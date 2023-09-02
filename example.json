@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "name": "tel.schich.idl.example",
+    "version": "1"
+  },
+  "definitions": [
+    {
+      "type": "primitive",
+      "metadata": {
+        "name": "test"
+      },
+      "dataType": "int32"
+    },
+    {
+      "type": "sum",
+      "metadata": {
+        "name": "untagged-sum"
+      },
+      "constructors": [
+        { "name": "test" }
+      ]
+    }
+  ],
+  "operations": []
+}
