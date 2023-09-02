@@ -6,6 +6,7 @@ import kotlinx.serialization.json.decodeFromStream
 import java.io.ByteArrayInputStream
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.extension
 
 interface Loader {
     fun load(data: ByteArray): Module
@@ -20,13 +21,12 @@ object JsonLoader : Loader {
     }
 }
 
-val Loaders = mapOf<String, Loader>(
-    "application/json" to JsonLoader,
+val Loaders = mapOf(
+    "json" to JsonLoader,
 )
 
 fun loadModule(path: Path): Module {
-    val contentType = Files.probeContentType(path)
-    val loader = Loaders[contentType]!!
+    val loader = path.extension.ifEmpty { null }?.let { Loaders[it] } ?: JsonLoader
     val data = Files.readAllBytes(path)
     return loader.load(data)
 }

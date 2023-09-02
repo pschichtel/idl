@@ -1,6 +1,5 @@
 package tel.schich.idl
 
-import kotlinx.serialization.json.Json
 import tel.schich.idl.validation.ValidationError
 import tel.schich.idl.validation.ValidationResult
 import tel.schich.idl.validation.validateModule
@@ -35,12 +34,6 @@ fun main(args: Array<String>) {
                 Files.isDirectory(it) -> Files.walk(it).asSequence().filterNot(Files::isDirectory)
                 else -> sequenceOf(it)
             }
-        }
-        .mapNotNull {
-            if (Files.probeContentType(it) != "application/json") {
-                return@mapNotNull null
-            }
-            it
         }
 
     if (inputFiles.isEmpty()) {
