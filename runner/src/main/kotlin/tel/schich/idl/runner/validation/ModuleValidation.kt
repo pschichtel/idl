@@ -1,6 +1,11 @@
-package tel.schich.idl.validation
+package tel.schich.idl.runner.validation
 
-import tel.schich.idl.*
+import tel.schich.idl.core.Alias
+import tel.schich.idl.core.Definition
+import tel.schich.idl.core.Model
+import tel.schich.idl.core.ModelReference
+import tel.schich.idl.core.Module
+import tel.schich.idl.core.ModuleReference
 import java.nio.file.Path
 
 sealed interface ValidationError {
@@ -8,9 +13,12 @@ sealed interface ValidationError {
 
     data class DuplicatedModule(override val module: ModuleReference, val sourceFiles: Set<Path>) : ValidationError
     data class InvalidModuleName(override val module: ModuleReference, val reason: String) : ValidationError
-    data class DuplicatedDefinition(override val module: ModuleReference, val name: String, val indices: List<Int>) : ValidationError
-    data class UndefinedModuleReferenced(override val module: ModuleReference, val definitionName: String, val referencedModule: ModuleReference) : ValidationError
-    data class UndefinedDefinitionReferenced(override val module: ModuleReference, val definitionName: String, val referencedModule: ModuleReference, val referencedDefinition: String) : ValidationError
+    data class DuplicatedDefinition(override val module: ModuleReference, val name: String, val indices: List<Int>) :
+        ValidationError
+    data class UndefinedModuleReferenced(override val module: ModuleReference, val definitionName: String, val referencedModule: ModuleReference) :
+        ValidationError
+    data class UndefinedDefinitionReferenced(override val module: ModuleReference, val definitionName: String, val referencedModule: ModuleReference, val referencedDefinition: String) :
+        ValidationError
 }
 
 sealed interface ValidationResult {

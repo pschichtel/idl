@@ -1,4 +1,4 @@
-package tel.schich.idl
+package tel.schich.idl.core
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -6,14 +6,16 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
-import tel.schich.idl.constraint.HomogenousListConstraint
-import tel.schich.idl.constraint.HomogenousMapConstraint
-import tel.schich.idl.constraint.HomogenousSetConstraint
-import tel.schich.idl.constraint.PrimitiveConstraint
+import tel.schich.idl.core.constraint.HomogenousListConstraint
+import tel.schich.idl.core.constraint.HomogenousMapConstraint
+import tel.schich.idl.core.constraint.HomogenousSetConstraint
+import tel.schich.idl.core.constraint.PrimitiveConstraint
 
 @Serializable
 @JvmInline
-value class PrimitiveDataType(val name: String)
+value class PrimitiveDataType(
+    val name: String,
+)
 
 @Serializable
 data class Example(
@@ -31,14 +33,6 @@ data class ModelMetadata(
 ) : Metadata
 
 @Serializable
-data class BasicMetadata(
-    override val name: String,
-    override val summary: String? = null,
-    override val description: String? = null,
-    override val annotations: Map<String, String> = emptyMap(),
-) : Metadata
-
-@Serializable
 data class ModelReference(
     val module: ModuleReference? = null,
     val name: String,
@@ -46,7 +40,9 @@ data class ModelReference(
 
 @Serializable
 @JvmInline
-value class Tag(val tag: String)
+value class Tag(
+    val tag: String,
+)
 
 @Serializable
 data class TaggedConstructor(
@@ -56,7 +52,10 @@ data class TaggedConstructor(
 )
 
 @Serializable
-data class EnumerationEntry(val metadata: BasicMetadata, val value: JsonElement = JsonPrimitive(metadata.name))
+data class EnumerationEntry(
+    val metadata: BasicMetadata,
+    val value: JsonElement = JsonPrimitive(metadata.name),
+)
 
 @Serializable
 sealed interface Definition {

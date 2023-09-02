@@ -4,6 +4,7 @@ rootProject.name = "kotlin-idl"
 include(
     "core",
     "runner",
+    "generator",
 )
 
 pluginManagement {

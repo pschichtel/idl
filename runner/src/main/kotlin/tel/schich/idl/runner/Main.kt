@@ -1,8 +1,9 @@
-package tel.schich.idl
+package tel.schich.idl.runner
 
-import tel.schich.idl.validation.ValidationError
-import tel.schich.idl.validation.ValidationResult
-import tel.schich.idl.validation.validateModule
+import tel.schich.idl.core.ModuleReference
+import tel.schich.idl.runner.validation.ValidationError
+import tel.schich.idl.runner.validation.ValidationResult
+import tel.schich.idl.runner.validation.validateModule
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.streams.asSequence

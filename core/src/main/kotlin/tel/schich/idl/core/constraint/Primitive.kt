@@ -1,67 +1,11 @@
-package tel.schich.idl.constraint
+package tel.schich.idl.core.constraint
 
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlinx.serialization.json.JsonElement
-import tel.schich.idl.ModelReference
-import tel.schich.idl.Module
 
-
-@Serializable
-sealed interface HomogenousListConstraint
-@Serializable
-sealed interface HomogenousSetConstraint
-@Serializable
-sealed interface HomogenousMapConstraint
-
-@Serializable
-@SerialName("size-gt")
-data class CollectionSizeGreaterThan(
-    val value: Int,
-) : HomogenousListConstraint, HomogenousSetConstraint, HomogenousMapConstraint
-
-@Serializable
-@SerialName("size-gte")
-data class CollectionSizeGreaterThanOrEqualTo(
-    val value: Int,
-) : HomogenousListConstraint, HomogenousSetConstraint, HomogenousMapConstraint
-
-@Serializable
-@SerialName("size-lt")
-data class CollectionSizeLessThan(
-    val value: Int,
-) : HomogenousListConstraint, HomogenousSetConstraint, HomogenousMapConstraint
-
-@Serializable
-@SerialName("size-lte")
-data class CollectionSizeLessThanOrEqualTo(
-    val value: Int,
-) : HomogenousListConstraint, HomogenousSetConstraint, HomogenousMapConstraint
-
-@Serializable
-@SerialName("size-eq")
-data class CollectionSizeEqualTo(
-    val value: Int,
-) : HomogenousListConstraint, HomogenousSetConstraint, HomogenousMapConstraint
-
-@Serializable
-@SerialName("size-ne")
-data class CollectionSizeNotEqualTo(
-    val value: Int,
-) : HomogenousListConstraint, HomogenousSetConstraint, HomogenousMapConstraint
-
-@Serializable
-@SerialName("values-unique")
-data object CollectionValuesUnique : HomogenousListConstraint, HomogenousMapConstraint
-
-@Serializable
-enum class PrimitiveConstraintSubject {
-    VALUE,
-    LENGTH,
-}
 
 @OptIn(ExperimentalSerializationApi::class)
 @JsonClassDiscriminator("type")

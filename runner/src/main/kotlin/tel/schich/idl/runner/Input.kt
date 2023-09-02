@@ -1,8 +1,9 @@
-package tel.schich.idl
+package tel.schich.idl.runner
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import tel.schich.idl.core.Module
 import java.io.ByteArrayInputStream
 import java.nio.file.Files
 import java.nio.file.Path
@@ -28,5 +29,5 @@ val Loaders = mapOf(
 fun loadModule(path: Path): Module {
     val loader = path.extension.ifEmpty { null }?.let { Loaders[it] } ?: JsonLoader
     val data = Files.readAllBytes(path)
-    return loader.load(data)
+    return JsonLoader.load(data)
 }

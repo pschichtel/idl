@@ -1,4 +1,4 @@
-package tel.schich.idl
+package tel.schich.idl.core
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
