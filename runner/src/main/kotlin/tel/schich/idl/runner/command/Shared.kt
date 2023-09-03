@@ -1,6 +1,8 @@
 package tel.schich.idl.runner.command
 
+import com.github.ajalt.clikt.core.Abort
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.ParameterHolder
 import com.github.ajalt.clikt.parameters.options.OptionWithValues
 import com.github.ajalt.clikt.parameters.options.multiple
@@ -95,8 +97,12 @@ internal fun CliktCommand.validate(modules: List<Module>) {
     }
 }
 
-fun ParameterHolder.moduleSourcesOption(): OptionWithValues<List<Path>, Path, Path> {
-    return option("-s")
+internal fun ParameterHolder.moduleSourcesOption(): OptionWithValues<List<Path>, Path, Path> {
+    return option("--source")
         .path(mustExist = true, mustBeReadable = true)
         .multiple(required = true)
+}
+
+internal fun CliktCommand.exit(code: Int): Nothing {
+    throw CliktError(statusCode = code)
 }
