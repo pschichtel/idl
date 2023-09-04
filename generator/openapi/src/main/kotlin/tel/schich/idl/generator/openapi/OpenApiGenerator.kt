@@ -27,7 +27,6 @@ import kotlin.io.path.createDirectories
 class OpenApiAnnotation<T : Any>(name: String, parser: AnnotationParser<T>) :
     Annotation<T>(namespace = "tel.schich.idl.generator.openapi", name, parser)
 
-val OpenApiVersionAnnotation = OpenApiAnnotation(name = "openapi-version", ::valueAsIs)
 val SpecVersionAnnotation = OpenApiAnnotation(name = "spec-version", ::valueAsIs)
 val SchemaNameAnnotation = OpenApiAnnotation(name = "schema-name", ::valueAsIs)
 val PrimitiveFormatAnnotation = OpenApiAnnotation(name = "primitive-format", ::valueAsIs)
@@ -57,7 +56,6 @@ class OpenApiGenerator : JvmInProcessGenerator {
     }
 
     override fun generate(request: GenerationRequest): GenerationResult {
-        val defaultOpenApiVersion = request.getAnnotation(OpenApiVersionAnnotation) ?: "3.0.1"
         val defaultSpecVersion = request.getAnnotation(SpecVersionAnnotation)
 
         val modules = request.modules
@@ -79,8 +77,6 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 val uri = URI(ref.module?.let { relativeOutputFilePath(it) } ?: "")
                 return Reference(uri, JsonPointer.fromString("/components/schemas/${ref.name}"))
             }
-
-            val version = module.metadata.getAnnotation(OpenApiVersionAnnotation) ?: defaultOpenApiVersion
 
             val info = Info(
                 title = module.metadata.name,
@@ -109,7 +105,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     is Model.Primitive -> {
                         val (type, format) = primitiveType(definition.dataType, definition.metadata)
                         SimpleSchema(
-                            type = type,
+                            type = type?.let(::setOf),
                             format = format,
                             description = definition.metadata.description,
                             deprecated = definition.metadata.deprecated,
@@ -117,7 +113,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     }
                     is Model.Record -> {
                         SimpleSchema(
-                            type = SchemaType.OBJECT,
+                            type = setOf(SchemaType.OBJECT),
                             description = definition.metadata.description,
                             deprecated = definition.metadata.deprecated,
                             properties = definition.properties.associate {
@@ -127,7 +123,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     }
                     is Model.HomogenousList -> {
                         SimpleSchema(
-                            type = SchemaType.ARRAY,
+                            type = setOf(SchemaType.ARRAY),
                             description = definition.metadata.description,
                             deprecated = definition.metadata.deprecated,
                             items = SimpleSchema(ref = referenceToModel(definition.itemModel))
@@ -135,7 +131,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     }
                     is Model.HomogenousSet -> {
                         SimpleSchema(
-                            type = SchemaType.ARRAY,
+                            type = setOf(SchemaType.ARRAY),
                             description = definition.metadata.description,
                             deprecated = definition.metadata.deprecated,
                             uniqueItems = true,
@@ -144,7 +140,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     }
                     is Model.HomogenousMap -> {
                         SimpleSchema(
-                            type = SchemaType.OBJECT,
+                            type = setOf(SchemaType.OBJECT),
                             description = definition.metadata.description,
                             deprecated = definition.metadata.deprecated,
                             additionalProperties = SimpleSchema(ref = referenceToModel(definition.valueModel))
@@ -160,7 +156,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     is Model.Enumeration -> {
                         val (type, format) = primitiveType(definition.dataType, definition.metadata)
                         SimpleSchema(
-                            type = type,
+                            type = type?.let(::setOf),
                             format = format,
                             description = definition.metadata.description,
                             deprecated = definition.metadata.deprecated,
@@ -194,7 +190,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 schemas = schemas,
             )
             val spec = OpenApiSpec(
-                openapi = version,
+                openapi = "3.1.0",
                 info = info,
                 components = components,
             )

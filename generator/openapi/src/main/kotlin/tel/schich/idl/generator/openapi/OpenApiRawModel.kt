@@ -15,6 +15,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
@@ -495,6 +496,8 @@ enum class SchemaType {
     BOOLEAN,
     @SerialName("string")
     STRING,
+    @SerialName("null")
+    NULL,
 }
 
 interface Schema
@@ -520,7 +523,7 @@ object SchemaSerializer : KSerializer<Schema> {
 
 @Serializable
 data class SimpleSchema(
-    val type: SchemaType? = null,
+    val type: Set<SchemaType>? = null,
     @SerialName("\$ref")
     val ref: Reference? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.1
@@ -616,6 +619,9 @@ data class SimpleSchema(
 
 @Serializable
 data class TupleSchema(
+    @Transient
+    val nullable: Boolean = false,
+
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.1
     val title: String? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.1
@@ -642,7 +648,7 @@ data class TupleSchema(
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.2
     val minItems: BigInteger,
 ): Schema {
-    val type: SchemaType = SchemaType.ARRAY
+    val type: Set<SchemaType> = if (nullable) setOf(SchemaType.ARRAY, SchemaType.NULL) else setOf(SchemaType.ARRAY)
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.1.2
     val items: Boolean = false
 }
