@@ -8,6 +8,8 @@ import tel.schich.idl.core.Module
 import tel.schich.idl.core.Annotation
 import tel.schich.idl.core.AnnotationParser
 import tel.schich.idl.core.Model
+import tel.schich.idl.core.ModelReference
+import tel.schich.idl.core.ModuleReference
 import tel.schich.idl.core.generate.GenerationRequest
 import tel.schich.idl.core.generate.GenerationResult
 import tel.schich.idl.core.generate.getAnnotation
@@ -63,10 +65,17 @@ class OpenApiGenerator : JvmInProcessGenerator {
         val commonNamePrefix = determineCommonPrefix(modules)
         println(commonNamePrefix)
 
+        fun outputFilePath(module: ModuleReference): String =
+            "${module.name.removePrefix(commonNamePrefix).replace(MODULE_NAME_SEPARATOR, File.separatorChar)}.json"
+
         for (module in subjectModules) {
-            val path =
-                "${module.metadata.name.removePrefix(commonNamePrefix).replace(MODULE_NAME_SEPARATOR, File.separatorChar)}.json"
-            println(path)
+
+            fun referenceToModel(ref: ModelReference): Reference {
+                val uri = URI(ref.module?.let { outputFilePath(it) } ?: "")
+                return Reference(uri, JsonPointer.fromString("/components/schemas/${ref.name}"))
+            }
+
+            println(outputFilePath(module.reference))
             val version = module.metadata.getAnnotation(OpenApiVersionAnnotation) ?: defaultOpenApiVersion
 
             val info = Info(
@@ -79,65 +88,41 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 val schemaName = definition.metadata.getAnnotation(SchemaNameAnnotation) ?: definition.metadata.name
                 val schema: Schema = when (definition) {
                     is Model.Primitive -> {
-                        val format = definition.metadata.getAnnotation(PrimitiveFormatAnnotation)?.let(::TypeFormat)
-                        when (val typeName = definition.dataType.name) {
+                        val type = when (definition.dataType.name) {
                             "int32",
-                            "int64" -> {
-                                Schema.InstanceSchema.IntegerSchema(
-                                    format = format ?: TypeFormat(typeName),
-                                    description = definition.metadata.description,
-                                    deprecated = definition.metadata.deprecated,
-                                )
-                            }
-                            "float32" -> {
-                                Schema.InstanceSchema.NumberSchema(
-                                    format = format ?: TypeFormat(format = "float"),
-                                    description = definition.metadata.description,
-                                    deprecated = definition.metadata.deprecated,
-                                )
-                            }
-                            "float64" -> {
-                                Schema.InstanceSchema.NumberSchema(
-                                    format = format ?: TypeFormat(format = "double"),
-                                    description = definition.metadata.description,
-                                    deprecated = definition.metadata.deprecated,
-                                )
-                            }
-                            "boolean" -> {
-                                Schema.InstanceSchema.BooleanSchema(
-                                    format = format,
-                                    description = definition.metadata.description,
-                                    deprecated = definition.metadata.deprecated,
-                                )
-                            }
-                            else -> {
-                                Schema.InstanceSchema.StringSchema(
-                                    format = format,
-                                    description = definition.metadata.description,
-                                    deprecated = definition.metadata.deprecated,
-                                )
-                            }
+                            "int64" -> SchemaType.INTEGER
+                            "float32",
+                            "float64" -> SchemaType.NUMBER
+                            "boolean" -> SchemaType.BOOLEAN
+                            "string" -> SchemaType.STRING
+                            else -> null
                         }
+                        val format = definition.metadata.getAnnotation(PrimitiveFormatAnnotation)?.let(::TypeFormat)
+                        Schema(
+                            type = type,
+                            format = format,
+                            description = definition.metadata.description,
+                            deprecated = definition.metadata.deprecated,
+                        )
                     }
                     is Model.Record -> {
-                        Schema.InstanceSchema.ObjectSchema(
+                        Schema(
+                            type = SchemaType.OBJECT,
                             description = definition.metadata.description,
                             deprecated = definition.metadata.deprecated,
                             properties = definition.properties.associate {
-                                println(Reference(URI(""), JsonPointer.fromString("/components/schemas/${it.model.name}")))
-                                Pair(PropertyName(it.metadata.name), Schema.ReferencingSchema(Reference(URI(""), JsonPointer.fromString("/components/schemas/${it.model.name}"))))
+                                Pair(PropertyName(it.metadata.name), Schema(ref = referenceToModel(it.model)))
                             }
                         )
                     }
                     is Model.Sum -> {
-
-                        Schema.OneOfComposite(
-                            components = definition.constructors.map {
-                                Schema.EmptySchema
+                        Schema(
+                            oneOf = definition.constructors.map {
+                                Schema(ref = referenceToModel(it))
                             }
                         )
                     }
-                    else -> Schema.EmptySchema
+                    else -> Schema()
                 }
                 Pair(SchemaName(schemaName), schema)
             }

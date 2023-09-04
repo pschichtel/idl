@@ -79,7 +79,7 @@ sealed interface Parameter {
     val required: Boolean
     val deprecated: Boolean
     val explode: Boolean
-    val schema: Schema?
+    val schema: StrictSchema?
     val content: Contents?
     val example: ExampleValue?
     val examples: Map<String, Example>
@@ -93,7 +93,7 @@ sealed interface Parameter {
         override val deprecated: Boolean = false,
         val style: PathParameterStyle = PathParameterStyle.SIMPLE,
         override val explode: Boolean = style.explode,
-        override val schema: Schema? = null,
+        override val schema: StrictSchema? = null,
         override val content: Contents? = null,
         override val example: ExampleValue? = null,
         override val examples: Map<String, @Contextual Example> = emptyMap(),
@@ -109,7 +109,7 @@ sealed interface Parameter {
         val style: QueryParameterStyle = QueryParameterStyle.FORM,
         override val explode: Boolean = style.explode,
         val allowReserved: Boolean = false,
-        override val schema: Schema? = null,
+        override val schema: StrictSchema? = null,
         override val content: Contents? = null,
         override val example: ExampleValue? = null,
         override val examples: Map<String, @Contextual Example> = emptyMap(),
@@ -124,7 +124,7 @@ sealed interface Parameter {
         override val deprecated: Boolean = false,
         override val style: HeaderParameterStyle = HeaderParameterStyle.SIMPLE,
         override val explode: Boolean = style.explode,
-        override val schema: Schema? = null,
+        override val schema: StrictSchema? = null,
         override val content: Contents? = null,
         override val example: ExampleValue? = null,
         override val examples: Map<String, @Contextual Example> = emptyMap(),
@@ -139,7 +139,7 @@ sealed interface Parameter {
         override val deprecated: Boolean = false,
         val style: CookieParameterStyle = CookieParameterStyle.FORM,
         override val explode: Boolean = style.explode,
-        override val schema: Schema? = null,
+        override val schema: StrictSchema? = null,
         override val content: Contents? = null,
         override val example: ExampleValue? = null,
         override val examples: Map<String, @Contextual Example> = emptyMap(),
@@ -152,7 +152,7 @@ sealed interface HeaderDescription {
     val deprecated: Boolean
     val style: HeaderParameterStyle
     val explode: Boolean
-    val schema: Schema?
+    val schema: StrictSchema?
     val content: Contents?
     val example: ExampleValue?
     val examples: Map<String, Example>
@@ -165,7 +165,7 @@ data class Header(
     override val deprecated: Boolean = false,
     override val style: HeaderParameterStyle = HeaderParameterStyle.SIMPLE,
     override val explode: Boolean = style.explode,
-    override val schema: Schema? = null,
+    override val schema: StrictSchema? = null,
     override val content: Contents? = null,
     override val example: ExampleValue? = null,
     override val examples: Map<String, @Contextual Example> = emptyMap(),
@@ -422,7 +422,7 @@ value class MimeType(val type: String)
 
 @Serializable
 data class MediaType(
-    val schema: Schema,
+    val schema: StrictSchema,
     val example: ExampleValue? = null,
     val examples: Map<String, @Contextual Example> = emptyMap(),
 )
@@ -479,7 +479,102 @@ value class RegularExpression(val raw: String) {
 }
 
 @Serializable
-sealed interface Schema {
+enum class SchemaType {
+    @SerialName("object")
+    OBJECT,
+    @SerialName("array")
+    ARRAY,
+    @SerialName("number")
+    NUMBER,
+    @SerialName("integer")
+    INTEGER,
+    @SerialName("boolean")
+    BOOLEAN,
+    @SerialName("string")
+    STRING,
+}
+
+@Serializable
+data class Schema(
+    val type: SchemaType? = null,
+    @SerialName("\$ref")
+    val ref: Reference? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.1
+    val title: String? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.1
+    val description: String? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.2
+    val default: JsonElement? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.3
+    val deprecated: Boolean? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.4
+    val readOnly: Boolean? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.4
+    val writeOnly: Boolean? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.5
+    val examples: List<JsonElement>? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.1.2
+    val enum: List<JsonElement>? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.1.3
+    val const: JsonElement? = null,
+    // https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#fixed-fields-20
+    val externalDocs: ExternalDocs? = null,
+
+    val format: TypeFormat? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.2.1
+    val multipleOf: BigInteger? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.2.2
+    val maximum: BigInteger? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.2.3
+    val exclusiveMaximum: BigInteger? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.2.4
+    val minimum: BigInteger? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.2.5
+    val exclusiveMinimum: BigInteger? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.3.1
+    val maxLength: Long? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.3.2
+    val minLength: Long? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.3.3
+    val pattern: RegularExpression? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-8.3
+    val contentEncoding: String? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-8.4
+    val contentMediaType: MediaType? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-8.5
+    val contentSchema: Schema? = null,
+
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.2.1
+    val properties: Map<PropertyName, Schema>? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.2.2
+    val patternProperties: Map<RegularExpression, Schema>? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.2.3
+    val additionalProperties: Schema? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.2.4
+    val propertyNames: Schema? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.5.1
+    val maxProperties: BigInteger? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.5.2
+    val minProperties: BigInteger? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.5.3
+    val required: List<PropertyName>? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.5.4
+    val dependentRequired: Map<PropertyName, Set<PropertyName>>? = null,
+
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.2.1.1
+    val allOf: List<Schema>? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.2.1.3
+    val oneOf: List<Schema>? = null,
+    // https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#fixed-fields-20
+    val discriminator: Discriminator? = null,
+) {
+    companion object {
+        val Empty = Schema()
+    }
+}
+
+@Serializable
+sealed interface StrictSchema {
 
     sealed interface PrimitiveInstanceSchema : InstanceSchema {
         val format: TypeFormat?
@@ -502,7 +597,7 @@ sealed interface Schema {
     @Serializable
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.1.1 (intentionally ignored array variant)
     @JsonClassDiscriminator(InstanceSchema.TYPE_FIELD_NAME)
-    sealed interface InstanceSchema : Schema {
+    sealed interface InstanceSchema : StrictSchema {
 
         // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.1
         val title: String?
@@ -538,22 +633,6 @@ sealed interface Schema {
             override val enum: List<JsonElement>? = null,
             override val const: JsonElement? = null,
             override val externalDocs: ExternalDocs? = null,
-            // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.2.1
-            val properties: Map<PropertyName, Schema> = emptyMap(),
-            // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.2.2
-            val patternProperties: Map<RegularExpression, Schema> = emptyMap(),
-            // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.2.3
-            val additionalProperties: Schema? = null,
-            // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.2.4
-            val propertyNames: Schema? = null,
-            // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.5.1
-            val maxProperties: BigInteger? = null,
-            // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.5.2
-            val minProperties: BigInteger = BigInteger.ZERO,
-            // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.5.3
-            val required: List<PropertyName> = emptyList(),
-            // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.5.4
-            val dependentRequired: Map<PropertyName, Set<PropertyName>> = emptyMap(),
         ) : InstanceSchema
 
         @Serializable
@@ -570,11 +649,11 @@ sealed interface Schema {
             override val const: JsonElement? = null,
             override val externalDocs: ExternalDocs? = null,
             // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.1.1
-            val prefixItems: List<Schema> = emptyList(),
+            val prefixItems: List<StrictSchema> = emptyList(),
             // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.1.2
-            val items: Schema? = null,
+            val items: StrictSchema? = null,
             // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.1.3
-            val contains: Schema? = null,
+            val contains: StrictSchema? = null,
             // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.1
             val maxItems: BigInteger? = null,
             // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.2
@@ -682,7 +761,7 @@ sealed interface Schema {
             // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-8.4
             val contentMediaType: MediaType? = null,
             // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-8.5
-            val contentSchema: Schema? = null,
+            val contentSchema: StrictSchema? = null,
         ) : PrimitiveInstanceSchema {
             companion object {
                 // from https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#data-types
@@ -742,16 +821,16 @@ sealed interface Schema {
     data class ReferencingSchema(
         @SerialName(ReferenceObject.REF_FIELD_NAME)
         val reference: Reference
-    ) : Schema
+    ) : StrictSchema
 
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.2.1.1
     @Serializable
     data class AllOfComposite(
         @SerialName(ALL_OF_FIELD_NAME)
-        val components: List<Schema>,
+        val components: List<StrictSchema>,
         // https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#fixed-fields-20
         val discriminator: Discriminator? = null,
-    ) : Schema {
+    ) : StrictSchema {
         companion object {
             const val ALL_OF_FIELD_NAME = "allOf"
         }
@@ -761,10 +840,10 @@ sealed interface Schema {
     @Serializable
     data class AnyOfComposite(
         @SerialName(ANY_OF_FIELD_NAME)
-        val components: List<Schema>,
+        val components: List<StrictSchema>,
         // https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#fixed-fields-20
         val discriminator: Discriminator? = null,
-    ) : Schema {
+    ) : StrictSchema {
         companion object {
             const val ANY_OF_FIELD_NAME = "anyOf"
         }
@@ -774,10 +853,10 @@ sealed interface Schema {
     @Serializable
     data class OneOfComposite(
         @SerialName(ONE_OF_FIELD_NAME)
-        val components: List<Schema>,
+        val components: List<StrictSchema>,
         // https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#fixed-fields-20
         val discriminator: Discriminator? = null,
-    ) : Schema {
+    ) : StrictSchema {
         companion object {
             const val ONE_OF_FIELD_NAME = "oneOf"
         }
@@ -787,8 +866,8 @@ sealed interface Schema {
     @Serializable
     data class Not(
         @SerialName(NOT_FIELD_NAME)
-        val schema: Schema,
-    ) : Schema {
+        val schema: StrictSchema,
+    ) : StrictSchema {
         companion object {
             const val NOT_FIELD_NAME = "not"
         }
@@ -799,14 +878,14 @@ sealed interface Schema {
     data class If(
         // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.2.2.1
         @SerialName(IF_FIELD_NAME)
-        val condition: Schema,
+        val condition: StrictSchema,
         // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.2.2.2
         @SerialName(THEN_FIELD_NAME)
-        val thenSchema: Schema? = null,
+        val thenSchema: StrictSchema? = null,
         // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.2.2.3
         @SerialName(ELSE_FIELD_NAME)
-        val elseSchema: Schema? = null,
-    ) : Schema {
+        val elseSchema: StrictSchema? = null,
+    ) : StrictSchema {
         companion object {
             const val IF_FIELD_NAME = "if"
             const val THEN_FIELD_NAME = "then"
@@ -819,15 +898,15 @@ sealed interface Schema {
     data class DependentSchemas(
         // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.2.2.4
         @SerialName(DEPENDENT_SCHEMAS_FIELD_NAME)
-        val dependentSchemas: Map<PropertyName, Schema> = emptyMap(),
-    ) : Schema {
+        val dependentSchemas: Map<PropertyName, StrictSchema> = emptyMap(),
+    ) : StrictSchema {
         companion object {
             const val DEPENDENT_SCHEMAS_FIELD_NAME = "dependentSchemas"
         }
     }
 
     @Serializable
-    object EmptySchema : Schema {
+    object EmptySchema : StrictSchema {
         override fun toString(): String = "EmptySchema"
     }
 }
@@ -859,18 +938,18 @@ data class DeclaredSchemaName(val name: String) : DiscriminatorMappingReference
 @Serializable
 data class Discriminator(val propertyName: String, val mapping: Map<String, DiscriminatorMappingReference>? = null)
 
-object SchemaSerializer : JsonContentPolymorphicSerializer<Schema>(Schema::class) {
+object SchemaSerializer : JsonContentPolymorphicSerializer<StrictSchema>(StrictSchema::class) {
     override fun selectDeserializer(element: JsonElement) = when {
-        element !is JsonObject -> Schema.InstanceSchema.serializer()
-        element.containsKey(ReferenceObject.REF_FIELD_NAME) -> Schema.ReferencingSchema.serializer()
-        element.containsKey(Schema.InstanceSchema.TYPE_FIELD_NAME) -> Schema.InstanceSchema.serializer()
-        element.containsKey(Schema.AllOfComposite.ALL_OF_FIELD_NAME) -> Schema.AllOfComposite.serializer()
-        element.containsKey(Schema.AnyOfComposite.ANY_OF_FIELD_NAME) -> Schema.AnyOfComposite.serializer()
-        element.containsKey(Schema.OneOfComposite.ONE_OF_FIELD_NAME) -> Schema.OneOfComposite.serializer()
-        element.containsKey(Schema.Not.NOT_FIELD_NAME) -> Schema.Not.serializer()
-        element.containsKey(Schema.If.IF_FIELD_NAME) -> Schema.If.serializer()
-        element.containsKey(Schema.DependentSchemas.DEPENDENT_SCHEMAS_FIELD_NAME) -> Schema.DependentSchemas.serializer()
-        else -> Schema.EmptySchema.serializer()
+        element !is JsonObject -> StrictSchema.InstanceSchema.serializer()
+        element.containsKey(ReferenceObject.REF_FIELD_NAME) -> StrictSchema.ReferencingSchema.serializer()
+        element.containsKey(StrictSchema.InstanceSchema.TYPE_FIELD_NAME) -> StrictSchema.InstanceSchema.serializer()
+        element.containsKey(StrictSchema.AllOfComposite.ALL_OF_FIELD_NAME) -> StrictSchema.AllOfComposite.serializer()
+        element.containsKey(StrictSchema.AnyOfComposite.ANY_OF_FIELD_NAME) -> StrictSchema.AnyOfComposite.serializer()
+        element.containsKey(StrictSchema.OneOfComposite.ONE_OF_FIELD_NAME) -> StrictSchema.OneOfComposite.serializer()
+        element.containsKey(StrictSchema.Not.NOT_FIELD_NAME) -> StrictSchema.Not.serializer()
+        element.containsKey(StrictSchema.If.IF_FIELD_NAME) -> StrictSchema.If.serializer()
+        element.containsKey(StrictSchema.DependentSchemas.DEPENDENT_SCHEMAS_FIELD_NAME) -> StrictSchema.DependentSchemas.serializer()
+        else -> StrictSchema.EmptySchema.serializer()
     }
 }
 
