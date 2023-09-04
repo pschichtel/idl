@@ -107,7 +107,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 val schema: Schema = when (definition) {
                     is Model.Primitive -> {
                         val (type, format) = primitiveType(definition.dataType, definition.metadata)
-                        Schema(
+                        SimpleSchema(
                             type = type,
                             format = format,
                             description = definition.metadata.description,
@@ -115,50 +115,50 @@ class OpenApiGenerator : JvmInProcessGenerator {
                         )
                     }
                     is Model.Record -> {
-                        Schema(
+                        SimpleSchema(
                             type = SchemaType.OBJECT,
                             description = definition.metadata.description,
                             deprecated = definition.metadata.deprecated,
                             properties = definition.properties.associate {
-                                Pair(PropertyName(it.metadata.name), Schema(ref = referenceToModel(it.model)))
+                                Pair(PropertyName(it.metadata.name), SimpleSchema(ref = referenceToModel(it.model)))
                             }
                         )
                     }
                     is Model.HomogenousList -> {
-                        Schema(
+                        SimpleSchema(
                             type = SchemaType.ARRAY,
                             description = definition.metadata.description,
                             deprecated = definition.metadata.deprecated,
-                            items = Schema(ref = referenceToModel(definition.itemModel))
+                            items = SimpleSchema(ref = referenceToModel(definition.itemModel))
                         )
                     }
                     is Model.HomogenousSet -> {
-                        Schema(
+                        SimpleSchema(
                             type = SchemaType.ARRAY,
                             description = definition.metadata.description,
                             deprecated = definition.metadata.deprecated,
                             uniqueItems = true,
-                            items = Schema(ref = referenceToModel(definition.itemModel))
+                            items = SimpleSchema(ref = referenceToModel(definition.itemModel))
                         )
                     }
                     is Model.HomogenousMap -> {
-                        Schema(
+                        SimpleSchema(
                             type = SchemaType.OBJECT,
                             description = definition.metadata.description,
                             deprecated = definition.metadata.deprecated,
-                            additionalProperties = Schema(ref = referenceToModel(definition.valueModel))
+                            additionalProperties = SimpleSchema(ref = referenceToModel(definition.valueModel))
                         )
                     }
                     is Model.Sum -> {
-                        Schema(
+                        SimpleSchema(
                             oneOf = definition.constructors.map {
-                                Schema(ref = referenceToModel(it))
+                                SimpleSchema(ref = referenceToModel(it))
                             }
                         )
                     }
                     is Model.Enumeration -> {
                         val (type, format) = primitiveType(definition.dataType, definition.metadata)
-                        Schema(
+                        SimpleSchema(
                             type = type,
                             format = format,
                             description = definition.metadata.description,
@@ -167,15 +167,25 @@ class OpenApiGenerator : JvmInProcessGenerator {
                         )
                     }
                     is Alias -> {
-                        Schema(ref = referenceToModel(definition.aliasedModel))
+                        SimpleSchema(ref = referenceToModel(definition.aliasedModel))
                     }
                     is Model.Unknown -> {
-                        Schema(
+                        SimpleSchema(
                             description = definition.metadata.description,
                             deprecated = definition.metadata.deprecated,
                         )
                     }
-                    else -> Schema()
+                    is Model.Product -> {
+                        val size = definition.components.size.toBigInteger()
+                        TupleSchema(
+                            prefixItems = definition.components.map {
+                                SimpleSchema(ref = referenceToModel(it))
+                            },
+                            minItems = size,
+                            maxItems = size,
+                        )
+                    }
+                    else -> SimpleSchema.Empty
                 }
                 Pair(SchemaName(schemaName), schema)
             }

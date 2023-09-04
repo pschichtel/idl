@@ -4,6 +4,7 @@
     BigDecimalSerializer::class,
     HttpStatusCodeSerializer::class,
     JsonPointerSerializer::class,
+    SchemaSerializer::class,
 )
 
 package tel.schich.idl.generator.openapi
@@ -20,6 +21,8 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.SerialKind
+import kotlinx.serialization.descriptors.buildSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonClassDiscriminator
@@ -494,8 +497,29 @@ enum class SchemaType {
     STRING,
 }
 
+interface Schema
+
+object SchemaSerializer : KSerializer<Schema> {
+    override val descriptor: SerialDescriptor = object : SerialDescriptor by SimpleSchema.serializer().descriptor {
+        @OptIn(ExperimentalSerializationApi::class)
+        override val serialName: String = Schema::class.qualifiedName!!
+    }
+
+    override fun serialize(encoder: Encoder, value: Schema) {
+        when (value) {
+            is SimpleSchema -> SimpleSchema.serializer().serialize(encoder, value)
+            is TupleSchema -> TupleSchema.serializer().serialize(encoder, value)
+            else -> error("Unsupported schema type!")
+        }
+    }
+
+    override fun deserialize(decoder: Decoder): Schema {
+        error("This serializer is not meant for deserialization!")
+    }
+}
+
 @Serializable
-data class Schema(
+data class SimpleSchema(
     val type: SchemaType? = null,
     @SerialName("\$ref")
     val ref: Reference? = null,
@@ -584,10 +608,43 @@ data class Schema(
     val oneOf: List<Schema>? = null,
     // https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#fixed-fields-20
     val discriminator: Discriminator? = null,
-) {
+) : Schema {
     companion object {
-        val Empty = Schema()
+        val Empty = SimpleSchema()
     }
+}
+
+@Serializable
+data class TupleSchema(
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.1
+    val title: String? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.1
+    val description: String? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.2
+    val default: JsonElement? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.3
+    val deprecated: Boolean? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.4
+    val readOnly: Boolean? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.4
+    val writeOnly: Boolean? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.5
+    val examples: List<JsonElement>? = null,
+    // https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#fixed-fields-20
+    val externalDocs: ExternalDocs? = null,
+
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.1.1
+    val prefixItems: List<Schema>,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.1.3
+    val contains: Schema? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.1
+    val maxItems: BigInteger,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.2
+    val minItems: BigInteger,
+): Schema {
+    val type: SchemaType = SchemaType.ARRAY
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.1.2
+    val items: Boolean = false
 }
 
 @Serializable(with = DiscriminatorMappingReferenceSerializer::class)

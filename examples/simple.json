@@ -19,6 +19,16 @@
       "constructors": [
         { "name": "test" }
       ]
+    },
+    {
+      "type": "product",
+      "metadata": {
+        "name": "product"
+      },
+      "components": [
+        { "name": "untagged-sum" },
+        { "name": "test" }
+      ]
     }
   ],
   "operations": []
