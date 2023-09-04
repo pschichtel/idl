@@ -1,0 +1,88 @@
+{
+  "metadata": {
+    "name": "ai.vier.cvg.shared.barge-in",
+    "version": "1"
+  },
+  "definitions": [
+    {
+      "metadata": {
+        "name": "TriggeredBargeIn"
+      },
+      "type": "primitive",
+      "dataType": "boolean"
+    },
+    {
+      "metadata": {
+        "name": "LegacyEnableBargeIn"
+      },
+      "type": "primitive",
+      "dataType": "boolean"
+    },
+    {
+      "metadata": {
+        "name": "EnableBargeInOnSpeech"
+      },
+      "type": "primitive",
+      "dataType": "boolean"
+    },
+    {
+      "metadata": {
+        "name": "EnableBargeInOnDtmf"
+      },
+      "type": "primitive",
+      "dataType": "boolean"
+    },
+    {
+      "metadata": {
+        "name": "BargeInSettings"
+      },
+      "type": "record",
+      "properties": [
+        {
+          "metadata": {
+            "name": "onSpeech"
+          },
+          "required": false,
+          "default": false,
+          "model": {
+            "name": "EnableBargeInOnSpeech"
+          }
+        },
+        {
+          "metadata": {
+            "name": "onDtmf"
+          },
+          "required": false,
+          "default": false,
+          "model": {
+            "name": "EnableBargeInOnDtmf"
+          }
+        },
+        {
+          "metadata": {
+            "name": "confidence"
+          },
+          "required": false,
+          "model": {
+            "module": {
+              "name": "ai.vier.cvg.shared.confidence",
+              "version": "1"
+            },
+            "name": "Confidence"
+          }
+        },
+        {
+          "metadata": {
+            "name": "onDtmf"
+          },
+          "required": false,
+          "default": false,
+          "model": {
+            "name": "EnableBargeInOnDtmf"
+          }
+        }
+      ]
+    }
+  ],
+  "operations": []
+}

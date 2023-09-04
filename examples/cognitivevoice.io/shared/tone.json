@@ -1,0 +1,113 @@
+{
+  "metadata": {
+    "name": "ai.vier.cvg.shared.tone",
+    "version": "1"
+  },
+  "definitions": [
+    {
+      "metadata": {
+        "name": "DtmfTone"
+      },
+      "type": "enum",
+      "dataType": "string",
+      "entries": [
+        {
+          "metadata": {
+            "name": "TONE_0"
+          },
+          "value": "0"
+        },
+        {
+          "metadata": {
+            "name": "TONE_1"
+          },
+          "value": "1"
+        },
+        {
+          "metadata": {
+            "name": "TONE_2"
+          },
+          "value": "2"
+        },
+        {
+          "metadata": {
+            "name": "TONE_3"
+          },
+          "value": "3"
+        },
+        {
+          "metadata": {
+            "name": "TONE_4"
+          },
+          "value": "4"
+        },
+        {
+          "metadata": {
+            "name": "TONE_5"
+          },
+          "value": "5"
+        },
+        {
+          "metadata": {
+            "name": "TONE_6"
+          },
+          "value": "6"
+        },
+        {
+          "metadata": {
+            "name": "TONE_7"
+          },
+          "value": "7"
+        },
+        {
+          "metadata": {
+            "name": "TONE_8"
+          },
+          "value": "8"
+        },
+        {
+          "metadata": {
+            "name": "TONE_9"
+          },
+          "value": "9"
+        },
+        {
+          "metadata": {
+            "name": "TONE_A"
+          },
+          "value": "A"
+        },
+        {
+          "metadata": {
+            "name": "TONE_B"
+          },
+          "value": "B"
+        },
+        {
+          "metadata": {
+            "name": "TONE_C"
+          },
+          "value": "C"
+        },
+        {
+          "metadata": {
+            "name": "TONE_D"
+          },
+          "value": "D"
+        },
+        {
+          "metadata": {
+            "name": "TONE_*"
+          },
+          "value": "*"
+        },
+        {
+          "metadata": {
+            "name": "TONE_#"
+          },
+          "value": "#"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "name": "ai.vier.cvg.shared.language",
+    "version": "1"
+  },
+  "definitions": [
+    {
+      "metadata": {
+        "name": "Language"
+      },
+      "type": "primitive",
+      "dataType": "string",
+      "constraints": [
+        {
+          "type": "gte",
+          "subject": "LENGTH",
+          "value": 1
+        }
+      ]
+    }
+  ]
+}
