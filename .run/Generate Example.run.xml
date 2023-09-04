@@ -2,7 +2,7 @@
   <configuration default="false" name="Generate Example" type="JetRunConfigurationType">
     <option name="MAIN_CLASS_NAME" value="tel.schich.idl.runner.MainKt" />
     <module name="kotlin-idl.generator.openapi.main" />
-    <option name="PROGRAM_PARAMETERS" value="generate-in-process --subject tel.schich.idl.example:1 --source example.json tel.schich.idl.generator.openapi.OpenApiGenerator" />
+    <option name="PROGRAM_PARAMETERS" value="generate-in-process --subject tel.schich.idl.example:1 --source examples/simple.json tel.schich.idl.generator.openapi.OpenApiGenerator" />
     <shortenClasspath name="NONE" />
     <method v="2">
       <option name="Make" enabled="true" />

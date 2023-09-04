@@ -2,7 +2,7 @@
   <configuration default="false" name="Validate Example" type="JetRunConfigurationType">
     <option name="MAIN_CLASS_NAME" value="tel.schich.idl.runner.MainKt" />
     <module name="kotlin-idl.runner.main" />
-    <option name="PROGRAM_PARAMETERS" value="validate tel.schich.idl.example:1 --source example.json" />
+    <option name="PROGRAM_PARAMETERS" value="validate --source examples/simple.json" />
     <shortenClasspath name="NONE" />
     <method v="2">
       <option name="Make" enabled="true" />
