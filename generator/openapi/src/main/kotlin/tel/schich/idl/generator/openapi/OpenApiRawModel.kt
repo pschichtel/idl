@@ -224,7 +224,7 @@ value class SecurityScope(val name: String)
 @Serializable
 data class Components(
     val schemas: Map<SchemaName, Schema> = emptyMap(),
-    val securitySchemas: Map<SchemaName, SecuritySchema> = emptyMap(),
+    val securitySchemes: Map<SchemaName, SecuritySchema> = emptyMap(),
 )
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -478,7 +478,7 @@ value class RegularExpression(val raw: String) {
     fun toRegex() = raw.toRegex()
 }
 
-@Serializable(with = SchemaSerializer::class)
+@Serializable
 sealed interface Schema {
 
     sealed interface PrimitiveInstanceSchema : InstanceSchema {
@@ -517,7 +517,7 @@ sealed interface Schema {
         // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.4
         val writeOnly: Boolean
         // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.5
-        val examples: List<JsonElement>
+        val examples: List<JsonElement>?
         // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.1.2
         val enum: List<JsonElement>?
         // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.1.3
@@ -534,7 +534,7 @@ sealed interface Schema {
             override val deprecated: Boolean = false,
             override val readOnly: Boolean = false,
             override val writeOnly: Boolean = false,
-            override val examples: List<JsonElement> = emptyList(),
+            override val examples: List<JsonElement>? = null,
             override val enum: List<JsonElement>? = null,
             override val const: JsonElement? = null,
             override val externalDocs: ExternalDocs? = null,
@@ -565,7 +565,7 @@ sealed interface Schema {
             override val deprecated: Boolean = false,
             override val readOnly: Boolean = false,
             override val writeOnly: Boolean = false,
-            override val examples: List<JsonElement> = emptyList(),
+            override val examples: List<JsonElement>? = null,
             override val enum: List<JsonElement>? = null,
             override val const: JsonElement? = null,
             override val externalDocs: ExternalDocs? = null,
@@ -596,7 +596,7 @@ sealed interface Schema {
             override val deprecated: Boolean = false,
             override val readOnly: Boolean = false,
             override val writeOnly: Boolean = false,
-            override val examples: List<JsonElement> = emptyList(),
+            override val examples: List<JsonElement>? = null,
             override val enum: List<JsonElement>? = null,
             override val const: JsonElement? = null,
             override val externalDocs: ExternalDocs? = null,
@@ -612,7 +612,7 @@ sealed interface Schema {
             override val deprecated: Boolean = false,
             override val readOnly: Boolean = false,
             override val writeOnly: Boolean = false,
-            override val examples: List<JsonElement> = emptyList(),
+            override val examples: List<JsonElement>? = null,
             override val enum: List<JsonElement>? = null,
             override val const: JsonElement? = null,
             override val externalDocs: ExternalDocs? = null,
@@ -639,7 +639,7 @@ sealed interface Schema {
             override val deprecated: Boolean = false,
             override val readOnly: Boolean = false,
             override val writeOnly: Boolean = false,
-            override val examples: List<JsonElement> = emptyList(),
+            override val examples: List<JsonElement>? = null,
             override val enum: List<JsonElement>? = null,
             override val const: JsonElement? = null,
             override val externalDocs: ExternalDocs? = null,
@@ -666,7 +666,7 @@ sealed interface Schema {
             override val deprecated: Boolean = false,
             override val readOnly: Boolean = false,
             override val writeOnly: Boolean = false,
-            override val examples: List<JsonElement> = emptyList(),
+            override val examples: List<JsonElement>? = null,
             override val enum: List<JsonElement>? = null,
             override val const: JsonElement? = null,
             override val externalDocs: ExternalDocs? = null,
@@ -726,7 +726,7 @@ sealed interface Schema {
             override val deprecated: Boolean = false,
             override val readOnly: Boolean = false,
             override val writeOnly: Boolean = false,
-            override val examples: List<JsonElement> = emptyList(),
+            override val examples: List<JsonElement>? = null,
             override val enum: List<JsonElement>? = null,
             override val const: JsonElement? = null,
             override val externalDocs: ExternalDocs? = null,
@@ -977,9 +977,12 @@ object HttpStatusCodeSerializer : KSerializer<HttpStatusCode> {
 object ReferenceSerializer : KSerializer<Reference> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Reference", PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: Reference) = encoder.encodeString(value.uri.toString())
+    override fun serialize(encoder: Encoder, value: Reference) = encoder.encodeString(serializeToString(value))
 
     override fun deserialize(decoder: Decoder): Reference = deserializeFromString(decoder.decodeString())
+
+    fun serializeToString(ref: Reference) =
+        URI(ref.uri.scheme, ref.uri.userInfo, ref.uri.host, ref.uri.port, ref.uri.path, ref.uri.query, ref.pointer.toString()).toString()
 
     fun deserializeFromString(s: String): Reference {
         val uri = URI.create(s)

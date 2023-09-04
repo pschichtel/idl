@@ -6,6 +6,7 @@ import com.github.ajalt.clikt.parameters.arguments.convert
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
+import tel.schich.idl.core.ANNOTATION_NAMESPACE_SEPARATOR
 import tel.schich.idl.core.ModuleReference
 import tel.schich.idl.core.generate.GenerationRequest
 import tel.schich.idl.core.generate.GenerationResult
@@ -13,6 +14,14 @@ import java.nio.file.Path
 
 internal abstract class GenerateCommand(name: String) : CliktCommand(name = name) {
     private val moduleSources: List<Path> by moduleSourcesOption()
+    private val annotations: List<Pair<String, String>> by option("--annotation", "-a").convert {
+        val equalsPosition = it.indexOf(char = '=')
+        if (equalsPosition == -1) {
+            Pair(it, "")
+        } else {
+            Pair(it.substring(0, equalsPosition), it.substring(equalsPosition + 1))
+        }
+    }.multiple()
     private val subjectReferences by option("--subject").convert { arg ->
         ModuleReference.parse(arg)
             ?: fail("the subject must be a valid module reference of the format module-name:version")
@@ -43,7 +52,7 @@ internal abstract class GenerateCommand(name: String) : CliktCommand(name = name
             }
         }
 
-        return block(GenerationRequest(modules, subjects))
+        return block(GenerationRequest(modules, subjects, annotations.toMap()))
     }
 }
 

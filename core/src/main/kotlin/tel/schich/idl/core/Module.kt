@@ -4,6 +4,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.nio.file.Path
 
+const val MODULE_NAME_SEPARATOR = '.'
+
 @Serializable
 @JvmInline
 value class ModuleVersion(val version: String)

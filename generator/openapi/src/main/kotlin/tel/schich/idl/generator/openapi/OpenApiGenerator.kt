@@ -1,11 +1,159 @@
 package tel.schich.idl.generator.openapi
 
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import tel.schich.idl.core.MODULE_NAME_SEPARATOR
+import tel.schich.idl.core.Module
+import tel.schich.idl.core.Annotation
+import tel.schich.idl.core.AnnotationParser
+import tel.schich.idl.core.Model
 import tel.schich.idl.core.generate.GenerationRequest
 import tel.schich.idl.core.generate.GenerationResult
+import tel.schich.idl.core.generate.getAnnotation
+import tel.schich.idl.core.getAnnotation
+import tel.schich.idl.core.valueAsIs
 import tel.schich.idl.runner.command.JvmInProcessGenerator
+import java.io.File
+import java.net.URI
+
+class OpenApiAnnotation<T : Any>(name: String, parser: AnnotationParser<T>) :
+    Annotation<T>(namespace = "tel.schich.idl.generator.openapi", name, parser)
+
+val OpenApiVersionAnnotation = OpenApiAnnotation(name = "openapi-version", ::valueAsIs)
+val SpecVersionAnnotation = OpenApiAnnotation(name = "spec-version", ::valueAsIs)
+val SchemaNameAnnotation = OpenApiAnnotation(name = "schema-name", ::valueAsIs)
+val PrimitiveFormatAnnotation = OpenApiAnnotation(name = "primitive-format", ::valueAsIs)
 
 class OpenApiGenerator : JvmInProcessGenerator {
+    @OptIn(ExperimentalSerializationApi::class)
+    private val encoder = Json {
+        prettyPrint = true
+        encodeDefaults = true
+        explicitNulls = false
+    }
+
+    private fun determineCommonPrefix(modules: List<Module>): String {
+        val splitNames = modules.map { it.metadata.name.split(MODULE_NAME_SEPARATOR).dropLast(1) }
+
+        fun commonPrefixLength(a: List<String>, b: List<String>): List<String> {
+            val zipped = a.zip(b)
+            val length = zipped.withIndex().firstOrNull { it.value.first != it.value.second }?.index ?: zipped.size
+            if (a.size == length) {
+                return a
+            }
+            return a.subList(0, length)
+        }
+
+        return splitNames.reduce(::commonPrefixLength)
+            .joinToString(separator = "$MODULE_NAME_SEPARATOR", postfix = "$MODULE_NAME_SEPARATOR")
+    }
+
     override fun generate(request: GenerationRequest): GenerationResult {
+        val defaultOpenApiVersion = request.getAnnotation(OpenApiVersionAnnotation) ?: "3.0.1"
+        val defaultSpecVersion = request.getAnnotation(SpecVersionAnnotation)
+
+        val modules = request.modules
+        if (modules.isEmpty()) {
+            return GenerationResult.Failure(reason = "No modules have been requested!")
+        }
+
+        val subjectModules = modules.filter { it.reference in request.subjects }
+
+        val commonNamePrefix = determineCommonPrefix(modules)
+        println(commonNamePrefix)
+
+        for (module in subjectModules) {
+            val path =
+                "${module.metadata.name.removePrefix(commonNamePrefix).replace(MODULE_NAME_SEPARATOR, File.separatorChar)}.json"
+            println(path)
+            val version = module.metadata.getAnnotation(OpenApiVersionAnnotation) ?: defaultOpenApiVersion
+
+            val info = Info(
+                title = module.metadata.name,
+                version = module.metadata.getAnnotation(SpecVersionAnnotation) ?: defaultSpecVersion,
+                summary = module.metadata.summary,
+                description = module.metadata.description,
+            )
+            val schemas: Map<SchemaName, Schema> = module.definitions.associate { definition ->
+                val schemaName = definition.metadata.getAnnotation(SchemaNameAnnotation) ?: definition.metadata.name
+                val schema: Schema = when (definition) {
+                    is Model.Primitive -> {
+                        val format = definition.metadata.getAnnotation(PrimitiveFormatAnnotation)?.let(::TypeFormat)
+                        when (val typeName = definition.dataType.name) {
+                            "int32",
+                            "int64" -> {
+                                Schema.InstanceSchema.IntegerSchema(
+                                    format = format ?: TypeFormat(typeName),
+                                    description = definition.metadata.description,
+                                    deprecated = definition.metadata.deprecated,
+                                )
+                            }
+                            "float32" -> {
+                                Schema.InstanceSchema.NumberSchema(
+                                    format = format ?: TypeFormat(format = "float"),
+                                    description = definition.metadata.description,
+                                    deprecated = definition.metadata.deprecated,
+                                )
+                            }
+                            "float64" -> {
+                                Schema.InstanceSchema.NumberSchema(
+                                    format = format ?: TypeFormat(format = "double"),
+                                    description = definition.metadata.description,
+                                    deprecated = definition.metadata.deprecated,
+                                )
+                            }
+                            "boolean" -> {
+                                Schema.InstanceSchema.BooleanSchema(
+                                    format = format,
+                                    description = definition.metadata.description,
+                                    deprecated = definition.metadata.deprecated,
+                                )
+                            }
+                            else -> {
+                                Schema.InstanceSchema.StringSchema(
+                                    format = format,
+                                    description = definition.metadata.description,
+                                    deprecated = definition.metadata.deprecated,
+                                )
+                            }
+                        }
+                    }
+                    is Model.Record -> {
+                        Schema.InstanceSchema.ObjectSchema(
+                            description = definition.metadata.description,
+                            deprecated = definition.metadata.deprecated,
+                            properties = definition.properties.associate {
+                                println(Reference(URI(""), JsonPointer.fromString("/components/schemas/${it.model.name}")))
+                                Pair(PropertyName(it.metadata.name), Schema.ReferencingSchema(Reference(URI(""), JsonPointer.fromString("/components/schemas/${it.model.name}"))))
+                            }
+                        )
+                    }
+                    is Model.Sum -> {
+
+                        Schema.OneOfComposite(
+                            components = definition.constructors.map {
+                                Schema.EmptySchema
+                            }
+                        )
+                    }
+                    else -> Schema.EmptySchema
+                }
+                Pair(SchemaName(schemaName), schema)
+            }
+            val components = Components(
+                schemas = schemas,
+            )
+            val spec = OpenApiSpec(
+                openapi = version,
+                info = info,
+                components = components,
+            )
+            val json = encoder.encodeToString(spec)
+
+            println(json)
+        }
+
         return GenerationResult.Success(emptyList())
     }
 }

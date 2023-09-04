@@ -30,6 +30,7 @@ data class ModelMetadata(
     override val description: String? = null,
     override val annotations: Map<String, String> = emptyMap(),
     val examples: Set<Example> = emptySet(),
+    val deprecated: Boolean = false,
 ) : Metadata
 
 @Serializable

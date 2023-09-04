@@ -1,6 +1,5 @@
 package tel.schich.idl.runner.command
 
-import com.github.ajalt.clikt.core.Abort
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.ParameterHolder
@@ -10,9 +9,9 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.path
 import tel.schich.idl.core.Module
 import tel.schich.idl.runner.loadModule
-import tel.schich.idl.runner.validation.ValidationError
-import tel.schich.idl.runner.validation.ValidationResult
-import tel.schich.idl.runner.validation.validateModule
+import tel.schich.idl.core.validation.ValidationError
+import tel.schich.idl.core.validation.ValidationResult
+import tel.schich.idl.core.validation.validateModule
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.streams.asSequence

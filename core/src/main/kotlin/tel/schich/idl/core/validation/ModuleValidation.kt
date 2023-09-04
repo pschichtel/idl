@@ -1,12 +1,17 @@
-package tel.schich.idl.runner.validation
+package tel.schich.idl.core.validation
 
+import kotlinx.serialization.Serializable
 import tel.schich.idl.core.Alias
 import tel.schich.idl.core.Definition
+import tel.schich.idl.core.MODULE_NAME_SEPARATOR
 import tel.schich.idl.core.Model
 import tel.schich.idl.core.ModelReference
 import tel.schich.idl.core.Module
 import tel.schich.idl.core.ModuleReference
 import java.nio.file.Path
+
+@Serializable
+data class GeneratorValidationError(val module: ModuleReference, val description: String)
 
 sealed interface ValidationError {
     val module: ModuleReference
@@ -65,7 +70,7 @@ object ModuleNameValidator : ModuleValidator {
     private val segmentPattern = "^[a-z][a-z0-9]*(-[a-z0-9]+)*$".toRegex()
 
     override fun validate(module: Module, allModules: List<Module>): ValidationResult {
-        val nameSegments = module.metadata.name.split('.')
+        val nameSegments = module.metadata.name.split(MODULE_NAME_SEPARATOR)
         val errors = buildSet<ValidationError> {
             if (nameSegments.size == 1) {
                 add(
