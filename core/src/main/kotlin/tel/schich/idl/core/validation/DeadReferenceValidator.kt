@@ -20,7 +20,7 @@ data class UndefinedDefinitionReferencedError(
     val referencedDefinition: String,
 ) : ValidationError
 
-object ReferenceValidator : ModuleValidator {
+object DeadReferenceValidator : ModuleValidator {
     override fun validate(module: Module, allModules: List<Module>): ValidationResult {
         val moduleLookup = allModules.associate { m ->
             Pair(m.reference, m.definitions.map { it.metadata.name }.toSet())

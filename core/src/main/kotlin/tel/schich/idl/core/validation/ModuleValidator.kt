@@ -10,7 +10,7 @@ private val validations: List<ModuleValidator> = listOf(
     DuplicateModuleValidator,
     ModuleNameValidator,
     DuplicateDefinitionValidator,
-    ReferenceValidator,
+    DeadReferenceValidator,
 )
 
 fun validateModule(module: Module, allModules: List<Module>): ValidationResult {
