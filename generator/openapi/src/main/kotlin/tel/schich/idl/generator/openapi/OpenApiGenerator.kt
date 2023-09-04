@@ -21,6 +21,8 @@ import tel.schich.idl.core.valueAsIs
 import tel.schich.idl.runner.command.JvmInProcessGenerator
 import java.io.File
 import java.net.URI
+import java.nio.file.Files
+import kotlin.io.path.createDirectories
 
 class OpenApiAnnotation<T : Any>(name: String, parser: AnnotationParser<T>) :
     Annotation<T>(namespace = "tel.schich.idl.generator.openapi", name, parser)
@@ -68,17 +70,16 @@ class OpenApiGenerator : JvmInProcessGenerator {
         val commonNamePrefix = determineCommonPrefix(modules)
         println(commonNamePrefix)
 
-        fun outputFilePath(module: ModuleReference): String =
+        fun relativeOutputFilePath(module: ModuleReference): String =
             "${module.name.removePrefix(commonNamePrefix).replace(MODULE_NAME_SEPARATOR, File.separatorChar)}.json"
 
         for (module in subjectModules) {
 
             fun referenceToModel(ref: ModelReference): Reference {
-                val uri = URI(ref.module?.let { outputFilePath(it) } ?: "")
+                val uri = URI(ref.module?.let { relativeOutputFilePath(it) } ?: "")
                 return Reference(uri, JsonPointer.fromString("/components/schemas/${ref.name}"))
             }
 
-            println(outputFilePath(module.reference))
             val version = module.metadata.getAnnotation(OpenApiVersionAnnotation) ?: defaultOpenApiVersion
 
             val info = Info(
@@ -199,6 +200,12 @@ class OpenApiGenerator : JvmInProcessGenerator {
             )
             val json = encoder.encodeToString(spec)
 
+            val relativePath = relativeOutputFilePath(module.reference)
+            val outputPath = request.outputPath.resolve(relativePath)
+            outputPath.parent.createDirectories()
+            Files.write(outputPath, json.toByteArray())
+            println(relativePath)
+            println(outputPath)
             println(json)
         }
 

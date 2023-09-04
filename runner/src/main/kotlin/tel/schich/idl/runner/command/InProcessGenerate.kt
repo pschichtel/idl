@@ -6,6 +6,8 @@ import com.github.ajalt.clikt.parameters.arguments.convert
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.types.path
 import tel.schich.idl.core.ANNOTATION_NAMESPACE_SEPARATOR
 import tel.schich.idl.core.ModuleReference
 import tel.schich.idl.core.generate.GenerationRequest
@@ -26,6 +28,7 @@ internal abstract class GenerateCommand(name: String) : CliktCommand(name = name
         ModuleReference.parse(arg)
             ?: fail("the subject must be a valid module reference of the format module-name:version")
     }.multiple(required = false)
+    private val outputPath by option("--output", "-o").path().required()
 
     protected inline fun withRequest(block: (GenerationRequest) -> GenerationResult): GenerationResult {
         val modules = loadModules(moduleSources)
@@ -52,7 +55,13 @@ internal abstract class GenerateCommand(name: String) : CliktCommand(name = name
             }
         }
 
-        return block(GenerationRequest(modules, subjects, annotations.toMap()))
+        val request = GenerationRequest(
+            modules,
+            subjects,
+            annotations.toMap(),
+            outputPath,
+        )
+        return block(request)
     }
 }
 

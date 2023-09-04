@@ -6,13 +6,14 @@ import tel.schich.idl.core.Annotation
 import tel.schich.idl.core.Module
 import tel.schich.idl.core.ModuleReference
 import tel.schich.idl.core.validation.GeneratorValidationError
+import java.nio.file.Path
 
 @Serializable
 data class GenerationRequest(
     val modules: List<Module>,
     val subjects: Set<ModuleReference>,
     val annotations: Map<String, String>,
-    // TODO some form of configuration pass through?
+    val outputPath: Path,
 )
 
 fun <T : Any> GenerationRequest.getAnnotation(annotation: Annotation<T>): T? =
