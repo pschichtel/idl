@@ -544,6 +544,23 @@ data class Schema(
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-8.5
     val contentSchema: Schema? = null,
 
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.1.1
+    val prefixItems: List<Schema>? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.1.2
+    val items: Schema? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.1.3
+    val contains: Schema? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.1
+    val maxItems: BigInteger? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.2
+    val minItems: BigInteger? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.3
+    val uniqueItems: Boolean? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.4
+    val maxContains: BigInteger? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.5
+    val minContains: BigInteger? = null,
+
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.2.1
     val properties: Map<PropertyName, Schema>? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.2.2

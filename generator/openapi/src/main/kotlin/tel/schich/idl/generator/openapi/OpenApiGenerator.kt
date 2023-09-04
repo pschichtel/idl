@@ -115,6 +115,32 @@ class OpenApiGenerator : JvmInProcessGenerator {
                             }
                         )
                     }
+                    is Model.HomogenousList -> {
+                        Schema(
+                            type = SchemaType.ARRAY,
+                            description = definition.metadata.description,
+                            deprecated = definition.metadata.deprecated,
+                            items = Schema(ref = referenceToModel(definition.itemModel))
+                        )
+                    }
+                    is Model.HomogenousSet -> {
+                        Schema(
+                            type = SchemaType.ARRAY,
+                            description = definition.metadata.description,
+                            deprecated = definition.metadata.deprecated,
+                            uniqueItems = true,
+                            items = Schema(ref = referenceToModel(definition.itemModel))
+                        )
+                    }
+                    is Model.HomogenousMap -> {
+                        Schema(
+                            type = SchemaType.OBJECT,
+                            description = definition.metadata.description,
+                            deprecated = definition.metadata.deprecated,
+                            uniqueItems = true,
+                            additionalProperties = Schema(ref = referenceToModel(definition.valueModel))
+                        )
+                    }
                     is Model.Sum -> {
                         Schema(
                             oneOf = definition.constructors.map {
