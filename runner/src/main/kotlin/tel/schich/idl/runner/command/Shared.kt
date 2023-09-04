@@ -8,6 +8,7 @@ import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.path
 import tel.schich.idl.core.Module
+import tel.schich.idl.core.validation.CyclicReferenceError
 import tel.schich.idl.core.validation.DuplicatedDefinitionError
 import tel.schich.idl.core.validation.DuplicatedModuleError
 import tel.schich.idl.core.validation.InvalidModuleNameError
@@ -77,6 +78,12 @@ internal fun CliktCommand.printValidationErrors(validationErrors: Set<Validation
                 }
                 is UndefinedDefinitionReferencedError -> {
                     error("        An undefined definition is referenced from definition ${error.definitionName}: ${error.referencedDefinition} from ${error.referencedModule}")
+                }
+                is CyclicReferenceError -> {
+                    error("        A cyclic reference has been detected, path:")
+                    for (ref in error.path) {
+                        error("          - ${ref.module} -> ${ref.name}")
+                    }
                 }
             }
         }

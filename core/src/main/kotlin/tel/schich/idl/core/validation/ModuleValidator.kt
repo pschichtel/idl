@@ -11,6 +11,7 @@ private val validations: List<ModuleValidator> = listOf(
     ModuleNameValidator,
     DuplicateDefinitionValidator,
     DeadReferenceValidator,
+    CyclicReferenceValidator,
 )
 
 fun validateModule(module: Module, allModules: List<Module>): ValidationResult {
