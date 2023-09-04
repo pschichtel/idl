@@ -8,6 +8,11 @@ import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.path
 import tel.schich.idl.core.Module
+import tel.schich.idl.core.validation.DuplicatedDefinitionError
+import tel.schich.idl.core.validation.DuplicatedModuleError
+import tel.schich.idl.core.validation.InvalidModuleNameError
+import tel.schich.idl.core.validation.UndefinedDefinitionReferencedError
+import tel.schich.idl.core.validation.UndefinedModuleReferencedError
 import tel.schich.idl.runner.loadModule
 import tel.schich.idl.core.validation.ValidationError
 import tel.schich.idl.core.validation.ValidationResult
@@ -52,25 +57,25 @@ internal fun CliktCommand.printValidationErrors(validationErrors: Set<Validation
         error("    Module: $module")
         for (error in errors) {
             when (error) {
-                is ValidationError.DuplicatedModule -> {
+                is DuplicatedModuleError -> {
                     error("        Module has been defined in multiple files:")
                     for (sourceFile in error.sourceFiles) {
                         error("            - $sourceFile")
                     }
                 }
 
-                is ValidationError.DuplicatedDefinition -> {
+                is DuplicatedDefinitionError -> {
                     error("        There are multiple definitions named ${error.name}: ${error.indices.joinToString(", ")}")
                 }
 
-                is ValidationError.InvalidModuleName -> {
+                is InvalidModuleNameError -> {
                     error("        The module name is invalid: ${error.reason}")
                 }
 
-                is ValidationError.UndefinedModuleReferenced -> {
+                is UndefinedModuleReferencedError -> {
                     error("        An undefined module is referenced from definition ${error.definitionName}: ${error.referencedModule}")
                 }
-                is ValidationError.UndefinedDefinitionReferenced -> {
+                is UndefinedDefinitionReferencedError -> {
                     error("        An undefined definition is referenced from definition ${error.definitionName}: ${error.referencedDefinition} from ${error.referencedModule}")
                 }
             }
