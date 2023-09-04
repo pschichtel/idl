@@ -78,6 +78,7 @@ data class RecordProperty(
     val required: Boolean = true,
     val nullable: Boolean = false,
     val default: JsonElement? = null,
+    val deprecated: Boolean = false,
 )
 
 @OptIn(ExperimentalSerializationApi::class)

@@ -3,13 +3,16 @@ package tel.schich.idl.generator.openapi
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import tel.schich.idl.core.Alias
 import tel.schich.idl.core.MODULE_NAME_SEPARATOR
 import tel.schich.idl.core.Module
 import tel.schich.idl.core.Annotation
 import tel.schich.idl.core.AnnotationParser
+import tel.schich.idl.core.Metadata
 import tel.schich.idl.core.Model
 import tel.schich.idl.core.ModelReference
 import tel.schich.idl.core.ModuleReference
+import tel.schich.idl.core.PrimitiveDataType
 import tel.schich.idl.core.generate.GenerationRequest
 import tel.schich.idl.core.generate.GenerationResult
 import tel.schich.idl.core.generate.getAnnotation
@@ -84,20 +87,26 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 summary = module.metadata.summary,
                 description = module.metadata.description,
             )
+
+            fun primitiveType(dataType: PrimitiveDataType, metadata: Metadata): Pair<SchemaType?, TypeFormat?> {
+                val type = when (dataType.name) {
+                    "int32",
+                    "int64" -> SchemaType.INTEGER
+                    "float32",
+                    "float64" -> SchemaType.NUMBER
+                    "boolean" -> SchemaType.BOOLEAN
+                    "string" -> SchemaType.STRING
+                    else -> null
+                }
+                val format = metadata.getAnnotation(PrimitiveFormatAnnotation)?.let(::TypeFormat)
+                return Pair(type, format)
+            }
+
             val schemas: Map<SchemaName, Schema> = module.definitions.associate { definition ->
                 val schemaName = definition.metadata.getAnnotation(SchemaNameAnnotation) ?: definition.metadata.name
                 val schema: Schema = when (definition) {
                     is Model.Primitive -> {
-                        val type = when (definition.dataType.name) {
-                            "int32",
-                            "int64" -> SchemaType.INTEGER
-                            "float32",
-                            "float64" -> SchemaType.NUMBER
-                            "boolean" -> SchemaType.BOOLEAN
-                            "string" -> SchemaType.STRING
-                            else -> null
-                        }
-                        val format = definition.metadata.getAnnotation(PrimitiveFormatAnnotation)?.let(::TypeFormat)
+                        val (type, format) = primitiveType(definition.dataType, definition.metadata)
                         Schema(
                             type = type,
                             format = format,
@@ -137,7 +146,6 @@ class OpenApiGenerator : JvmInProcessGenerator {
                             type = SchemaType.OBJECT,
                             description = definition.metadata.description,
                             deprecated = definition.metadata.deprecated,
-                            uniqueItems = true,
                             additionalProperties = Schema(ref = referenceToModel(definition.valueModel))
                         )
                     }
@@ -146,6 +154,25 @@ class OpenApiGenerator : JvmInProcessGenerator {
                             oneOf = definition.constructors.map {
                                 Schema(ref = referenceToModel(it))
                             }
+                        )
+                    }
+                    is Model.Enumeration -> {
+                        val (type, format) = primitiveType(definition.dataType, definition.metadata)
+                        Schema(
+                            type = type,
+                            format = format,
+                            description = definition.metadata.description,
+                            deprecated = definition.metadata.deprecated,
+                            enum = definition.entries.map { it.value },
+                        )
+                    }
+                    is Alias -> {
+                        Schema(ref = referenceToModel(definition.aliasedModel))
+                    }
+                    is Model.Unknown -> {
+                        Schema(
+                            description = definition.metadata.description,
+                            deprecated = definition.metadata.deprecated,
                         )
                     }
                     else -> Schema()
