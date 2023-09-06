@@ -3,8 +3,7 @@ metadata:
   version: "1"
 definitions:
   - metadata:
-      name: Confidence
-      description: The confidence of the transcription result as a percentage from 0 to 100, or 100 in case of DTMF.
+      name: CallType
     type: enum
     dataType: string
     entries:

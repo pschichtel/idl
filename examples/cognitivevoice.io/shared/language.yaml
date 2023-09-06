@@ -4,6 +4,11 @@ metadata:
 definitions:
   - metadata:
       name: Language
+      description: A language code like `de-DE` or `en-US`.
+      examples:
+        - metadata:
+            name: german in Germany
+          example: 'de-DE'
     type: primitive
     dataType: string
     constraints:

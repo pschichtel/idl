@@ -4,7 +4,8 @@ metadata:
 definitions:
   - metadata:
       name: E164Number
-      description: A phone number in +E.164 format.
+      description: |-
+        A phone number in +E.164 format.
       examples:
         - metadata:
             name: Example E.164 number from Karlsruhe, Germany
@@ -13,6 +14,11 @@ definitions:
     dataType: string
   - metadata:
       name: OutboundCallDestination
+      description: |-
+        A phone number (+E.164 format) or a SIP URI (RFC 3261) for outgoing calls.
+
+        Note that when using a SIP URI, the call is routed via public Internet,
+        so there are no quality of service guarantees.
       examples:
         - metadata:
             name: Example E.164 number from Karlsruhe, Germany
@@ -21,6 +27,8 @@ definitions:
     dataType: string
   - metadata:
       name: CustomerLocalParty
+      description: |-
+        A phone number (+E.164 format) or a SIP URI (RFC 3261) of the callee (inbound) or caller (outbound).
       examples:
         - metadata:
             name: Example E.164 number from Karlsruhe, Germany
@@ -29,6 +37,8 @@ definitions:
     dataType: string
   - metadata:
       name: CustomerRemoteParty
+      description: |-
+        A phone number (+E.164 format) or a SIP URI (RFC 3261) of the caller (inbound) or callee (outbound).
       examples:
         - metadata:
             name: Example E.164 number from Karlsruhe, Germany
@@ -37,6 +47,9 @@ definitions:
     dataType: string
   - metadata:
       name: LegacyCustomerRemoteParty
+      description: |-
+        A phone number (+E.164 format) of the caller (inbound) or callee (outbound).
+        If the number is unknown / suppressed, this is an empty string (`""`).
       examples:
         - metadata:
             name: Example E.164 number from Karlsruhe, Germany
@@ -45,6 +58,11 @@ definitions:
     dataType: string
   - metadata:
       name: CallerId
+      description: |-
+        The number to display to the callee. This is a best-effort feature since we cannot guarantee that all
+        gateways the traffic flows through will retain this information.
+        
+        Setting this value to `"anonymous"` will signal a suppressed number to the callee.
       examples:
         - metadata:
             name: Example E.164 number from Karlsruhe, Germany
