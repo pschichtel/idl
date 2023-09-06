@@ -1,25 +1,14 @@
-{
-  "metadata": {
-    "name": "ai.vier.cvg.shared.google",
-    "version": "1"
-  },
-  "definitions": [
-    {
-      "metadata": {
-        "name": "GoogleServiceAccount",
-        "description": "A google service account as JSON"
-      },
-      "type": "unknown"
-    },
-    {
-      "metadata": {
-        "name": "GoogleInsightsServiceAccount",
-        "description": "A service account with privileges to access Google Insights and Google Cloud Storage"
-      },
-      "type": "alias",
-      "aliasedModel": {
-        "name": "GoogleServiceAccount"
-      }
-    }
-  ]
-}
+metadata:
+  name: ai.vier.cvg.shared.google
+  version: "1"
+definitions:
+  - metadata:
+      name: GoogleServiceAccount
+      description: A google service account as JSON
+    type: unknown
+  - metadata:
+      name: GoogleInsightsServiceAccount
+      description: A service account with privileges to access Google Insights and Google Cloud Storage
+    type: alias
+    aliasedModel:
+      name: GoogleServiceAccount

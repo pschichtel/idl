@@ -1,100 +1,54 @@
-{
-  "metadata": {
-    "name": "ai.vier.cvg.shared.phone-number",
-    "version": "1"
-  },
-  "definitions": [
-    {
-      "metadata": {
-        "name": "E164Number",
-        "description": "A phone number in +E.164 format.",
-        "examples": [
-          {
-            "metadata": {
-              "name": "Example E.164 number from Karlsruhe, Germany"
-            },
-            "example": "+49721123456789"
-          }
-        ]
-      },
-      "type": "primitive",
-      "dataType": "string"
-    },
-    {
-      "metadata": {
-        "name": "OutboundCallDestination",
-        "examples": [
-          {
-            "metadata": {
-              "name": "Example E.164 number from Karlsruhe, Germany"
-            },
-            "example": "+49721123456789"
-          }
-        ]
-      },
-      "type": "primitive",
-      "dataType": "string"
-    },
-    {
-      "metadata": {
-        "name": "CustomerLocalParty",
-        "examples": [
-          {
-            "metadata": {
-              "name": "Example E.164 number from Karlsruhe, Germany"
-            },
-            "example": "+49721123456789"
-          }
-        ]
-      },
-      "type": "primitive",
-      "dataType": "string"
-    },
-    {
-      "metadata": {
-        "name": "CustomerRemoteParty",
-        "examples": [
-          {
-            "metadata": {
-              "name": "Example E.164 number from Karlsruhe, Germany"
-            },
-            "example": "+49721123456789"
-          }
-        ]
-      },
-      "type": "primitive",
-      "dataType": "string"
-    },
-    {
-      "metadata": {
-        "name": "LegacyCustomerRemoteParty",
-        "examples": [
-          {
-            "metadata": {
-              "name": "Example E.164 number from Karlsruhe, Germany"
-            },
-            "example": "+49721123456789"
-          }
-        ]
-      },
-      "type": "primitive",
-      "dataType": "string"
-    },
-    {
-      "metadata": {
-        "name": "CallerId",
-        "examples": [
-          {
-            "metadata": {
-              "name": "Example E.164 number from Karlsruhe, Germany"
-            },
-            "example": "+49721123456789"
-          }
-        ]
-      },
-      "type": "primitive",
-      "dataType": "string"
-    }
-  ],
-  "operations": []
-}
+metadata:
+  name: ai.vier.cvg.shared.phone-number
+  version: "1"
+definitions:
+  - metadata:
+      name: E164Number
+      description: A phone number in +E.164 format.
+      examples:
+        - metadata:
+            name: Example E.164 number from Karlsruhe, Germany
+          example: "+49721123456789"
+    type: primitive
+    dataType: string
+  - metadata:
+      name: OutboundCallDestination
+      examples:
+        - metadata:
+            name: Example E.164 number from Karlsruhe, Germany
+          example: "+49721123456789"
+    type: primitive
+    dataType: string
+  - metadata:
+      name: CustomerLocalParty
+      examples:
+        - metadata:
+            name: Example E.164 number from Karlsruhe, Germany
+          example: "+49721123456789"
+    type: primitive
+    dataType: string
+  - metadata:
+      name: CustomerRemoteParty
+      examples:
+        - metadata:
+            name: Example E.164 number from Karlsruhe, Germany
+          example: "+49721123456789"
+    type: primitive
+    dataType: string
+  - metadata:
+      name: LegacyCustomerRemoteParty
+      examples:
+        - metadata:
+            name: Example E.164 number from Karlsruhe, Germany
+          example: "+49721123456789"
+    type: primitive
+    dataType: string
+  - metadata:
+      name: CallerId
+      examples:
+        - metadata:
+            name: Example E.164 number from Karlsruhe, Germany
+          example: "+49721123456789"
+    type: primitive
+    dataType: string
+operations: [ ]

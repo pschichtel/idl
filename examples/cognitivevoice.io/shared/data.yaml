@@ -1,131 +1,78 @@
-{
-  "metadata": {
-    "name": "ai.vier.cvg.shared.data",
-    "version": "1"
-  },
-  "definitions": [
-    {
-      "metadata": {
-        "name": "CustomHeaderName"
-      },
-      "type": "primitive",
-      "dataType": "string"
-    },
-    {
-      "metadata": {
-        "name": "CustomHeaderValue"
-      },
-      "type": "primitive",
-      "dataType": "string"
-    },
-    {
-      "metadata": {
-        "name": "CustomHeaderValues"
-      },
-      "type": "list",
-      "itemModel": {
-        "name": "CustomHeaderValue"
-      }
-    },
-    {
-      "metadata": {
-        "name": "CustomSipHeaders",
-        "description": "A google service account as JSON",
-        "examples": [
-          {
-            "metadata": {
-              "name": "Single-valued custom header"
-            },
-            "example": {
-              "X-CustomHeader": ["some-value"]
-            }
-          },
-          {
-            "metadata": {
-              "name": "Multi-valued custom header"
-            },
-            "example": {
-              "X-ASecondCustomHeader": ["more values", "even more values"]
-            }
-          }
-        ]
-      },
-      "type": "map",
-      "keyModel": {
-        "name": "CustomHeaderName"
-      },
-      "valueModel": {
-        "name": "CustomHeaderValues"
-      }
-    },
-    {
-      "metadata": {
-        "name": "UserToUserInformationValue"
-      },
-      "type": "primitive",
-      "dataType": "string"
-    },
-    {
-      "metadata": {
-        "name": "UserToUserInformation"
-      },
-      "type": "list",
-      "itemModel": {
-        "name": "UserToUserInformationValue"
-      }
-    },
-    {
-      "metadata": {
-        "name": "CustomDialogDataKey"
-      },
-      "type": "primitive",
-      "dataType": "string"
-    },
-    {
-      "metadata": {
-        "name": "CustomDialogDataValue"
-      },
-      "type": "primitive",
-      "dataType": "string"
-    },
-    {
-      "metadata": {
-        "name": "CustomDialogDataValues"
-      },
-      "type": "list",
-      "itemModel": {
-        "name": "CustomHeaderValue"
-      }
-    },
-    {
-      "metadata": {
-        "name": "CustomDialogData",
-        "examples": [
-          {
-            "metadata": {
-              "name": "Single-valued custom dialog data"
-            },
-            "example": {
-              "CustomKey": ["some-value"]
-            }
-          },
-          {
-            "metadata": {
-              "name": "Multi-valued custom dialog data"
-            },
-            "example": {
-              "ASecondCustomKey": ["more values", "even more values"]
-            }
-          }
-        ]
-      },
-      "type": "map",
-      "keyModel": {
-        "name": "CustomDialogDataKey"
-      },
-      "valueModel": {
-        "name": "CustomDialogDataValues"
-      }
-    }
-  ]
-}
+metadata:
+  name: ai.vier.cvg.shared.data
+  version: "1"
+definitions:
+  - metadata:
+      name: CustomHeaderName
+    type: primitive
+    dataType: string
+  - metadata:
+      name: CustomHeaderValue
+    type: primitive
+    dataType: string
+  - metadata:
+      name: CustomHeaderValues
+    type: list
+    itemModel:
+      name: CustomHeaderValue
+  - metadata:
+      name: CustomSipHeaders
+      description: A google service account as JSON
+      examples:
+        - metadata:
+            name: Single-valued custom header
+          example:
+            X-CustomHeader:
+              - some-value
+        - metadata:
+            name: Multi-valued custom header
+          example:
+            X-ASecondCustomHeader:
+              - more values
+              - even more values
+    type: map
+    keyModel:
+      name: CustomHeaderName
+    valueModel:
+      name: CustomHeaderValues
+  - metadata:
+      name: UserToUserInformationValue
+    type: primitive
+    dataType: string
+  - metadata:
+      name: UserToUserInformation
+    type: list
+    itemModel:
+      name: UserToUserInformationValue
+  - metadata:
+      name: CustomDialogDataKey
+    type: primitive
+    dataType: string
+  - metadata:
+      name: CustomDialogDataValue
+    type: primitive
+    dataType: string
+  - metadata:
+      name: CustomDialogDataValues
+    type: list
+    itemModel:
+      name: CustomHeaderValue
+  - metadata:
+      name: CustomDialogData
+      examples:
+        - metadata:
+            name: Single-valued custom dialog data
+          example:
+            CustomKey:
+              - some-value
+        - metadata:
+            name: Multi-valued custom dialog data
+          example:
+            ASecondCustomKey:
+              - more values
+              - even more values
+    type: map
+    keyModel:
+      name: CustomDialogDataKey
+    valueModel:
+      name: CustomDialogDataValues
