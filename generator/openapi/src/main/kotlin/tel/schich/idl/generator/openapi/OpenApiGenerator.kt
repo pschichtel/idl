@@ -116,6 +116,9 @@ class OpenApiGenerator : JvmInProcessGenerator {
                             type = setOf(SchemaType.OBJECT),
                             description = definition.metadata.description,
                             deprecated = definition.metadata.deprecated,
+                            required = definition.properties.filter { it.default == null }.map {
+                                PropertyName(it.metadata.name)
+                            },
                             properties = definition.properties.associate {
                                 Pair(PropertyName(it.metadata.name), SimpleSchema(ref = referenceToModel(it.model)))
                             }

@@ -50,6 +50,9 @@ definitions:
           name: Confidence
       - metadata:
           name: phraseList
+        nullable: true
+        default:
+          value: null
         model:
           module:
             name: ai.vier.cvg.shared.speech-service
