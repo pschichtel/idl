@@ -9,9 +9,11 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.path
 import tel.schich.idl.core.Module
 import tel.schich.idl.core.validation.CyclicReferenceError
+import tel.schich.idl.core.validation.DuplicateRecordPropertyError
 import tel.schich.idl.core.validation.DuplicatedDefinitionError
 import tel.schich.idl.core.validation.DuplicatedModuleError
 import tel.schich.idl.core.validation.InvalidModuleNameError
+import tel.schich.idl.core.validation.NullDefaultInNonNullableRecordPropertyError
 import tel.schich.idl.core.validation.UndefinedDefinitionReferencedError
 import tel.schich.idl.core.validation.UndefinedModuleReferencedError
 import tel.schich.idl.runner.loadModule
@@ -84,6 +86,12 @@ internal fun CliktCommand.printValidationErrors(validationErrors: Set<Validation
                     for (ref in error.path) {
                         error("          - ${ref.module} -> ${ref.name}")
                     }
+                }
+                is NullDefaultInNonNullableRecordPropertyError -> {
+                    error("        Property ${error.property} of record ${error.definition} is not nullable but has null as its default value")
+                }
+                is DuplicateRecordPropertyError -> {
+                    error("        Property ${error.property} of record ${error.definition} is defined multiple times at indices: ${error.indices.joinToString(", ")}")
                 }
             }
         }

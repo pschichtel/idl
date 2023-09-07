@@ -20,7 +20,7 @@ definitions:
     type: primitive
     dataType: boolean
   - metadata:
-      name: BargeInOptions
+      name: AdvancedBargeInOptions
       description: |-
         By default, transcriptions made while the bot is 'talking' (synthesis or audio file playback) are ignored.
         However, if barge-in is enabled, the audio output is interrupted and the transcription result is sent to the bot.
@@ -32,28 +32,33 @@ definitions:
     properties:
       - metadata:
           name: onSpeech
-        required: false
-        default: false
         model:
           name: EnableBargeInOnSpeech
       - metadata:
           name: onDtmf
-        required: false
-        default: false
         model:
           name: EnableBargeInOnDtmf
       - metadata:
           name: confidence
-        required: false
+        nullable: true
+        default:
+          value: null
         model:
           module:
             name: ai.vier.cvg.shared.confidence
             version: "1"
           name: Confidence
       - metadata:
-          name: onDtmf
-        required: false
-        default: false
+          name: phraseList
         model:
-          name: EnableBargeInOnDtmf
+          module:
+            name: ai.vier.cvg.shared.speech-service
+            version: "1"
+          name: PhraseList
+  - metadata:
+      name: BargeInOptions
+    type: sum
+    constructors:
+      - name: AdvancedBargeInOptions
+      - name: LegacyEnableBargeIn
 operations: [ ]

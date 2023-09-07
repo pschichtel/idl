@@ -71,13 +71,15 @@ data class Alias(
 ) : Definition
 
 @Serializable
+data class DefaultValue(val value: JsonElement)
+
+@Serializable
 data class RecordProperty(
     val metadata: BasicMetadata,
     val model: ModelReference,
     // TODO can this inferred from nullable and default ?
-    val required: Boolean = true,
     val nullable: Boolean = false,
-    val default: JsonElement? = null,
+    val default: DefaultValue? = null,
     val deprecated: Boolean = false,
 )
 

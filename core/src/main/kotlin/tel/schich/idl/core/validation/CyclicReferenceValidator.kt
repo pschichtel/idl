@@ -93,7 +93,7 @@ object CyclicReferenceValidator : ModuleValidator {
                 is Model.RawStream -> null
                 is Model.Record -> {
                     definition.properties.asSequence()
-                        .filter { it.required }
+                        .filter { it.default == null }
                         .mapNotNull {
                             detectCycle(referencedModuleRef, it.model, path + ref)
                         }
