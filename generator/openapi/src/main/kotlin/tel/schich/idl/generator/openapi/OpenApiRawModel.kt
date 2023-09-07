@@ -512,6 +512,7 @@ object SchemaSerializer : KSerializer<Schema> {
         when (value) {
             is SimpleSchema -> SimpleSchema.serializer().serialize(encoder, value)
             is TupleSchema -> TupleSchema.serializer().serialize(encoder, value)
+            is ReferenceSchema -> ReferenceSchema.serializer().serialize(encoder, value)
             else -> error("Unsupported schema type!")
         }
     }
@@ -524,8 +525,6 @@ object SchemaSerializer : KSerializer<Schema> {
 @Serializable
 data class SimpleSchema(
     val type: Set<SchemaType>? = null,
-    @SerialName("\$ref")
-    val ref: Reference? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.1
     val title: String? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.1
@@ -652,6 +651,14 @@ data class TupleSchema(
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.1.2
     val items: Boolean = false
 }
+
+@Serializable
+data class ReferenceSchema(
+    @SerialName("\$ref")
+    val ref: Reference? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.1
+    val description: String? = null,
+) : Schema
 
 @Serializable(with = DiscriminatorMappingReferenceSerializer::class)
 sealed interface DiscriminatorMappingReference

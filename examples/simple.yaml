@@ -14,7 +14,17 @@ definitions:
   - type: product
     metadata:
       name: product
+      description: product
     components:
       - name: untagged-sum
       - name: test
+  - type: record
+    metadata:
+      name: record
+    properties:
+      - metadata:
+          name: prop1
+          description: override
+        model:
+          name: product
 operations: [ ]

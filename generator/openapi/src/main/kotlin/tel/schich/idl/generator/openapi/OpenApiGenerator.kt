@@ -73,9 +73,10 @@ class OpenApiGenerator : JvmInProcessGenerator {
 
         for (module in subjectModules) {
 
-            fun referenceToModel(ref: ModelReference): Reference {
+            fun referenceToModel(ref: ModelReference, overrideMetadata: Metadata? = null): ReferenceSchema {
                 val uri = URI(ref.module?.let { relativeOutputFilePath(it) } ?: "")
-                return Reference(uri, JsonPointer.fromString("/components/schemas/${ref.name}"))
+                val reference = Reference(uri, JsonPointer.fromString("/components/schemas/${ref.name}"))
+                return ReferenceSchema(reference, overrideMetadata?.description)
             }
 
             val info = Info(
@@ -120,7 +121,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
                                 PropertyName(it.metadata.name)
                             },
                             properties = definition.properties.associate {
-                                Pair(PropertyName(it.metadata.name), SimpleSchema(ref = referenceToModel(it.model)))
+                                // TODO the schema needs to be cloned when nullable and possible in other situations
+                                Pair(PropertyName(it.metadata.name), referenceToModel(it.model, it.metadata))
                             }
                         )
                     }
@@ -129,7 +131,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                             type = setOf(SchemaType.ARRAY),
                             description = definition.metadata.description,
                             deprecated = definition.metadata.deprecated,
-                            items = SimpleSchema(ref = referenceToModel(definition.itemModel))
+                            items = referenceToModel(definition.itemModel)
                         )
                     }
                     is Model.HomogenousSet -> {
@@ -138,7 +140,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                             description = definition.metadata.description,
                             deprecated = definition.metadata.deprecated,
                             uniqueItems = true,
-                            items = SimpleSchema(ref = referenceToModel(definition.itemModel))
+                            items = referenceToModel(definition.itemModel)
                         )
                     }
                     is Model.HomogenousMap -> {
@@ -146,13 +148,13 @@ class OpenApiGenerator : JvmInProcessGenerator {
                             type = setOf(SchemaType.OBJECT),
                             description = definition.metadata.description,
                             deprecated = definition.metadata.deprecated,
-                            additionalProperties = SimpleSchema(ref = referenceToModel(definition.valueModel))
+                            additionalProperties = referenceToModel(definition.valueModel)
                         )
                     }
                     is Model.Sum -> {
                         SimpleSchema(
                             oneOf = definition.constructors.map {
-                                SimpleSchema(ref = referenceToModel(it))
+                                referenceToModel(it)
                             }
                         )
                     }
@@ -167,7 +169,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                         )
                     }
                     is Alias -> {
-                        SimpleSchema(ref = referenceToModel(definition.aliasedModel))
+                        referenceToModel(definition.aliasedModel)
                     }
                     is Model.Unknown -> {
                         SimpleSchema(
@@ -179,7 +181,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                         val size = definition.components.size.toBigInteger()
                         TupleSchema(
                             prefixItems = definition.components.map {
-                                SimpleSchema(ref = referenceToModel(it))
+                                referenceToModel(it)
                             },
                             minItems = size,
                             maxItems = size,
