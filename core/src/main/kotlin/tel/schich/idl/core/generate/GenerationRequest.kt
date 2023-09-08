@@ -23,7 +23,7 @@ fun <T : Any> GenerationRequest.getAnnotation(annotation: Annotation<T>): T? =
 sealed interface GenerationResult {
     @Serializable
     @SerialName("success")
-    data class Success(val generatedFiles: List<String>) : GenerationResult
+    data class Success(val generatedFiles: List<Path>) : GenerationResult
 
     @Serializable
     @SerialName("invalid")

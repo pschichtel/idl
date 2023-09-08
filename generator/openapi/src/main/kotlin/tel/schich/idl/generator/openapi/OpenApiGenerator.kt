@@ -71,8 +71,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
         fun relativeOutputFilePath(module: ModuleReference): String =
             "${module.name.removePrefix(commonNamePrefix).replace(MODULE_NAME_SEPARATOR, File.separatorChar)}.json"
 
-        for (module in subjectModules) {
-
+        val generatedFiles = subjectModules.map { module ->
             fun referenceToModel(ref: ModelReference, overrideMetadata: Metadata? = null): ReferenceSchema {
                 val uri = URI(ref.module?.let { relativeOutputFilePath(it) } ?: "")
                 val reference = Reference(uri, JsonPointer.fromString("/components/schemas/${ref.name}"))
@@ -221,8 +220,10 @@ class OpenApiGenerator : JvmInProcessGenerator {
             println(relativePath)
             println(outputPath)
             println(json)
+
+            outputPath
         }
 
-        return GenerationResult.Success(emptyList())
+        return GenerationResult.Success(generatedFiles)
     }
 }
