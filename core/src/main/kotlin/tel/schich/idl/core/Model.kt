@@ -77,7 +77,6 @@ data class DefaultValue(val value: JsonElement)
 data class RecordProperty(
     val metadata: BasicMetadata,
     val model: ModelReference,
-    // TODO can this inferred from nullable and default ?
     val nullable: Boolean = false,
     val default: DefaultValue? = null,
     val deprecated: Boolean = false,
