@@ -162,12 +162,6 @@ sealed interface Model : Definition {
     ) : Model
 
     @Serializable
-    @SerialName("raw")
-    data class RawStream(
-        override val metadata: ModelMetadata,
-    ) : Model
-
-    @Serializable
     @SerialName("enum")
     data class Enumeration(
         override val metadata: ModelMetadata,

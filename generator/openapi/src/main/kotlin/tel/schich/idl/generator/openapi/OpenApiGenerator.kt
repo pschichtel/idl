@@ -199,7 +199,6 @@ class OpenApiGenerator : JvmInProcessGenerator {
                             const = definition.value,
                         )
                     }
-                    is Model.RawStream -> TODO()
                 }
                 Pair(SchemaName(schemaName), schema)
             }

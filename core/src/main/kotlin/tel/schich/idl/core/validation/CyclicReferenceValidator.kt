@@ -90,7 +90,6 @@ object CyclicReferenceValidator : ModuleValidator {
                         }
                         .firstOrNull()
                 }
-                is Model.RawStream -> null
                 is Model.Record -> {
                     definition.properties.asSequence()
                         .filter { it.default == null }
