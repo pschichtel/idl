@@ -27,4 +27,10 @@ definitions:
           description: override
         model:
           name: product
+  - type: constant
+    metadata:
+      name: constant
+      deprecated: true
+    dataType: int32
+    value: 1
 operations: [ ]

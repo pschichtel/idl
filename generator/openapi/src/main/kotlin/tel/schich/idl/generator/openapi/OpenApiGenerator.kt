@@ -158,6 +158,9 @@ class OpenApiGenerator : JvmInProcessGenerator {
                             }
                         )
                     }
+                    is Model.TaggedSum -> {
+                        TODO()
+                    }
                     is Model.Enumeration -> {
                         val (type, format) = primitiveType(definition.dataType, definition.metadata)
                         SimpleSchema(
@@ -187,7 +190,17 @@ class OpenApiGenerator : JvmInProcessGenerator {
                             maxItems = size,
                         )
                     }
-                    else -> SimpleSchema.Empty
+                    is Model.Constant -> {
+                        val (type, format) = primitiveType(definition.dataType, definition.metadata)
+                        SimpleSchema(
+                            type = type?.let(::setOf),
+                            format = format,
+                            description = definition.metadata.description,
+                            deprecated = definition.metadata.deprecated,
+                            const = definition.value,
+                        )
+                    }
+                    is Model.RawStream -> TODO()
                 }
                 Pair(SchemaName(schemaName), schema)
             }
