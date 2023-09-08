@@ -14,8 +14,9 @@ value class ModuleVersion(val version: String)
 data class ModuleMetadata(
     override val name: String,
     val version: ModuleVersion,
-    override val summary: String? = null,
+    val summary: String? = null,
     override val description: String? = null,
+    override val deprecated: Boolean = false,
     override val annotations: Map<String, String> = emptyMap(),
     val sourcePath: Path? = null
 ) : Metadata

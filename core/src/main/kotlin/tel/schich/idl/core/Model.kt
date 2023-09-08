@@ -26,11 +26,10 @@ data class Example(
 @Serializable
 data class ModelMetadata(
     override val name: String,
-    override val summary: String? = null,
     override val description: String? = null,
+    override val deprecated: Boolean = false,
     override val annotations: Map<String, String> = emptyMap(),
     val examples: Set<Example> = emptySet(),
-    val deprecated: Boolean = false,
 ) : Metadata
 
 @Serializable
@@ -79,7 +78,6 @@ data class RecordProperty(
     val model: ModelReference,
     val nullable: Boolean = false,
     val default: DefaultValue? = null,
-    val deprecated: Boolean = false,
 )
 
 @OptIn(ExperimentalSerializationApi::class)

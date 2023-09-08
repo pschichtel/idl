@@ -9,6 +9,7 @@ definitions:
     dataType: boolean
   - metadata:
       name: LegacyEnableBargeIn
+      deprecated: true
     type: primitive
     dataType: boolean
   - metadata:

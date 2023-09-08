@@ -513,6 +513,7 @@ object SchemaSerializer : KSerializer<Schema> {
             is SimpleSchema -> SimpleSchema.serializer().serialize(encoder, value)
             is TupleSchema -> TupleSchema.serializer().serialize(encoder, value)
             is ReferenceSchema -> ReferenceSchema.serializer().serialize(encoder, value)
+            is NullSchema -> NullSchema.serializer().serialize(encoder, value)
             else -> error("Unsupported schema type!")
         }
     }
@@ -659,6 +660,11 @@ data class ReferenceSchema(
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.1
     val description: String? = null,
 ) : Schema
+
+@Serializable
+object NullSchema : Schema {
+    val type: Set<SchemaType> = setOf(SchemaType.NULL)
+}
 
 @Serializable(with = DiscriminatorMappingReferenceSerializer::class)
 sealed interface DiscriminatorMappingReference

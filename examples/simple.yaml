@@ -27,6 +27,7 @@ definitions:
           description: override
         model:
           name: product
+        nullable: true
   - type: constant
     metadata:
       name: constant
