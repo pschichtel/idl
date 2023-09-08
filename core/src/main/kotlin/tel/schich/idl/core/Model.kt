@@ -42,7 +42,7 @@ data class ModelReference(
 @Serializable
 @JvmInline
 value class Tag(
-    val tag: String,
+    val tag: JsonPrimitive,
 )
 
 @Serializable
