@@ -24,6 +24,8 @@ import tel.schich.idl.runner.command.JvmInProcessGenerator
 import java.io.File
 import java.net.URI
 import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.io.path.createDirectories
 
 class OpenApiAnnotation<T : Any>(name: String, parser: AnnotationParser<T>) :
@@ -81,6 +83,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
         withDefault: JsonElement?,
         overrideMetadata: Metadata?,
     ): Schema {
+        val subjectPath = relativeOutputFilePath(subject.reference, commonNamePrefix)
+
         fun typeWithNull(type: SchemaType): Set<SchemaType> {
             return if (asNullable) {
                 setOf(type, SchemaType.NULL)
@@ -102,7 +106,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
             val uri = if (subject.reference == moduleRef) {
                 URI("")
             } else {
-                URI(relativeOutputFilePath(moduleRef, commonNamePrefix))
+                URI(subjectPath.parent.relativize(relativeOutputFilePath(moduleRef, commonNamePrefix)).toString())
             }
             val reference = Reference(uri, JsonPointer.fromString("/components/schemas/${ref.name}"))
             return ReferenceSchema(reference, overrideMetadata?.description)
@@ -256,8 +260,9 @@ class OpenApiGenerator : JvmInProcessGenerator {
         }
     }
 
-    private fun relativeOutputFilePath(module: ModuleReference, commonNamePrefix: String): String =
-        "${module.name.removePrefix(commonNamePrefix).replace(MODULE_NAME_SEPARATOR, File.separatorChar)}.json"
+    private fun relativeOutputFilePath(module: ModuleReference, commonNamePrefix: String): Path {
+        return Paths.get("${module.name.removePrefix(commonNamePrefix).replace(MODULE_NAME_SEPARATOR, File.separatorChar)}.json")
+    }
 
     override fun generate(request: GenerationRequest): GenerationResult {
         val defaultSpecVersion = request.getAnnotation(SpecVersionAnnotation)
