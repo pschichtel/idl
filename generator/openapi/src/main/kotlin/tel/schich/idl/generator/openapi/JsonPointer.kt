@@ -1,8 +1,6 @@
 package tel.schich.idl.generator.openapi
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -141,8 +139,6 @@ data class JsonPointer(val raw: String, val segments: List<String>) {
     }
 }
 
-@OptIn(ExperimentalSerializationApi::class)
-@Serializer(forClass = JsonPointer::class)
 object JsonPointerSerializer : KSerializer<JsonPointer> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("JsonPointer", PrimitiveKind.STRING)
 
