@@ -1,0 +1,98 @@
+metadata:
+  name: ai.vier.cvg.shared.tokens
+  version: "1"
+definitions:
+  - metadata:
+      name: DialogId
+      description: The id of a dialog.
+      examples:
+        - metadata:
+            name: A valid token
+          example: 09e59647-5c77-4c02-a1c5-7fb2b47060f1
+    type: primitive
+    dataType: string
+  - metadata:
+      name: ExternalCallId
+      description: |-
+        This ID can be an arbitrary string provided by the client. The ID should be chosen in a way that
+        guarantees uniqueness across a project for as long as the dialog data is retained.
+      examples:
+        - metadata:
+            name: A valid token
+          example: someRandomId
+    type: primitive
+    dataType: string
+    constraints:
+      - type: gte
+        subject: LENGTH
+        value: 1
+      - type: lte
+        subject: LENGTH
+        value: 50
+  - metadata:
+      name: ProfileToken
+      description: The unique token of a speech service profile. You can find the token on the configuration page of the profile.
+      examples:
+        - metadata:
+            name: A valid token
+          example: 09e59647-5c77-4c02-a1c5-7fb2b47060f1
+    type: primitive
+    dataType: string
+  - metadata:
+      name: IntegrationToken
+      description: The unique token of a external service integration.
+      examples:
+        - metadata:
+            name: A valid token
+          example: 09e59647-5c77-4c02-a1c5-7fb2b47060f1
+    type: primitive
+    dataType: string
+  - metadata:
+      name: ProjectToken
+      description: The unique token of a project. You can find your token on your project configuration page.
+      examples:
+        - metadata:
+            name: A valid token
+          example: 09e59647-5c77-4c02-a1c5-7fb2b47060f1
+    type: primitive
+    dataType: string
+  - metadata:
+      name: AccountToken
+      description: The unique token of an account. You can find your token on your account configuration page.
+      examples:
+        - metadata:
+            name: A valid token
+          example: 09e59647-5c77-4c02-a1c5-7fb2b47060f1
+    type: primitive
+    dataType: string
+  - metadata:
+      name: CustomerToken
+      description: The unique token of a customer. You can find your token on your customer configuration page.
+      examples:
+        - metadata:
+            name: A valid token
+          example: 09e59647-5c77-4c02-a1c5-7fb2b47060f1
+    type: primitive
+    dataType: string
+  - metadata:
+      name: ResellerToken
+      description: The unique token of a reseller. You can find your token on your project configuration page.
+      examples:
+        - metadata:
+            name: A valid token
+          example: 09e59647-5c77-4c02-a1c5-7fb2b47060f1
+    type: primitive
+    dataType: string
+  - metadata:
+      name: ProjectContext
+      description: This object encapsulates the tokens of the organizational units relevant for most API calls.
+    type: record
+    properties:
+      - metadata:
+          name: projectToken
+        model:
+          name: ProjectToken
+      - metadata:
+          name: resellerToken
+        model:
+          name: ResellerToken
