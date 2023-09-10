@@ -13,5 +13,4 @@ definitions:
       size: 32
       signed: false
       range:
-        minimum: 0
         maximum: 100

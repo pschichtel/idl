@@ -26,6 +26,7 @@ import tel.schich.idl.core.getAnnotation
 import tel.schich.idl.core.valueAsIs
 import tel.schich.idl.runner.command.JvmInProcessGenerator
 import java.io.File
+import java.math.BigDecimal
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
@@ -202,15 +203,77 @@ class OpenApiGenerator : JvmInProcessGenerator {
         return when (definition) {
             is Model.Primitive -> {
                 val (type, format) = primitiveType(definition.dataType, definition.metadata)
-                SimpleSchema(
-                    type = type?.let(::typeWithNull),
-                    format = format,
-                    description = description,
-                    deprecated = deprecated,
-                    example = examples.firstOrNull(),
-                    examples = examples,
-                    default = withDefault,
-                )
+                when (val dataType = definition.dataType) {
+                    is PrimitiveDataType.Integer -> {
+                        val minimum = dataType.range?.minimum?.toBigDecimal() ?: (if (dataType.signed) null else BigDecimal.ZERO)
+                        val maximum = dataType.range?.maximum?.toBigDecimal()
+                        SimpleSchema(
+                            type = type?.let(::typeWithNull),
+                            format = format,
+                            description = description,
+                            deprecated = deprecated,
+                            example = examples.firstOrNull(),
+                            examples = examples,
+                            default = withDefault,
+                            minimum = minimum,
+                            maximum = maximum,
+                        )
+                    }
+                    is PrimitiveDataType.Float -> {
+                        val minimum = dataType.range?.minimum ?: (if (dataType.signed) null else BigDecimal.ZERO)
+                        val maximum = dataType.range?.maximum
+                        SimpleSchema(
+                            type = type?.let(::typeWithNull),
+                            format = format,
+                            description = description,
+                            deprecated = deprecated,
+                            example = examples.firstOrNull(),
+                            examples = examples,
+                            default = withDefault,
+                            minimum = minimum,
+                            maximum = maximum,
+                        )
+                    }
+                    is PrimitiveDataType.String -> {
+                        val minLength = dataType.lengthRange?.minimum
+                        val maxLength = dataType.lengthRange?.maximum
+                        val pattern = dataType.regex?.toString()?.let(::RegularExpression)
+                        SimpleSchema(
+                            type = type?.let(::typeWithNull),
+                            format = format,
+                            description = description,
+                            deprecated = deprecated,
+                            example = examples.firstOrNull(),
+                            examples = examples,
+                            default = withDefault,
+                            minLength = minLength,
+                            maxLength = maxLength,
+                            pattern = pattern,
+                        )
+                    }
+                    is PrimitiveDataType.Bool -> {
+                        SimpleSchema(
+                            type = type?.let(::typeWithNull),
+                            format = format,
+                            description = description,
+                            deprecated = deprecated,
+                            example = examples.firstOrNull(),
+                            examples = examples,
+                            default = withDefault,
+                        )
+                    }
+                    is PrimitiveDataType.Custom -> {
+                        SimpleSchema(
+                            type = type?.let(::typeWithNull),
+                            format = format,
+                            description = description,
+                            deprecated = deprecated,
+                            example = examples.firstOrNull(),
+                            examples = examples,
+                            default = withDefault,
+                        )
+                    }
+                }
             }
             is Model.Record -> {
                 SimpleSchema(
@@ -232,6 +295,9 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     example = examples.firstOrNull(),
                     examples = examples,
                     default = withDefault,
+                    uniqueItems = definition.uniqueValues,
+                    minItems = definition.sizeRange?.minimum,
+                    maxItems = definition.sizeRange?.maximum,
                     items = referenceToModel(module, definition.itemModel)
                 )
             }
@@ -244,6 +310,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     examples = examples,
                     default = withDefault,
                     uniqueItems = true,
+                    minItems = definition.sizeRange?.minimum,
+                    maxItems = definition.sizeRange?.maximum,
                     items = referenceToModel(module, definition.itemModel)
                 )
             }
@@ -255,6 +323,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     example = examples.firstOrNull(),
                     examples = examples,
                     default = withDefault,
+                    minProperties = definition.sizeRange?.minimum,
+                    maxProperties = definition.sizeRange?.maximum,
                     additionalProperties = referenceToModel(module, definition.valueModel)
                 )
             }

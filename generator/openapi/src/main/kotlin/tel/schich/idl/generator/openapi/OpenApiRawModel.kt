@@ -1,6 +1,5 @@
 @file:UseSerializers(
     URISerializer::class,
-    LenientBigIntegerSerializer::class,
     BigDecimalSerializer::class,
     HttpStatusCodeSerializer::class,
     JsonPointerSerializer::class,
@@ -22,18 +21,14 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.SerialKind
-import kotlinx.serialization.descriptors.buildSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.JsonTransformingSerializer
+import tel.schich.idl.core.BigDecimalSerializer
 import java.math.BigDecimal
-import java.math.BigInteger
 import java.net.URI
 import kotlin.reflect.KClass
 
@@ -554,19 +549,19 @@ data class SimpleSchema(
 
     val format: TypeFormat? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.2.1
-    val multipleOf: BigInteger? = null,
+    val multipleOf: BigDecimal? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.2.2
-    val maximum: BigInteger? = null,
+    val maximum: BigDecimal? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.2.3
-    val exclusiveMaximum: BigInteger? = null,
+    val exclusiveMaximum: BigDecimal? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.2.4
-    val minimum: BigInteger? = null,
+    val minimum: BigDecimal? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.2.5
-    val exclusiveMinimum: BigInteger? = null,
+    val exclusiveMinimum: BigDecimal? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.3.1
-    val maxLength: Long? = null,
+    val maxLength: ULong? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.3.2
-    val minLength: Long? = null,
+    val minLength: ULong? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.3.3
     val pattern: RegularExpression? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-8.3
@@ -583,15 +578,15 @@ data class SimpleSchema(
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.1.3
     val contains: Schema? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.1
-    val maxItems: BigInteger? = null,
+    val maxItems: ULong? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.2
-    val minItems: BigInteger? = null,
+    val minItems: ULong? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.3
     val uniqueItems: Boolean? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.4
-    val maxContains: BigInteger? = null,
+    val maxContains: ULong? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.5
-    val minContains: BigInteger? = null,
+    val minContains: ULong? = null,
 
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.2.1
     val properties: Map<PropertyName, Schema>? = null,
@@ -602,9 +597,9 @@ data class SimpleSchema(
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.2.4
     val propertyNames: Schema? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.5.1
-    val maxProperties: BigInteger? = null,
+    val maxProperties: ULong? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.5.2
-    val minProperties: BigInteger? = null,
+    val minProperties: ULong? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.5.3
     val required: List<PropertyName>? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.5.4
@@ -653,9 +648,9 @@ data class TupleSchema(
 ): Schema {
     val type: Set<SchemaType> = if (nullable) setOf(SchemaType.ARRAY, SchemaType.NULL) else setOf(SchemaType.ARRAY)
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.1
-    val maxItems: BigInteger = prefixItems.size.toBigInteger()
+    val maxItems: ULong = prefixItems.size.toULong()
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.2
-    val minItems: BigInteger = prefixItems.size.toBigInteger()
+    val minItems: ULong = prefixItems.size.toULong()
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.1.2
     val items: Boolean = false
 }
@@ -753,54 +748,6 @@ object URISerializer : KSerializer<URI> {
     override fun serialize(encoder: Encoder, value: URI) = encoder.encodeString(value.toString())
 
     override fun deserialize(decoder: Decoder): URI = URI.create(decoder.decodeString())
-}
-
-object BigIntegerSerializer : KSerializer<BigInteger> {
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("BigInteger", PrimitiveKind.INT)
-
-    override fun serialize(encoder: Encoder, value: BigInteger) = encoder.encodeString(value.toString())
-
-    override fun deserialize(decoder: Decoder): BigInteger = BigInteger(decoder.decodeString())
-}
-
-object LenientBigIntegerSerializer : JsonTransformingSerializer<BigInteger>(BigIntegerSerializer) {
-    override fun transformDeserialize(element: JsonElement): JsonElement {
-        if (element is JsonPrimitive && !element.isString) {
-            return JsonPrimitive(element.content)
-        }
-        return super.transformDeserialize(element)
-    }
-
-    override fun transformSerialize(element: JsonElement): JsonElement {
-        if (element is JsonPrimitive && element.isString) {
-            return JsonPrimitive(BigInteger(element.content))
-        }
-        return super.transformSerialize(element)
-    }
-}
-
-object BigDecimalSerializer : KSerializer<BigDecimal> {
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("BigDecimal", PrimitiveKind.STRING)
-
-    override fun serialize(encoder: Encoder, value: BigDecimal) = encoder.encodeString(value.toPlainString())
-
-    override fun deserialize(decoder: Decoder): BigDecimal = BigDecimal(decoder.decodeString())
-}
-
-object LenientBigDecimalSerializer : JsonTransformingSerializer<BigDecimal>(BigDecimalSerializer) {
-    override fun transformDeserialize(element: JsonElement): JsonElement {
-        if (element is JsonPrimitive && !element.isString) {
-            return JsonPrimitive(element.content)
-        }
-        return super.transformDeserialize(element)
-    }
-
-    override fun transformSerialize(element: JsonElement): JsonElement {
-        if (element is JsonPrimitive && element.isString) {
-            return JsonPrimitive(BigDecimal(element.content))
-        }
-        return super.transformSerialize(element)
-    }
 }
 
 object HttpStatusCodeSerializer : KSerializer<HttpStatusCode> {
