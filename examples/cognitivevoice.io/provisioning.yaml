@@ -1,5 +1,205 @@
 metadata:
   name: ai.vier.cvg.provisioning
   version: "1"
-definitions: [ ]
+  description: |-
+    The Provisioning API provides contact centers with a way to announce a call to CVG before the call is actually
+    transferred to CVG. With this announcement of the call, there are two major advantages over direct call resp.
+    direct call transfer:
+    
+    1. The CVG project (bot configuration, voice provider selection, audio configuration, ...) can be dynamically
+    configured for the announced call via the Provisioning API.
+    
+    2. Between the announcement of the call and the actual transfer of the call to CVG, there is a short time window in
+    which CVG already knows about the upcoming dialog. This time window can be used by the contact center to attach
+    custom data fields to the call via the Dialog API. These custom data fields can be used by the bot or other
+    downstream systems.
+    
+    If you are just looking for a way to pass data about a call from your contact center to your bot, and you are using
+    SIP telephony, then this also can be achieved by adding custom SIP headers (starting with `X-`) to the call.
+    CVG passes these custom SIP headers to the bot during session initialization.
+definitions:
+  - metadata:
+      name: ProvisionCallRequest
+    type: record
+    properties:
+      - metadata:
+          name: resellerToken
+        model:
+          module:
+            name: ai.vier.cvg.shared.tokens
+            version: '1'
+          name: ResellerToken
+      - metadata:
+          name: projectToken
+        model:
+          module:
+            name: ai.vier.cvg.shared.tokens
+            version: '1'
+          name: ProjectToken
+      - metadata:
+          name: callId
+        model:
+          module:
+            name: ai.vier.cvg.shared.tokens
+            version: '1'
+          name: ExternalCallId
+      - metadata:
+          name: botURL
+        nullable: true
+        default:
+          value: null
+        model:
+          module:
+            name: ai.vier.cvg.shared.project
+            version: '1'
+          name: BotUrl
+      - metadata:
+          name: botAccessToken
+        nullable: true
+        default:
+          value: null
+        model:
+          module:
+            name: ai.vier.cvg.shared.project
+            version: '1'
+          name: BotToken
+      - metadata:
+          name: botConfiguration
+        nullable: true
+        default:
+          value: null
+        model:
+          module:
+            name: ai.vier.cvg.shared.project
+            version: '1'
+          name: BotConfiguration
+      - metadata:
+          name: language
+        nullable: true
+        default:
+          value: null
+        model:
+          name: ProvisionCallRequestLanguage
+      - metadata:
+          name: transcriberVendors
+        nullable: true
+        default:
+          value: null
+        model:
+          module:
+            name: ai.vier.cvg.shared.speech-service
+            version: '1'
+          name: TranscriberSelection
+      - metadata:
+          name: synthesizerVendors
+        nullable: true
+        default:
+          value: null
+        model:
+          module:
+            name: ai.vier.cvg.shared.speech-service
+            version: '1'
+          name: SynthesizerSelection
+      - metadata:
+          name: writeDialogData
+        default:
+          value: true
+        model:
+          name: EnabledDialogData
+      - metadata:
+          name: inactivityTimeout
+        nullable: true
+        default:
+          value: null
+        model:
+          module:
+            name: ai.vier.cvg.shared.project
+            version: '1'
+          name: InactivityTimeout
+      - metadata:
+          name: minimumNoiseLevel
+        nullable: true
+        default:
+          value: null
+        model:
+          module:
+            name: ai.vier.cvg.shared.project
+            version: '1'
+          name: MinimumNoiseLevel
+      - metadata:
+          name: utteranceTimeout
+        nullable: true
+        default:
+          value: null
+        model:
+          module:
+            name: ai.vier.cvg.shared.project
+            version: '1'
+          name: UtteranceTimeout
+  - metadata:
+      name: ProvisionCallRequestLanguage
+    type: sum
+    constructors:
+      - name: ProvisioningLanguageSelection
+      - module:
+          name: ai.vier.cvg.shared.language
+          version: '1'
+        name: Language
+  - metadata:
+      name: ProvisioningLanguageSelection
+    type: record
+    properties:
+      - metadata:
+          name: transcriber
+        model:
+          module:
+            name: ai.vier.cvg.shared.language
+            version: '1'
+          name: Language
+      - metadata:
+          name: synthesizer
+        model:
+          module:
+            name: ai.vier.cvg.shared.language
+            version: '1'
+          name: Language
+  - metadata:
+      name: EnabledDialogData
+    type: primitive
+    dataType:
+      type: boolean
+  - metadata:
+      name: ProvisionCallResponse
+    type: adt
+    constructors:
+      - metadata:
+          name: Success
+        properties:
+          - metadata:
+              name: target
+            model:
+              module:
+                name: ai.vier.cvg.shared.phone-number
+                version: '1'
+              name: E164Number
+          - metadata:
+              name: dialogId
+            model:
+              module:
+                name: ai.vier.cvg.shared.tokens
+                version: '1'
+              name: DialogId
+      - metadata:
+          name: Error
+        properties:
+          - metadata:
+              name: message
+            model:
+              name: ProvisionCallErrorMessage
+  - metadata:
+      name: ProvisionCallErrorMessage
+      description: The message describing the error
+    type: primitive
+    dataType:
+      type: string
 operations: [ ]

@@ -127,7 +127,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 SimpleSchema(
                     description = schema.description,
                     deprecated = schema.deprecated,
-                    oneOf = listOf(schema, NullSchema),
+                    oneOf = listOf(schema, nullSchema()),
                 )
             } else {
                 schema
@@ -139,7 +139,14 @@ class OpenApiGenerator : JvmInProcessGenerator {
             val uri = if (subject.reference == moduleRef) {
                 URI("")
             } else {
-                URI(subjectPath.parent.relativize(relativeOutputFilePath(moduleRef, commonNamePrefix)).toString())
+                val outputFilePath = relativeOutputFilePath(moduleRef, commonNamePrefix)
+                val parentPath = subjectPath.parent
+                val path = if (parentPath == null) {
+                    outputFilePath
+                } else {
+                    parentPath.relativize(outputFilePath)
+                }
+                URI(path.toString())
             }
             val reference = Reference(uri, JsonPointer.fromString("/components/schemas/${ref.name}"))
             val examples = (overrideMetadata as? ModelMetadata)?.examples?.map { it.example }
@@ -333,7 +340,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
             }
             is Model.Sum -> {
                 val nullSchema = if (asNullable) {
-                    listOf(NullSchema)
+                    listOf(nullSchema())
                 } else {
                     emptyList()
                 }
@@ -353,7 +360,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 val valueFieldName = definition.metadata.getAnnotation(TaggedSumValueFieldNameAnnotation) ?: PropertyName("value")
 
                 val nullSchema = if (asNullable) {
-                    listOf(NullSchema)
+                    listOf(nullSchema())
                 } else {
                     emptyList()
                 }
@@ -470,7 +477,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
 
             is Model.Adt -> {
                 val nullSchema = if (asNullable) {
-                    listOf(NullSchema)
+                    listOf(nullSchema())
                 } else {
                     emptyList()
                 }
@@ -525,16 +532,20 @@ class OpenApiGenerator : JvmInProcessGenerator {
 
             val schemas: Map<SchemaName, Schema> = module.definitions.associate { definition ->
                 val schemaName = definition.metadata.getAnnotation(SchemaNameAnnotation) ?: definition.metadata.name
-                val schema = generateSchema(
-                    module,
-                    definition,
-                    module,
-                    modules,
-                    commonNamePrefix,
-                    asNullable = false,
-                    withDefault = null,
-                    overrideMetadata = null,
-                )
+                val schema = try {
+                    generateSchema(
+                        module,
+                        definition,
+                        module,
+                        modules,
+                        commonNamePrefix,
+                        asNullable = false,
+                        withDefault = null,
+                        overrideMetadata = null,
+                    )
+                } catch (e: Exception) {
+                    throw Exception("Failed to generate schema for module ${module.reference}", e)
+                }
                 Pair(SchemaName(schemaName), schema)
             }
             val components = Components(
@@ -567,6 +578,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
         } catch (e: InvalidModuleException) {
             GenerationResult.Invalid(listOf(GeneratorValidationError(e.module, e.reason)))
         } catch (e: Exception) {
+            e.printStackTrace(System.err)
             GenerationResult.Failure(e.message ?: "unknown reason")
         }
     }

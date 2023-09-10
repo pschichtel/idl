@@ -20,6 +20,7 @@ import tel.schich.idl.core.validation.DuplicateRecordPropertyError
 import tel.schich.idl.core.validation.DuplicateTagInTaggedSumError
 import tel.schich.idl.core.validation.DuplicatedDefinitionError
 import tel.schich.idl.core.validation.DuplicatedModuleError
+import tel.schich.idl.core.validation.EmptyRecordError
 import tel.schich.idl.core.validation.InvalidModuleNameError
 import tel.schich.idl.core.validation.NullDefaultInNonNullableRecordPropertyError
 import tel.schich.idl.core.validation.UndefinedDefinitionReferencedError
@@ -125,6 +126,9 @@ internal fun CliktCommand.printValidationErrors(validationErrors: Set<Validation
                 is DuplicateConstructorPropertyInAdtError -> {
                     error("        Constructor ${error.constructor} of ADT ${error.definition} defines the property ${error.property} multiple times: ${error.indices.joinToString(", ")}")
                 }
+                is EmptyRecordError -> {
+                    error("        Record ${error.definition} does not have any properties")
+                }
             }
         }
     }
@@ -154,6 +158,6 @@ internal fun ParameterHolder.moduleSourcesOption(): OptionWithValues<List<Path>,
         .multiple(required = true)
 }
 
-internal fun CliktCommand.exit(code: Int): Nothing {
+internal fun exit(code: Int): Nothing {
     throw CliktError(statusCode = code)
 }

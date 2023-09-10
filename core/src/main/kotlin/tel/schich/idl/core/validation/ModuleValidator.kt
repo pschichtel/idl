@@ -18,6 +18,7 @@ private val validations: List<ModuleValidator> = listOf(
     DuplicateTagInTaggedSumValidator,
     DuplicateConstructorInAdtValidator,
     DuplicatePropertiesInAdtValidator,
+    EmptyRecordValidator,
 )
 
 fun validateModule(module: Module, allModules: List<Module>): ValidationResult {
