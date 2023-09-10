@@ -27,7 +27,7 @@ sealed interface GenerationResult {
 
     @Serializable
     @SerialName("invalid")
-    data class Invalid(val errors: GeneratorValidationError) : GenerationResult
+    data class Invalid(val errors: List<GeneratorValidationError>) : GenerationResult
 
     @Serializable
     @SerialName("failure")

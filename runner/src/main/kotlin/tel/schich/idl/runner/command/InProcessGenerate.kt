@@ -75,6 +75,22 @@ internal class InProcessGenerate : GenerateCommand(name = "generate-in-process")
             generator.generate(generationRequest)
         }
 
-        echo("$result")
+        when (result) {
+            is GenerationResult.Failure -> {
+                error("Generation failed: ${result.reason}")
+            }
+            is GenerationResult.Invalid -> {
+                error("The generator rejected the model for these reasons:")
+                for (error in result.errors) {
+                    error(" - in module ${error.module}: ${error.description}")
+                }
+            }
+            is GenerationResult.Success -> {
+                echo("Successfully generated the following files:")
+                for (generatedFile in result.generatedFiles) {
+                    echo(" - $generatedFile")
+                }
+            }
+        }
     }
 }
