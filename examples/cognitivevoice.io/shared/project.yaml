@@ -1,0 +1,103 @@
+metadata:
+  name: ai.vier.cvg.shared.project
+  version: "1"
+definitions:
+  - metadata:
+      name: BotUrl
+      description: URL to the server that implements the Bot API.
+      examples:
+        - metadata:
+            name: CVG-hosted bot
+          example: http://echo-bot:9090
+      annotations:
+        tel.schich.idl.generator.openapi/primitive-format: uri
+    type: primitive
+    dataType:
+      type: string
+  - metadata:
+      name: BotToken
+      description: A bearer token that is used for calls to the Bot API.
+    type: primitive
+    dataType:
+      type: string
+  - metadata:
+      name: BotConfiguration
+      description: |-
+        Advanced configuration for the bot. Can contain arbitrary JSON data, including `null`.
+        Please consult the documentation of the bot you are using for the required format.
+    type: unknown
+  - metadata:
+      name: InactivityTimeout
+      description: |-
+        Duration after which the inactivity detection timeout occurs.
+        The value is in milliseconds.
+      examples:
+        - metadata:
+            name: 15 seconds
+          example: 15000
+    type: primitive
+    dataType:
+      type: integer
+      size: 32
+      signed: false
+      range:
+        minimum: 2000
+        maximum: 20000
+  - metadata:
+      name: MinimumNoiseLevel
+      description: |-
+        Optional transcription parameter. A level in dB that a signal must
+        surpass to be considered at all.
+      examples:
+        - metadata:
+            name: -45 dB
+          example: -45
+    type: primitive
+    dataType:
+      type: integer
+      size: 32
+      range:
+        minimum: -60
+        maximum: -30
+  - metadata:
+      name: UtteranceTimeout
+      description: |-
+        Optional transcription parameter. The time (milliseconds) of silence
+        that must occur after non-noise to complete an utterance.
+      examples:
+        - metadata:
+            name: 500ms
+          example: 500
+    type: primitive
+    dataType:
+      type: integer
+      size: 32
+      signed: false
+      range:
+        minimum: 200
+        maximum: 1000
+  - metadata:
+      name: Callback
+      description: |-
+        The base URL against which API calls should be made, e.g. https://cognitivevoice.io/v1 for the
+        production environment and https://stage.cognitivevoice.io/v1 for the staging environment.
+      annotations:
+        tel.schich.idl.generator.openapi/primitive-format: uri
+    type: primitive
+    dataType:
+      type: string
+  - metadata:
+      name: FeatureFlag
+    type: enum
+    dataType:
+      type: string
+    entries:
+      - metadata:
+          name: SIP_URI_IN_SESSION_REQUEST
+      - metadata:
+          name: SIP_URI_PARAMS_AS_HEADERS
+  - metadata:
+      name: FeatureFlagSet
+    type: set
+    itemModel:
+      name: FeatureFlag
