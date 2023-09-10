@@ -1,0 +1,44 @@
+metadata:
+  name: ai.vier.cvg.shared.time
+  version: "1"
+definitions:
+  - metadata:
+      name: Timestamp
+      description: An instant of time, measured in milliseconds since the epoch (1970-01-01) in UTC.
+      examples:
+        - metadata:
+            name: Wed Aug 29 2018 12:45:18
+          example: 1535546718115
+    type: primitive
+    dataType: int64
+  - metadata:
+      name: Duration
+      description: An amount of time, measured in milliseconds.
+      examples:
+        - metadata:
+            name: 1 minute
+          example: 60000
+    type: primitive
+    dataType: int32
+  - metadata:
+      name: InactivityDuration
+      description: |-
+        The duration of the inactivity period in milliseconds.
+        The timestamp of the last activity in this call can be calculated with `timestamp - duration`.
+
+        When an inactivity timeout triggers within a potential utterance, we can't yet know whether that utterance
+        will result in a successful transcription or if it was likely just background noise. To make sure
+        inactivity events aren't sent in the former case, the events are delayed to the end of the utterance.
+        As a result, this duration may be longer than the inactivity timeout configured in the project settings.
+    type: alias
+    aliasedModel:
+      name: Duration
+  - metadata:
+      name: Timezone
+      description: A timezone name or time offset to UTC.
+      examples:
+        - metadata:
+            name: 1 hour offset
+          example: '+01:00'
+    type: primitive
+    dataType: string

@@ -89,11 +89,14 @@ definitions:
     metadata:
       name: adt
       description: test-adt
+      examples:
+        - metadata:
+            name: a
+          example:
+            type: a
+            timestamp: 123
+            counter: 1
     commonProperties:
-      - metadata:
-          name: timestamp
-        model:
-          name: test
       - metadata:
           name: timestamp
         model:

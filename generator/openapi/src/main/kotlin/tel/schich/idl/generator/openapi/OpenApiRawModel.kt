@@ -541,6 +541,8 @@ data class SimpleSchema(
     val readOnly: Boolean? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.4
     val writeOnly: Boolean? = null,
+    // This is from OpenAPI 3.0, swagger-ui is still using this, even for OpenAPI 3.1 specs
+    val example: JsonElement? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.5
     val examples: List<JsonElement>? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.1.2
@@ -637,6 +639,8 @@ data class TupleSchema(
     val readOnly: Boolean? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.4
     val writeOnly: Boolean? = null,
+    // This is from OpenAPI 3.0, swagger-ui is still using this, even for OpenAPI 3.1 specs
+    val example: JsonElement? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.5
     val examples: List<JsonElement>? = null,
     // https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#fixed-fields-20
@@ -664,6 +668,10 @@ data class ReferenceSchema(
     override val description: String? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.3
     override val deprecated: Boolean? = null,
+    // This is from OpenAPI 3.0, swagger-ui is still using this, even for OpenAPI 3.1 specs
+    val example: JsonElement? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.5
+    val examples: List<JsonElement>? = null,
 ) : Schema
 
 @Serializable

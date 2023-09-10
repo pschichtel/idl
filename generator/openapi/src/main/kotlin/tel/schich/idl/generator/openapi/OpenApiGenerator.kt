@@ -13,6 +13,7 @@ import tel.schich.idl.core.AnnotationParser
 import tel.schich.idl.core.Definition
 import tel.schich.idl.core.Metadata
 import tel.schich.idl.core.Model
+import tel.schich.idl.core.ModelMetadata
 import tel.schich.idl.core.ModelReference
 import tel.schich.idl.core.ModuleReference
 import tel.schich.idl.core.PrimitiveDataType
@@ -125,7 +126,14 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 URI(subjectPath.parent.relativize(relativeOutputFilePath(moduleRef, commonNamePrefix)).toString())
             }
             val reference = Reference(uri, JsonPointer.fromString("/components/schemas/${ref.name}"))
-            return ReferenceSchema(reference, overrideMetadata?.description, overrideMetadata?.deprecated)
+            val examples = (overrideMetadata as? ModelMetadata)?.examples?.map { it.example }
+            return ReferenceSchema(
+                reference,
+                overrideMetadata?.description,
+                overrideMetadata?.deprecated,
+                examples?.firstOrNull(),
+                examples,
+            )
         }
 
         fun lookupDefinition(ref: ModelReference): Pair<Module, Definition> {
@@ -176,6 +184,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
 
         val description = overrideMetadata?.description ?: definition.metadata.description
         val deprecated = if (overrideMetadata?.deprecated == true || definition.metadata.deprecated) true else null
+        val examples = ((overrideMetadata as? ModelMetadata)?.examples ?: definition.metadata.examples)
+            .map { it.example }
 
         return when (definition) {
             is Model.Primitive -> {
@@ -185,6 +195,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     format = format,
                     description = description,
                     deprecated = deprecated,
+                    example = examples.firstOrNull(),
+                    examples = examples,
                     default = withDefault,
                 )
             }
@@ -193,6 +205,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     type = typeWithNull(SchemaType.OBJECT),
                     description = description,
                     deprecated = deprecated,
+                    example = examples.firstOrNull(),
+                    examples = examples,
                     default = withDefault,
                     required = generateRequiredProperties(definition.properties),
                     properties = generateProperties(definition.properties)
@@ -203,6 +217,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     type = typeWithNull(SchemaType.ARRAY),
                     description = description,
                     deprecated = deprecated,
+                    example = examples.firstOrNull(),
+                    examples = examples,
                     default = withDefault,
                     items = referenceToModel(module, definition.itemModel)
                 )
@@ -212,6 +228,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     type = typeWithNull(SchemaType.ARRAY),
                     description = description,
                     deprecated = deprecated,
+                    example = examples.firstOrNull(),
+                    examples = examples,
                     default = withDefault,
                     uniqueItems = true,
                     items = referenceToModel(module, definition.itemModel)
@@ -222,6 +240,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     type = typeWithNull(SchemaType.OBJECT),
                     description = description,
                     deprecated = deprecated,
+                    example = examples.firstOrNull(),
+                    examples = examples,
                     default = withDefault,
                     additionalProperties = referenceToModel(module, definition.valueModel)
                 )
@@ -235,6 +255,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 SimpleSchema(
                     description = description,
                     deprecated = deprecated,
+                    example = examples.firstOrNull(),
+                    examples = examples,
                     oneOf = definition.constructors.map {
                         referenceToModel(module, it)
                     } + nullSchema,
@@ -304,6 +326,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 SimpleSchema(
                     description = description,
                     deprecated = deprecated,
+                    example = examples.firstOrNull(),
+                    examples = examples,
                     oneOf = schemas + nullSchema,
                 )
             }
@@ -314,6 +338,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     format = format,
                     description = description,
                     deprecated = deprecated,
+                    example = examples.firstOrNull(),
+                    examples = examples,
                     default = withDefault,
                     enum = definition.entries.map { it.value },
                 )
@@ -325,6 +351,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 SimpleSchema(
                     description = description,
                     deprecated = deprecated,
+                    example = examples.firstOrNull(),
+                    examples = examples,
                     default = withDefault,
                 )
             )
@@ -333,6 +361,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     nullable = asNullable,
                     description = description,
                     deprecated = deprecated,
+                    example = examples.firstOrNull(),
+                    examples = examples,
                     default = withDefault,
                     prefixItems = definition.components.map {
                         referenceToModel(module, it)
@@ -346,6 +376,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     format = format,
                     description = description,
                     deprecated = deprecated,
+                    example = examples.firstOrNull(),
+                    examples = examples,
                     default = withDefault,
                     const = definition.value,
                 )
@@ -373,6 +405,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 SimpleSchema(
                     description = description,
                     deprecated = deprecated,
+                    example = examples.firstOrNull(),
+                    examples = examples,
                     oneOf = schemas + nullSchema
                 )
             }
