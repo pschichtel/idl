@@ -19,6 +19,12 @@ data class GenerationRequest(
 fun <T : Any> GenerationRequest.getAnnotation(annotation: Annotation<T>): T? =
     annotation.getValue(annotations)
 
+class InvalidModuleException(val module: ModuleReference, val reason: String) : Exception(reason)
+
+fun invalidModule(module: ModuleReference, reason: String): Nothing {
+    throw InvalidModuleException(module, reason)
+}
+
 @Serializable
 sealed interface GenerationResult {
     @Serializable

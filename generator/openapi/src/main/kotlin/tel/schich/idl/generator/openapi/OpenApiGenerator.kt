@@ -21,8 +21,11 @@ import tel.schich.idl.core.RecordProperty
 import tel.schich.idl.core.TaggedConstructor
 import tel.schich.idl.core.generate.GenerationRequest
 import tel.schich.idl.core.generate.GenerationResult
+import tel.schich.idl.core.generate.InvalidModuleException
 import tel.schich.idl.core.generate.getAnnotation
+import tel.schich.idl.core.generate.invalidModule
 import tel.schich.idl.core.getAnnotation
+import tel.schich.idl.core.validation.GeneratorValidationError
 import tel.schich.idl.core.valueAsIs
 import tel.schich.idl.runner.command.JvmInProcessGenerator
 import java.io.File
@@ -365,10 +368,10 @@ class OpenApiGenerator : JvmInProcessGenerator {
                         definition.constructors.map {
                             val (_, referencedDefinition) = lookupDefinition(it.model)
                             if (referencedDefinition !is Model.Record) {
-                                error("The ${TaggedSumEncoding.RECORD_PROPERTY} encoding requires all constructors to be records!")
+                                invalidModule(subject.reference, "The ${TaggedSumEncoding.RECORD_PROPERTY} encoding requires all constructors to be records!")
                             }
                             if (referencedDefinition.properties.any { property -> property.metadata.name == tagFieldName.name }) {
-                                error("The ${TaggedSumEncoding.RECORD_PROPERTY} requires a tag field name that does not exist in any of its constructors, $tagFieldName already exists in ${it.metadata.name}!")
+                                invalidModule(subject.reference, "The ${TaggedSumEncoding.RECORD_PROPERTY} requires a tag field name that does not exist in any of its constructors, $tagFieldName already exists in ${it.metadata.name}!")
                             }
                             SimpleSchema(
                                 allOf = listOf(
@@ -499,12 +502,12 @@ class OpenApiGenerator : JvmInProcessGenerator {
         return Paths.get("${module.name.removePrefix(commonNamePrefix).replace(MODULE_NAME_SEPARATOR, File.separatorChar)}.json")
     }
 
-    override fun generate(request: GenerationRequest): GenerationResult {
+    private fun generateModel(request: GenerationRequest): List<Path> {
         val defaultSpecVersion = request.getAnnotation(SpecVersionAnnotation)
 
         val modules = request.modules
         if (modules.isEmpty()) {
-            return GenerationResult.Failure(reason = "No modules have been requested!")
+            error("No modules have been requested!")
         }
 
         val subjectModules = modules.filter { it.reference in request.subjects }
@@ -513,7 +516,6 @@ class OpenApiGenerator : JvmInProcessGenerator {
         println(commonNamePrefix)
 
         val generatedFiles = subjectModules.map { module ->
-
             val info = Info(
                 title = module.metadata.name,
                 version = module.metadata.getAnnotation(SpecVersionAnnotation) ?: defaultSpecVersion,
@@ -556,6 +558,16 @@ class OpenApiGenerator : JvmInProcessGenerator {
             outputPath
         }
 
-        return GenerationResult.Success(generatedFiles)
+        return generatedFiles
+    }
+
+    override fun generate(request: GenerationRequest): GenerationResult {
+        return try {
+            GenerationResult.Success(generateModel(request))
+        } catch (e: InvalidModuleException) {
+            GenerationResult.Invalid(listOf(GeneratorValidationError(e.module, e.reason)))
+        } catch (e: Exception) {
+            GenerationResult.Failure(e.message ?: "unknown reason")
+        }
     }
 }
