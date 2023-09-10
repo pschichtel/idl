@@ -5,7 +5,9 @@ definitions:
   - type: primitive
     metadata:
       name: test
-    dataType: int32
+    dataType:
+      type: integer
+      size: 32
   - type: sum
     metadata:
       name: untagged-sum
@@ -32,14 +34,18 @@ definitions:
     metadata:
       name: constant
       deprecated: true
-    dataType: int32
+    dataType:
+      type: integer
+      size: 32
     value: 1
   - type: tagged-sum
     metadata:
       name: tagged-sum-tuple
       annotations:
         tel.schich.idl.generator.openapi/tagged-sum-encoding: WRAPPER_TUPLE
-    tagDataType: int32
+    tagDataType:
+      type: integer
+      size: 32
     constructors:
       - metadata:
           name: ctor1
@@ -56,7 +62,9 @@ definitions:
       name: tagged-sum-record
       annotations:
         tel.schich.idl.generator.openapi/tagged-sum-encoding: WRAPPER_RECORD
-    tagDataType: int32
+    tagDataType:
+      type: integer
+      size: 32
     constructors:
       - metadata:
           name: ctor1
@@ -73,7 +81,9 @@ definitions:
       name: tagged-sum-property
       annotations:
         tel.schich.idl.generator.openapi/tagged-sum-encoding: RECORD_PROPERTY
-    tagDataType: int32
+    tagDataType:
+      type: integer
+      size: 32
     constructors:
       - metadata:
           name: ctor1

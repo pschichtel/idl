@@ -10,8 +10,7 @@ definitions:
             name: german in Germany
           example: 'de-DE'
     type: primitive
-    dataType: string
-    constraints:
-      - type: gte
-        subject: LENGTH
-        value: 1
+    dataType:
+      type: string
+      lengthRange:
+        minimum: 1

@@ -6,9 +6,7 @@ import tel.schich.idl.core.Model
 import tel.schich.idl.core.ModelReference
 import tel.schich.idl.core.Module
 import tel.schich.idl.core.ModuleReference
-import tel.schich.idl.core.constraint.CollectionConstraint
 import tel.schich.idl.core.constraint.CollectionSizeRange
-import tel.schich.idl.core.constraint.CollectionValuesUnique
 
 data class CyclicReferenceError(
     override val module: ModuleReference,
@@ -28,19 +26,8 @@ object CyclicReferenceValidator : ModuleValidator {
             return definitionLookup[ref.name]?.let { Pair(moduleRef, it) }
         }
 
-        fun resolveMinimumSize(constraints: Set<CollectionConstraint>): Int {
-            var minimum = 0
-            for (constraint in constraints) {
-                when (constraint) {
-                    is CollectionSizeRange -> {
-                        if (constraint.minimum > minimum) {
-                           minimum = constraint.minimum
-                        }
-                    }
-                    is CollectionValuesUnique -> {}
-                }
-            }
-            return minimum
+        fun resolveMinimumSize(sizeRange: CollectionSizeRange?): ULong {
+            return sizeRange?.minimum ?: 0u
         }
 
         fun refWithModule(moduleRef: ModuleReference, ref: ModelReference): ModelReference {
@@ -61,21 +48,21 @@ object CyclicReferenceValidator : ModuleValidator {
                 is Model.Constant -> null
                 is Model.Enumeration -> null
                 is Model.HomogenousList -> {
-                    if (resolveMinimumSize(definition.constraints) > 0) {
+                    if (resolveMinimumSize(definition.sizeRange) > 0u) {
                         detectCycle(referencedModuleRef, definition.itemModel, path + ref)
                     } else {
                         null
                     }
                 }
                 is Model.HomogenousSet -> {
-                    if (resolveMinimumSize(definition.constraints) > 0) {
+                    if (resolveMinimumSize(definition.sizeRange) > 0u) {
                         detectCycle(referencedModuleRef, definition.itemModel, path + ref)
                     } else {
                         null
                     }
                 }
                 is Model.HomogenousMap -> {
-                    if (resolveMinimumSize(definition.constraints) > 0) {
+                    if (resolveMinimumSize(definition.sizeRange) > 0u) {
                         detectCycle(referencedModuleRef, definition.keyModel, path + ref)
                             ?: detectCycle(referencedModuleRef, definition.valueModel, path + ref)
                     } else {

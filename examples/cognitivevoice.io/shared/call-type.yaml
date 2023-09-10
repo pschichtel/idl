@@ -5,7 +5,8 @@ definitions:
   - metadata:
       name: CallType
     type: enum
-    dataType: string
+    dataType:
+      type: string
     entries:
       - metadata:
           name: INBOUND

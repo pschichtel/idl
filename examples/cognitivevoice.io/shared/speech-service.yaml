@@ -6,14 +6,11 @@ definitions:
       name: Phrase
       description: The confidence of the transcription result as a percentage from 0 to 100, or 100 in case of DTMF.
     type: primitive
-    dataType: string
-    constraints:
-      - type: gte
-        subject: LENGTH
-        value: 1
-      - type: lte
-        subject: LENGTH
-        value: 80
+    dataType:
+      type: string
+      lengthRange:
+        minimum: 1
+        maximum: 80
   - metadata:
       name: PhraseList
       description: |-
@@ -28,18 +25,19 @@ definitions:
     type: list
     itemModel:
       name: Phrase
-    constraints:
-      - type: size-range
-        minimum: 1
-        maximum: 100
+    sizeRange:
+      minimum: 1
+      maximum: 100
   - metadata:
       name: SynthesizerName
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: TranscriberName
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: SynthesizerSelection
       description: |-
@@ -62,9 +60,8 @@ definitions:
     type: list
     itemModel:
       name: SynthesizerName
-    constraints:
-      - type: size-range
-        minimum: 1
+    sizeRange:
+      minimum: 1
   - metadata:
       name: TranscriberSelection
       description: |-
@@ -86,6 +83,5 @@ definitions:
     type: list
     itemModel:
       name: TranscriberName
-    constraints:
-      - type: size-range
-        minimum: 1
+    sizeRange:
+      minimum: 1

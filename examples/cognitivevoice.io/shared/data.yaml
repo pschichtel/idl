@@ -5,11 +5,13 @@ definitions:
   - metadata:
       name: CustomHeaderName
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: CustomHeaderValue
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: CustomHeaderValues
     type: list
@@ -49,7 +51,8 @@ definitions:
   - metadata:
       name: UserToUserInformationValue
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: UserToUserInformation
       description: |-
@@ -62,11 +65,13 @@ definitions:
   - metadata:
       name: CustomDialogDataKey
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: CustomDialogDataValue
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: CustomDialogDataValues
     type: list

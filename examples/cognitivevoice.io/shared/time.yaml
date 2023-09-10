@@ -10,7 +10,9 @@ definitions:
             name: Wed Aug 29 2018 12:45:18
           example: 1535546718115
     type: primitive
-    dataType: int64
+    dataType:
+      type: integer
+      size: 64
   - metadata:
       name: Duration
       description: An amount of time, measured in milliseconds.
@@ -19,7 +21,10 @@ definitions:
             name: 1 minute
           example: 60000
     type: primitive
-    dataType: int32
+    dataType:
+      type: integer
+      size: 32
+      signed: false
   - metadata:
       name: InactivityDuration
       description: |-
@@ -41,4 +46,5 @@ definitions:
             name: 1 hour offset
           example: '+01:00'
     type: primitive
-    dataType: string
+    dataType:
+      type: string

@@ -5,17 +5,49 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
-import tel.schich.idl.core.constraint.HomogenousListConstraint
-import tel.schich.idl.core.constraint.HomogenousMapConstraint
-import tel.schich.idl.core.constraint.HomogenousSetConstraint
-import tel.schich.idl.core.constraint.PrimitiveConstraint
+import tel.schich.idl.core.constraint.CollectionSizeRange
+import tel.schich.idl.core.constraint.FloatValueRange
+import tel.schich.idl.core.constraint.IntegerValueRange
+import tel.schich.idl.core.constraint.StringLengthRange
 
 @Serializable
-@JvmInline
-value class PrimitiveDataType(
-    val name: String,
-)
+sealed interface PrimitiveDataType {
+    @Serializable
+    @SerialName("string")
+    data class String(
+        val lengthRange: StringLengthRange? = null,
+        @Serializable(with = RegexSerializer::class)
+        val regex: Regex? = null,
+        val startsWith: String? = null,
+        val endsWith: String? = null,
+    ) : PrimitiveDataType
+
+    @Serializable
+    @SerialName("integer")
+    data class Integer(
+        val size: UInt? = null,
+        val signed: Boolean = true,
+        val range: IntegerValueRange? = null,
+    ) : PrimitiveDataType
+
+    @Serializable
+    @SerialName("float")
+    data class Float(
+        val size: UInt? = null,
+        val signed: Boolean = true,
+        val range: FloatValueRange? = null,
+    ) : PrimitiveDataType
+
+    @Serializable
+    @SerialName("boolean")
+    data object Bool : PrimitiveDataType
+
+    @Serializable
+    @SerialName("custom")
+    data class Custom(val configuration: JsonElement = JsonNull) : PrimitiveDataType
+}
 
 @Serializable
 data class Example(
@@ -103,7 +135,6 @@ sealed interface Model : Definition {
     data class Primitive(
         override val metadata: ModelMetadata,
         val dataType: PrimitiveDataType,
-        val constraints: Set<PrimitiveConstraint> = emptySet(),
     ) : Model
 
     @Serializable
@@ -118,7 +149,8 @@ sealed interface Model : Definition {
     data class HomogenousList(
         override val metadata: ModelMetadata,
         val itemModel: ModelReference,
-        val constraints: Set<HomogenousListConstraint> = emptySet(),
+        val sizeRange: CollectionSizeRange? = null,
+        val uniqueValues: Boolean = false,
     ) : Model
 
     @Serializable
@@ -126,7 +158,7 @@ sealed interface Model : Definition {
     data class HomogenousSet(
         override val metadata: ModelMetadata,
         val itemModel: ModelReference,
-        val constraints: Set<HomogenousSetConstraint> = emptySet(),
+        val sizeRange: CollectionSizeRange? = null,
     ) : Model
 
     @Serializable
@@ -135,7 +167,8 @@ sealed interface Model : Definition {
         override val metadata: ModelMetadata,
         val keyModel: ModelReference,
         val valueModel: ModelReference,
-        val constraints: Set<HomogenousMapConstraint> = emptySet(),
+        val sizeRange: CollectionSizeRange? = null,
+        val uniqueValues: Boolean = false,
     ) : Model
 
     @Serializable

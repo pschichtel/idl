@@ -10,7 +10,8 @@ definitions:
             name: A valid token
           example: 09e59647-5c77-4c02-a1c5-7fb2b47060f1
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: ExternalCallId
       description: |-
@@ -21,14 +22,11 @@ definitions:
             name: A valid token
           example: someRandomId
     type: primitive
-    dataType: string
-    constraints:
-      - type: gte
-        subject: LENGTH
-        value: 1
-      - type: lte
-        subject: LENGTH
-        value: 50
+    dataType:
+      type: string
+      lengthRange:
+        minimum: 1
+        maximum: 50
   - metadata:
       name: ProfileToken
       description: The unique token of a speech service profile. You can find the token on the configuration page of the profile.
@@ -37,7 +35,8 @@ definitions:
             name: A valid token
           example: 09e59647-5c77-4c02-a1c5-7fb2b47060f1
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: IntegrationToken
       description: The unique token of a external service integration.
@@ -46,7 +45,8 @@ definitions:
             name: A valid token
           example: 09e59647-5c77-4c02-a1c5-7fb2b47060f1
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: ProjectToken
       description: The unique token of a project. You can find your token on your project configuration page.
@@ -55,7 +55,8 @@ definitions:
             name: A valid token
           example: 09e59647-5c77-4c02-a1c5-7fb2b47060f1
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: AccountToken
       description: The unique token of an account. You can find your token on your account configuration page.
@@ -64,7 +65,8 @@ definitions:
             name: A valid token
           example: 09e59647-5c77-4c02-a1c5-7fb2b47060f1
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: CustomerToken
       description: The unique token of a customer. You can find your token on your customer configuration page.
@@ -73,7 +75,8 @@ definitions:
             name: A valid token
           example: 09e59647-5c77-4c02-a1c5-7fb2b47060f1
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: ResellerToken
       description: The unique token of a reseller. You can find your token on your project configuration page.
@@ -82,7 +85,8 @@ definitions:
             name: A valid token
           example: 09e59647-5c77-4c02-a1c5-7fb2b47060f1
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: ProjectContext
       description: This object encapsulates the tokens of the organizational units relevant for most API calls.

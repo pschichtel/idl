@@ -10,7 +10,8 @@ definitions:
         - `CUSTOMER` is the human caller/callee
         - `AGENT` can be a virtual agent (bot), or a human agent during the assist use case
     type: enum
-    dataType: string
+    dataType:
+      type: string
     entries:
       - metadata:
           name: CUSTOMER
@@ -22,6 +23,5 @@ definitions:
     type: set
     itemModel:
       name: Speaker
-    constraints:
-      - type: size-range
-        minimum: 1
+    sizeRange:
+      minimum: 1

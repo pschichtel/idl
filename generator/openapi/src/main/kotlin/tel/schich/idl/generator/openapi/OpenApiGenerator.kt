@@ -73,17 +73,29 @@ class OpenApiGenerator : JvmInProcessGenerator {
     }
 
     private fun primitiveType(dataType: PrimitiveDataType, metadata: Metadata): Pair<SchemaType?, TypeFormat?> {
-        val type = when (dataType.name) {
-            "int32",
-            "int64" -> SchemaType.INTEGER
-            "float32",
-            "float64" -> SchemaType.NUMBER
-            "boolean" -> SchemaType.BOOLEAN
-            "string" -> SchemaType.STRING
-            else -> null
+        val (schemaType, defaultFormat) = when (dataType) {
+            is PrimitiveDataType.Integer -> {
+                val size = dataType.size
+                when {
+                    size != null && size <= 32u -> Pair(SchemaType.INTEGER, "int32")
+                    size != null && size <= 64u -> Pair(SchemaType.INTEGER, "int64")
+                    else -> Pair(SchemaType.INTEGER, null)
+                }
+            }
+            is PrimitiveDataType.Float -> {
+                val size = dataType.size
+                when {
+                    size != null && size <= 32u -> Pair(SchemaType.NUMBER, "float")
+                    size != null && size <= 64u -> Pair(SchemaType.NUMBER, "double")
+                    else -> Pair(SchemaType.NUMBER, null)
+                }
+            }
+            is PrimitiveDataType.String -> Pair(SchemaType.STRING, null)
+            is PrimitiveDataType.Bool -> Pair(SchemaType.BOOLEAN, null)
+            is PrimitiveDataType.Custom -> Pair(null, null)
         }
-        val format = metadata.getAnnotation(PrimitiveFormatAnnotation)?.let(::TypeFormat)
-        return Pair(type, format)
+        val format = (metadata.getAnnotation(PrimitiveFormatAnnotation) ?: defaultFormat)?.let(::TypeFormat)
+        return Pair(schemaType, format)
     }
 
     private fun generateSchema(

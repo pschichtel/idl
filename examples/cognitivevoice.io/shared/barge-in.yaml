@@ -6,20 +6,24 @@ definitions:
       name: TriggeredBargeIn
       description: This flag is set to true if this message triggered barge-in and the bot was interrupted.
     type: primitive
-    dataType: boolean
+    dataType:
+      type: boolean
   - metadata:
       name: LegacyEnableBargeIn
       deprecated: true
     type: primitive
-    dataType: boolean
+    dataType:
+      type: boolean
   - metadata:
       name: EnableBargeInOnSpeech
     type: primitive
-    dataType: boolean
+    dataType:
+      type: boolean
   - metadata:
       name: EnableBargeInOnDtmf
     type: primitive
-    dataType: boolean
+    dataType:
+      type: boolean
   - metadata:
       name: AdvancedBargeInOptions
       description: |-

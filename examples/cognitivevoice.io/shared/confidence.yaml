@@ -8,9 +8,10 @@ definitions:
         The confidence of the transcription result as a percentage from 0 to 100,
         or 100 in case of DTMF.
     type: primitive
-    dataType: int32
-    constraints:
-      - type: gte
-        value: 0
-      - type: lte
-        value: 100
+    dataType:
+      type: integer
+      size: 32
+      signed: false
+      range:
+        minimum: 0
+        maximum: 100

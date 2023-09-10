@@ -8,7 +8,8 @@ definitions:
         Overall health status for a project, determined by the health event with the worst status.
         `UNKNOWN` if no calls happened within the checked time period.
     type: enum
-    dataType: string
+    dataType:
+      type: string
     entries:
       - metadata:
           name: UNKNOWN

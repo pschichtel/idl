@@ -5,7 +5,8 @@ definitions:
   - metadata:
       name: DtmfTone
     type: enum
-    dataType: string
+    dataType:
+      type: string
     entries:
       - metadata:
           name: TONE_0

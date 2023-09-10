@@ -11,7 +11,8 @@ definitions:
             name: Example E.164 number from Karlsruhe, Germany
           example: "+49721123456789"
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: OutboundCallDestination
       description: |-
@@ -24,7 +25,8 @@ definitions:
             name: Example E.164 number from Karlsruhe, Germany
           example: "+49721123456789"
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: CustomerLocalParty
       description: |-
@@ -34,7 +36,8 @@ definitions:
             name: Example E.164 number from Karlsruhe, Germany
           example: "+49721123456789"
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: CustomerRemoteParty
       description: |-
@@ -44,7 +47,8 @@ definitions:
             name: Example E.164 number from Karlsruhe, Germany
           example: "+49721123456789"
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: LegacyCustomerRemoteParty
       description: |-
@@ -55,7 +59,8 @@ definitions:
             name: Example E.164 number from Karlsruhe, Germany
           example: "+49721123456789"
     type: primitive
-    dataType: string
+    dataType:
+      type: string
   - metadata:
       name: CallerId
       description: |-
@@ -68,5 +73,6 @@ definitions:
             name: Example E.164 number from Karlsruhe, Germany
           example: "+49721123456789"
     type: primitive
-    dataType: string
+    dataType:
+      type: string
 operations: [ ]
