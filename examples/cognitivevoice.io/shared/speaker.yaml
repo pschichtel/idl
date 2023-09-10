@@ -1,0 +1,27 @@
+metadata:
+  name: ai.vier.cvg.shared.speaker
+  version: "1"
+definitions:
+  - metadata:
+      name: Speaker
+      description: |-
+        The speaker describes a participant of the dialog.
+
+        - `CUSTOMER` is the human caller/callee
+        - `AGENT` can be a virtual agent (bot), or a human agent during the assist use case
+    type: enum
+    dataType: string
+    entries:
+      - metadata:
+          name: CUSTOMER
+      - metadata:
+          name: AGENT
+  - metadata:
+      name: SpeakerSelection
+      description: Which speaker(s) to select, by default both.
+    type: set
+    itemModel:
+      name: Speaker
+    constraints:
+      - type: size-range
+        minimum: 1
