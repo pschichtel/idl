@@ -100,18 +100,52 @@ object CyclicReferenceValidator : ModuleValidator {
                 }
                 is Model.Sum -> {
                     val constructors = definition.constructors
-                    if (constructors.size == 1) {
-                        detectCycle(referencedModuleRef, constructors.first(), path + ref)
-                    } else {
+                    val paths = constructors.map {
+                        detectCycle(referencedModuleRef, it, path + ref)
+                    }
+                    // if any constructor exists that can be satisfied, then the other cycles are fine.
+                    if (paths.any { it == null }) {
                         null
+                    } else {
+                        paths.firstOrNull()
                     }
                 }
                 is Model.TaggedSum -> {
                     val constructors = definition.constructors
-                    if (constructors.size == 1) {
-                        detectCycle(referencedModuleRef, constructors.first().model, path + ref)
-                    } else {
+                    val paths = constructors.map {
+                        detectCycle(referencedModuleRef, it.model, path + ref)
+                    }
+                    // if any constructor exists that can be satisfied, then the other cycles are fine.
+                    if (paths.any { it == null }) {
                         null
+                    } else {
+                        paths.firstOrNull()
+                    }
+                }
+                is Model.Adt -> {
+                    val commonPropertyCycle = definition.commonProperties.asSequence()
+                        .filter { it.default == null }
+                        .mapNotNull {
+                            detectCycle(referencedModuleRef, it.model, path + ref)
+                        }
+                        .firstOrNull()
+                    if (commonPropertyCycle != null) {
+                        commonPropertyCycle
+                    } else {
+                        val paths = definition.constructors.map { record ->
+                            record.properties.asSequence()
+                                .filter { it.default == null }
+                                .mapNotNull {
+                                    detectCycle(referencedModuleRef, it.model, path + ref)
+                                }
+                                .firstOrNull()
+                        }
+                        // if any constructor exists that can be satisfied, then the other cycles are fine.
+                        if (paths.any { it == null }) {
+                            null
+                        } else {
+                            paths.firstOrNull()
+                        }
                     }
                 }
                 is Model.Unknown -> null

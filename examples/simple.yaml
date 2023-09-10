@@ -34,4 +34,83 @@ definitions:
       deprecated: true
     dataType: int32
     value: 1
+  - type: tagged-sum
+    metadata:
+      name: tagged-sum-tuple
+      annotations:
+        tel.schich.idl.generator.openapi/tagged-sum-encoding: WRAPPER_TUPLE
+    tagDataType: int32
+    constructors:
+      - metadata:
+          name: ctor1
+        tag: 1
+        model:
+          name: record
+      - metadata:
+          name: ctor2
+        tag: 2
+        model:
+          name: record
+  - type: tagged-sum
+    metadata:
+      name: tagged-sum-record
+      annotations:
+        tel.schich.idl.generator.openapi/tagged-sum-encoding: WRAPPER_RECORD
+    tagDataType: int32
+    constructors:
+      - metadata:
+          name: ctor1
+        tag: 1
+        model:
+          name: record
+      - metadata:
+          name: ctor2
+        tag: 2
+        model:
+          name: record
+  - type: tagged-sum
+    metadata:
+      name: tagged-sum-property
+      annotations:
+        tel.schich.idl.generator.openapi/tagged-sum-encoding: RECORD_PROPERTY
+    tagDataType: int32
+    constructors:
+      - metadata:
+          name: ctor1
+        tag: 1
+        model:
+          name: record
+      - metadata:
+          name: ctor2
+        tag: 2
+        model:
+          name: record
+  - type: adt
+    metadata:
+      name: adt
+      description: test-adt
+    commonProperties:
+      - metadata:
+          name: timestamp
+        model:
+          name: test
+      - metadata:
+          name: timestamp
+        model:
+          name: test
+    constructors:
+      - metadata:
+          name: a
+        properties:
+          - metadata:
+              name: counter
+            model:
+              name: test
+      - metadata:
+          name: b
+        properties:
+          - metadata:
+              name: hits
+            model:
+              name: test
 operations: [ ]

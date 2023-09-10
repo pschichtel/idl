@@ -8,8 +8,16 @@ import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.path
 import tel.schich.idl.core.Module
+import tel.schich.idl.core.validation.CommonPropertyDuplicatesTypePropertyInAdtError
+import tel.schich.idl.core.validation.ConstructorPropertyDuplicatesCommonPropertyInAdtError
+import tel.schich.idl.core.validation.ConstructorPropertyDuplicatesTypePropertyInAdtError
 import tel.schich.idl.core.validation.CyclicReferenceError
+import tel.schich.idl.core.validation.DuplicateCommonPropertyInAdtError
+import tel.schich.idl.core.validation.DuplicateConstructorInAdtError
+import tel.schich.idl.core.validation.DuplicateConstructorInTaggedSumError
+import tel.schich.idl.core.validation.DuplicateConstructorPropertyInAdtError
 import tel.schich.idl.core.validation.DuplicateRecordPropertyError
+import tel.schich.idl.core.validation.DuplicateTagInTaggedSumError
 import tel.schich.idl.core.validation.DuplicatedDefinitionError
 import tel.schich.idl.core.validation.DuplicatedModuleError
 import tel.schich.idl.core.validation.InvalidModuleNameError
@@ -92,6 +100,30 @@ internal fun CliktCommand.printValidationErrors(validationErrors: Set<Validation
                 }
                 is DuplicateRecordPropertyError -> {
                     error("        Property ${error.property} of record ${error.definition} is defined multiple times at indices: ${error.indices.joinToString(", ")}")
+                }
+                is DuplicateConstructorInTaggedSumError -> {
+                    error("        Constructor ${error.constructor} has been defined multiple times in ${error.definition}: ${error.indices.joinToString(", ")}")
+                }
+                is DuplicateTagInTaggedSumError -> {
+                    error("        Tagged-Sum ${error.definition} has the tag value ${error.tagValue} for multiple constructors: ${error.constructors.joinToString(", ")}")
+                }
+                is CommonPropertyDuplicatesTypePropertyInAdtError -> {
+                    error("        ADT ${error.definition} has the type property ${error.typeProperty} additionally defined as common property")
+                }
+                is ConstructorPropertyDuplicatesCommonPropertyInAdtError -> {
+                    error("        Constructor ${error.constructor} of ADT ${error.definition} also defines the common property ${error.property}")
+                }
+                is ConstructorPropertyDuplicatesTypePropertyInAdtError -> {
+                    error("        Constructor ${error.constructor} of ADT ${error.definition} also defines the type property ${error.typeProperty}")
+                }
+                is DuplicateCommonPropertyInAdtError -> {
+                    error("        ADT ${error.definition} defines the common property ${error.property} multiple times: ${error.indices.joinToString(", ")}")
+                }
+                is DuplicateConstructorInAdtError -> {
+                    error("        ADT ${error.definition} defines the constructor ${error.constructor} multiple times: ${error.indices.joinToString(", ")}")
+                }
+                is DuplicateConstructorPropertyInAdtError -> {
+                    error("        Constructor ${error.constructor} of ADT ${error.definition} defines the property ${error.property} multiple times: ${error.indices.joinToString(", ")}")
                 }
             }
         }

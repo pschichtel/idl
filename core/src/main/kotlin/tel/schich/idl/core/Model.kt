@@ -46,7 +46,7 @@ value class Tag(
 
 @Serializable
 data class TaggedConstructor(
-    val metadata: ModelMetadata,
+    val metadata: BasicMetadata,
     val tag: Tag,
     val model: ModelReference,
 )
@@ -156,7 +156,18 @@ sealed interface Model : Definition {
     @SerialName("tagged-sum")
     data class TaggedSum(
         override val metadata: ModelMetadata,
-        val constructors: Set<TaggedConstructor>,
+        val tagDataType: PrimitiveDataType,
+        val constructors: List<TaggedConstructor>,
+    ) : Model
+
+    // TODO revamp naming of sum, tagged-sum and adt... ?
+    @Serializable
+    @SerialName("adt")
+    data class Adt(
+        override val metadata: ModelMetadata,
+        val typeProperty: String = "type",
+        val commonProperties: List<RecordProperty> = emptyList(),
+        val constructors: List<Record>,
     ) : Model
 
     @Serializable

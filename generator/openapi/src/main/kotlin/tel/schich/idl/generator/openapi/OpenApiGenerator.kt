@@ -4,6 +4,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
 import tel.schich.idl.core.Alias
 import tel.schich.idl.core.MODULE_NAME_SEPARATOR
 import tel.schich.idl.core.Module
@@ -15,6 +16,8 @@ import tel.schich.idl.core.Model
 import tel.schich.idl.core.ModelReference
 import tel.schich.idl.core.ModuleReference
 import tel.schich.idl.core.PrimitiveDataType
+import tel.schich.idl.core.RecordProperty
+import tel.schich.idl.core.TaggedConstructor
 import tel.schich.idl.core.generate.GenerationRequest
 import tel.schich.idl.core.generate.GenerationResult
 import tel.schich.idl.core.generate.getAnnotation
@@ -31,9 +34,18 @@ import kotlin.io.path.createDirectories
 class OpenApiAnnotation<T : Any>(name: String, parser: AnnotationParser<T>) :
     Annotation<T>(namespace = "tel.schich.idl.generator.openapi", name, parser)
 
+enum class TaggedSumEncoding {
+    RECORD_PROPERTY,
+    WRAPPER_RECORD,
+    WRAPPER_TUPLE,
+}
+
 val SpecVersionAnnotation = OpenApiAnnotation(name = "spec-version", ::valueAsIs)
 val SchemaNameAnnotation = OpenApiAnnotation(name = "schema-name", ::valueAsIs)
 val PrimitiveFormatAnnotation = OpenApiAnnotation(name = "primitive-format", ::valueAsIs)
+val TaggedSumEncodingAnnotation = OpenApiAnnotation(name = "tagged-sum-encoding", TaggedSumEncoding::valueOf)
+val TaggedSumTagFieldNameAnnotation = OpenApiAnnotation(name = "tagged-sum-tag-field", ::PropertyName)
+val TaggedSumValueFieldNameAnnotation = OpenApiAnnotation(name = "tagged-sum-value-field", ::PropertyName)
 
 class OpenApiGenerator : JvmInProcessGenerator {
     @OptIn(ExperimentalSerializationApi::class)
@@ -95,7 +107,11 @@ class OpenApiGenerator : JvmInProcessGenerator {
 
         fun oneOfWithNull(schema: Schema): Schema {
             return if (asNullable) {
-                SimpleSchema(oneOf = listOf(schema, NullSchema))
+                SimpleSchema(
+                    description = schema.description,
+                    deprecated = schema.deprecated,
+                    oneOf = listOf(schema, NullSchema),
+                )
             } else {
                 schema
             }
@@ -109,7 +125,53 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 URI(subjectPath.parent.relativize(relativeOutputFilePath(moduleRef, commonNamePrefix)).toString())
             }
             val reference = Reference(uri, JsonPointer.fromString("/components/schemas/${ref.name}"))
-            return ReferenceSchema(reference, overrideMetadata?.description)
+            return ReferenceSchema(reference, overrideMetadata?.description, overrideMetadata?.deprecated)
+        }
+
+        fun lookupDefinition(ref: ModelReference): Pair<Module, Definition> {
+            val referencedModule = ref.module?.let { moduleRef ->
+                // if validation has passed then this is safe (no dead refs, no duplicates).
+                modules.first { it.reference == moduleRef }
+            } ?: module
+            // if validation has passed then this is safe (no dead refs, no duplicates).
+            val referencedDefinition = referencedModule.definitions.first { it.metadata.name == ref.name }
+
+            return Pair(referencedModule, referencedDefinition)
+        }
+
+        fun generateRequiredProperties(properties: List<RecordProperty>): List<PropertyName> {
+            return properties.filter { it.default == null }.map {
+                PropertyName(it.metadata.name)
+            }
+        }
+
+        fun generateProperties(properties: List<RecordProperty>): Map<PropertyName, Schema> {
+            return properties.associate { property ->
+                val (referencedModule, referencedDefinition) = lookupDefinition(property.model)
+
+                val isCloneRequired = property.nullable
+                        || property.default != null
+                        || property.metadata.deprecated != referencedDefinition.metadata.deprecated
+                val schema = if (isCloneRequired) {
+                    generateSchema(
+                        subject,
+                        referencedDefinition,
+                        referencedModule,
+                        modules,
+                        commonNamePrefix,
+                        asNullable = property.nullable,
+                        withDefault = property.default?.value,
+                        property.metadata,
+                    )
+                } else {
+                    referenceToModel(
+                        module,
+                        property.model,
+                        property.metadata,
+                    )
+                }
+                Pair(PropertyName(property.metadata.name), schema)
+            }
         }
 
         val description = overrideMetadata?.description ?: definition.metadata.description
@@ -132,40 +194,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     description = description,
                     deprecated = deprecated,
                     default = withDefault,
-                    required = definition.properties.filter { it.default == null }.map {
-                        PropertyName(it.metadata.name)
-                    },
-                    properties = definition.properties.associate { property ->
-                        val referencedModule = property.model.module?.let { moduleRef ->
-                            // if validation has passed then this is safe (no dead refs, no duplicates).
-                            modules.first { it.reference == moduleRef }
-                        } ?: module
-                        // if validation has passed then this is safe (no dead refs, no duplicates).
-                        val referencedDefinition = referencedModule.definitions.first { it.metadata.name == property.model.name }
-
-                        val isCloneRequired = property.nullable
-                                || property.default != null
-                                || property.metadata.deprecated != referencedDefinition.metadata.deprecated
-                        val schema = if (isCloneRequired) {
-                            generateSchema(
-                                subject,
-                                referencedDefinition,
-                                referencedModule,
-                                modules,
-                                commonNamePrefix,
-                                asNullable = property.nullable,
-                                withDefault = property.default?.value,
-                                property.metadata,
-                            )
-                        } else {
-                            referenceToModel(
-                                module,
-                                property.model,
-                                property.metadata,
-                            )
-                        }
-                        Pair(PropertyName(property.metadata.name), schema)
-                    }
+                    required = generateRequiredProperties(definition.properties),
+                    properties = generateProperties(definition.properties)
                 )
             }
             is Model.HomogenousList -> {
@@ -203,13 +233,79 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     emptyList()
                 }
                 SimpleSchema(
+                    description = description,
+                    deprecated = deprecated,
                     oneOf = definition.constructors.map {
                         referenceToModel(module, it)
                     } + nullSchema,
                 )
             }
             is Model.TaggedSum -> {
-                TODO()
+                val encoding = definition.metadata.getAnnotation(TaggedSumEncodingAnnotation) ?: TaggedSumEncoding.WRAPPER_TUPLE
+                val tagFieldName = definition.metadata.getAnnotation(TaggedSumTagFieldNameAnnotation) ?: PropertyName("type")
+                val valueFieldName = definition.metadata.getAnnotation(TaggedSumValueFieldNameAnnotation) ?: PropertyName("value")
+
+                val nullSchema = if (asNullable) {
+                    listOf(NullSchema)
+                } else {
+                    emptyList()
+                }
+
+                fun createTagConstant(constructor: TaggedConstructor): Schema {
+                    val (type, format) = primitiveType(definition.tagDataType, definition.metadata)
+                    return SimpleSchema(type = type?.let(::setOf), format = format, const = constructor.tag.tag)
+                }
+
+                val schemas = when (encoding) {
+                    TaggedSumEncoding.RECORD_PROPERTY -> {
+                        definition.constructors.map {
+                            val (_, referencedDefinition) = lookupDefinition(it.model)
+                            if (referencedDefinition !is Model.Record) {
+                                error("The ${TaggedSumEncoding.RECORD_PROPERTY} encoding requires all constructors to be records!")
+                            }
+                            if (referencedDefinition.properties.any { property -> property.metadata.name == tagFieldName.name }) {
+                                error("The ${TaggedSumEncoding.RECORD_PROPERTY} requires a tag field name that does not exist in any of its constructors, $tagFieldName already exists in ${it.metadata.name}!")
+                            }
+                            SimpleSchema(
+                                allOf = listOf(
+                                    SimpleSchema(
+                                        type = setOf(SchemaType.OBJECT),
+                                        description = referencedDefinition.metadata.description,
+                                        deprecated = referencedDefinition.metadata.deprecated,
+                                        required = listOf(tagFieldName),
+                                        properties = mapOf(
+                                            tagFieldName to createTagConstant(it),
+                                        )
+                                    ),
+                                    referenceToModel(module, it.model),
+                                )
+                            )
+                        }
+                    }
+                    TaggedSumEncoding.WRAPPER_RECORD -> {
+                        definition.constructors.map {
+                            SimpleSchema(
+                                type = setOf(SchemaType.OBJECT),
+                                required = listOf(tagFieldName, valueFieldName),
+                                properties = mapOf(
+                                    tagFieldName to createTagConstant(it),
+                                    valueFieldName to referenceToModel(module, it.model),
+                                ),
+                            )
+                        }
+                    }
+                    TaggedSumEncoding.WRAPPER_TUPLE -> {
+                        definition.constructors.map {
+                            TupleSchema(prefixItems = listOf(createTagConstant(it), referenceToModel(module, it.model)))
+                        }
+                    }
+                }
+
+                SimpleSchema(
+                    description = description,
+                    deprecated = deprecated,
+                    oneOf = schemas + nullSchema,
+                )
             }
             is Model.Enumeration -> {
                 val (type, format) = primitiveType(definition.dataType, definition.metadata)
@@ -223,7 +319,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 )
             }
             is Alias -> oneOfWithNull(
-                referenceToModel(module, definition.aliasedModel)
+                referenceToModel(module, definition.aliasedModel, definition.metadata)
             )
             is Model.Unknown -> oneOfWithNull(
                 SimpleSchema(
@@ -233,7 +329,6 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 )
             )
             is Model.Product -> {
-                val size = definition.components.size.toBigInteger()
                 TupleSchema(
                     nullable = asNullable,
                     description = description,
@@ -242,8 +337,6 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     prefixItems = definition.components.map {
                         referenceToModel(module, it)
                     },
-                    minItems = size,
-                    maxItems = size,
                 )
             }
             is Model.Constant -> {
@@ -255,6 +348,32 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     deprecated = deprecated,
                     default = withDefault,
                     const = definition.value,
+                )
+            }
+
+            is Model.Adt -> {
+                val nullSchema = if (asNullable) {
+                    listOf(NullSchema)
+                } else {
+                    emptyList()
+                }
+
+                val schemas = definition.constructors.map { record ->
+                    val typePropertyName = PropertyName(definition.typeProperty)
+                    val typeSchema = SimpleSchema(type = setOf(SchemaType.STRING), const = JsonPrimitive(record.metadata.name))
+                    val properties = definition.commonProperties + record.properties
+                    SimpleSchema(
+                        type = setOf(SchemaType.OBJECT),
+                        description = description,
+                        deprecated = deprecated,
+                        required = listOf(typePropertyName) + generateRequiredProperties(properties),
+                        properties = mapOf(typePropertyName to typeSchema) + generateProperties(properties)
+                    )
+                }
+                SimpleSchema(
+                    description = description,
+                    deprecated = deprecated,
+                    oneOf = schemas + nullSchema
                 )
             }
         }

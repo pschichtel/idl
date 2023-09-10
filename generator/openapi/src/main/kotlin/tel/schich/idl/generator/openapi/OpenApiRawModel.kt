@@ -500,7 +500,10 @@ enum class SchemaType {
     NULL,
 }
 
-interface Schema
+interface Schema {
+    val description: String?
+    val deprecated: Boolean?
+}
 
 object SchemaSerializer : KSerializer<Schema> {
     override val descriptor: SerialDescriptor = object : SerialDescriptor by SimpleSchema.serializer().descriptor {
@@ -529,11 +532,11 @@ data class SimpleSchema(
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.1
     val title: String? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.1
-    val description: String? = null,
+    override val description: String? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.2
     val default: JsonElement? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.3
-    val deprecated: Boolean? = null,
+    override val deprecated: Boolean? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.4
     val readOnly: Boolean? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.4
@@ -625,11 +628,11 @@ data class TupleSchema(
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.1
     val title: String? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.1
-    val description: String? = null,
+    override val description: String? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.2
     val default: JsonElement? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.3
-    val deprecated: Boolean? = null,
+    override val deprecated: Boolean? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.4
     val readOnly: Boolean? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.4
@@ -643,12 +646,12 @@ data class TupleSchema(
     val prefixItems: List<Schema>,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.1.3
     val contains: Schema? = null,
-    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.1
-    val maxItems: BigInteger,
-    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.2
-    val minItems: BigInteger,
 ): Schema {
     val type: Set<SchemaType> = if (nullable) setOf(SchemaType.ARRAY, SchemaType.NULL) else setOf(SchemaType.ARRAY)
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.1
+    val maxItems: BigInteger = prefixItems.size.toBigInteger()
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-6.4.2
+    val minItems: BigInteger = prefixItems.size.toBigInteger()
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.1.2
     val items: Boolean = false
 }
@@ -658,11 +661,17 @@ data class ReferenceSchema(
     @SerialName("\$ref")
     val ref: Reference? = null,
     // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.1
-    val description: String? = null,
+    override val description: String? = null,
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.3
+    override val deprecated: Boolean? = null,
 ) : Schema
 
 @Serializable
 object NullSchema : Schema {
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.1
+    override val description: String? = null
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-9.3
+    override val deprecated: Boolean? = null
     val type: Set<SchemaType> = setOf(SchemaType.NULL)
 }
 
