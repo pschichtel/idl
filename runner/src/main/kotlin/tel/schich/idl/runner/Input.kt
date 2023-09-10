@@ -91,5 +91,9 @@ val Loaders = mapOf(
 fun loadModule(path: Path): Module {
     val loader = path.extension.ifEmpty { null }?.let { Loaders[it] } ?: JsonLoader
     val data = Files.readAllBytes(path)
-    return loader.load(data)
+    try {
+        return loader.load(data)
+    } catch (e: Exception) {
+        throw Exception("Failed to load module from $path!", e)
+    }
 }

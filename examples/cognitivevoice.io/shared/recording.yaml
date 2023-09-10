@@ -1,0 +1,106 @@
+metadata:
+  name: ai.vier.cvg.shared.recording
+  version: "1"
+definitions:
+  - metadata:
+      name: DialogPhase
+      description: |-
+        Overall health status for a project, determined by the health event with the worst status.
+        `UNKNOWN` if no calls happened within the checked time period.
+    type: enum
+    dataType:
+      type: string
+    entries:
+      - metadata:
+          name: BOT
+      - metadata:
+          name: ASSIST
+  - metadata:
+      name: RecordingId
+      description: |-
+        Recording IDs are arbitrary strings which can by supplied to start a dedicated recording in addition to
+        the main recording. The ID must be unique within each dialog phase.
+
+        If the recording ID is omitted, `"default"` is used.
+    type: primitive
+    dataType:
+      type: string
+      lengthRange:
+        minimum: 1
+        maximum: 50
+  - metadata:
+      name: RecordingStartParameters
+    type: record
+    properties:
+      - metadata:
+          name: dialogId
+        model:
+          module:
+            name: ai.vier.cvg.shared.tokens
+            version: '1'
+          name: DialogId
+      - metadata:
+          name: maxDuration
+          description: |-
+            If set, the recording is automatically terminated after the specified duration.
+
+            When a recording is terminated, it will be processed as soon as possible and can't be resumed.
+        nullable: true
+        default:
+          value: null
+        model:
+          module:
+            name: ai.vier.cvg.shared.time
+            version: '1'
+          name: Duration
+      - metadata:
+          name: recordingId
+        nullable: true
+        default:
+          value: null
+        model:
+          name: RecordingId
+      - metadata:
+          name: speakers
+        nullable: true
+        default:
+          value: null
+        model:
+          module:
+            name: ai.vier.cvg.shared.speaker
+            version: '1'
+          name: SpeakerSelection
+  - metadata:
+      name: RecordingStopParameters
+    type: record
+    properties:
+      - metadata:
+          name: dialogId
+        model:
+          module:
+            name: ai.vier.cvg.shared.tokens
+            version: '1'
+          name: DialogId
+      - metadata:
+          name: recordingId
+        nullable: true
+        default:
+          value: null
+        model:
+          name: RecordingId
+      - metadata:
+          name: terminate
+        default:
+          value: false
+        model:
+          name: TerminateRecordingOnStop
+  - metadata:
+      name: TerminateRecordingOnStop
+      description: |-
+        Whether the recording should be terminated, rather than just paused. If terminated, the recording will be
+        processed as soon as possible instead of deferring processing until the dialog has ended.
+        
+        A terminated recording can't be resumed again with `/recording/start`.
+    type: primitive
+    dataType:
+      type: boolean

@@ -13,6 +13,8 @@ import tel.schich.idl.core.constraint.IntegerValueRange
 import tel.schich.idl.core.constraint.StringLengthRange
 
 @Serializable
+@OptIn(ExperimentalSerializationApi::class)
+@JsonClassDiscriminator("type")
 sealed interface PrimitiveDataType {
     @Serializable
     @SerialName("string")
