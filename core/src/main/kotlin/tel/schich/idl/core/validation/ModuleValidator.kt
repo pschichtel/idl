@@ -19,6 +19,7 @@ private val validations: List<ModuleValidator> = listOf(
     DuplicateConstructorInAdtValidator,
     DuplicatePropertiesInAdtValidator,
     EmptyRecordValidator,
+    NonRecordModelReferenceAsRecordPropertySourceValidator,
 )
 
 fun validateModule(module: Module, allModules: List<Module>): ValidationResult {

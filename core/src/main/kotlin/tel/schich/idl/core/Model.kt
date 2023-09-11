@@ -114,6 +114,12 @@ data class RecordProperty(
     val default: DefaultValue? = null,
 )
 
+@Serializable
+data class AdtConstructor(
+    val metadata: BasicMetadata,
+    val properties: List<RecordProperty>,
+)
+
 @OptIn(ExperimentalSerializationApi::class)
 @JsonClassDiscriminator("type")
 @Serializable
@@ -143,6 +149,7 @@ sealed interface Model : Definition {
     @SerialName("record")
     data class Record(
         override val metadata: ModelMetadata,
+        val propertiesFrom: List<ModelReference> = emptyList(),
         val properties: List<RecordProperty>,
     ) : Model
 
@@ -202,7 +209,7 @@ sealed interface Model : Definition {
         override val metadata: ModelMetadata,
         val typeProperty: String = "type",
         val commonProperties: List<RecordProperty> = emptyList(),
-        val constructors: List<Record>,
+        val constructors: List<AdtConstructor>,
     ) : Model
 
     @Serializable

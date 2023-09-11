@@ -25,6 +25,8 @@ import tel.schich.idl.core.generate.InvalidModuleException
 import tel.schich.idl.core.generate.getAnnotation
 import tel.schich.idl.core.generate.invalidModule
 import tel.schich.idl.core.getAnnotation
+import tel.schich.idl.core.resolveModelReference
+import tel.schich.idl.core.resolveModuleReferenceOfType
 import tel.schich.idl.core.validation.GeneratorValidationError
 import tel.schich.idl.core.valueAsIs
 import tel.schich.idl.runner.command.JvmInProcessGenerator
@@ -102,6 +104,37 @@ class OpenApiGenerator : JvmInProcessGenerator {
         return Pair(schemaType, format)
     }
 
+    private
+    fun resolveForeignProperties(startModule: Module, startRecord: Model.Record, allModules: List<Module>): List<Pair<Module, RecordProperty>> {
+        val pending = ArrayDeque<Pair<Module, Model.Record>>()
+        val seen = mutableSetOf<Model.Record>()
+        val properties = mutableListOf<Pair<Module, RecordProperty>>()
+
+        fun next(module: Module, record: Model.Record) {
+            seen.add(record)
+            for (ref in record.propertiesFrom.asReversed()) {
+                resolveModuleReferenceOfType<Model.Record>(module, allModules, ref)?.let {
+                    if (it.second !in seen) {
+                        pending.addLast(it)
+                    }
+                }
+            }
+        }
+
+        next(startModule, startRecord)
+        while (pending.isNotEmpty()) {
+            val (currentModule, currentRecord) = pending.removeLast()
+
+            for (property in currentRecord.properties) {
+                properties.add(Pair(currentModule, property))
+            }
+
+            next(currentModule, currentRecord)
+        }
+
+        return properties
+    }
+
     private fun generateSchema(
         subject: Module,
         definition: Definition,
@@ -160,14 +193,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
         }
 
         fun lookupDefinition(ref: ModelReference): Pair<Module, Definition> {
-            val referencedModule = ref.module?.let { moduleRef ->
-                // if validation has passed then this is safe (no dead refs, no duplicates).
-                modules.first { it.reference == moduleRef }
-            } ?: module
             // if validation has passed then this is safe (no dead refs, no duplicates).
-            val referencedDefinition = referencedModule.definitions.first { it.metadata.name == ref.name }
-
-            return Pair(referencedModule, referencedDefinition)
+            return resolveModelReference(module, modules, ref)!!
         }
 
         fun generateRequiredProperties(properties: List<RecordProperty>): List<PropertyName> {
@@ -176,9 +203,9 @@ class OpenApiGenerator : JvmInProcessGenerator {
             }
         }
 
-        fun generateProperties(properties: List<RecordProperty>): Map<PropertyName, Schema> {
-            return properties.associate { property ->
-                val (referencedModule, referencedDefinition) = lookupDefinition(property.model)
+        fun generateProperties(properties: List<Pair<Module, RecordProperty>>): Map<PropertyName, Schema> {
+            return properties.associate { (module, property) ->
+                val (referencedModule, referencedDefinition) = resolveModelReference(module, modules, property.model)!!
 
                 val isCloneRequired = property.nullable
                         || property.default != null
@@ -286,6 +313,9 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 }
             }
             is Model.Record -> {
+
+                val foreignProperties = resolveForeignProperties(module, definition, modules)
+                val properties = foreignProperties + definition.properties.map { Pair(module, it) }
                 SimpleSchema(
                     type = typeWithNull(SchemaType.OBJECT),
                     description = description,
@@ -293,8 +323,8 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     example = examples.firstOrNull(),
                     examples = examples,
                     default = withDefault,
-                    required = generateRequiredProperties(definition.properties),
-                    properties = generateProperties(definition.properties)
+                    required = generateRequiredProperties(properties.map { it.second }),
+                    properties = generateProperties(properties)
                 )
             }
             is Model.HomogenousList -> {
@@ -485,12 +515,12 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 val schemas = definition.constructors.map { record ->
                     val typePropertyName = PropertyName(definition.typeProperty)
                     val typeSchema = SimpleSchema(type = setOf(SchemaType.STRING), const = JsonPrimitive(record.metadata.name))
-                    val properties = definition.commonProperties + record.properties
+                    val properties = (definition.commonProperties + record.properties).map { Pair(module, it) }
                     SimpleSchema(
                         type = setOf(SchemaType.OBJECT),
                         description = description,
                         deprecated = deprecated,
-                        required = listOf(typePropertyName) + generateRequiredProperties(properties),
+                        required = listOf(typePropertyName) + generateRequiredProperties(properties.map { it.second }),
                         properties = mapOf(typePropertyName to typeSchema) + generateProperties(properties)
                     )
                 }

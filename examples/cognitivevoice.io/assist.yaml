@@ -1,0 +1,143 @@
+metadata:
+  name: ai.vier.cvg.assist
+  version: "1"
+  description: |-
+    With the CVG Assist API you can use live transcriptions of customers to provide in-call agent assistance.
+
+    CVG Assist API requires some integration with contact center software to link ACD phone number, dialogID und agentID.
+    The call has to be bridged to the contact center head number of e.g. a hotline plus an extension.
+    The contact center then has to invoke `/assist/accept` with the phone number.
+
+    Integration with VIER Engage is available. Ask us if you are interested in integrating other contact center software.
+
+    CVG Assist API is part of the VIER Cognitive Voice Gateway.
+
+    For more details, see [our documentation](/docs/Essential-Use-Cases.html#agent-assistance).
+definitions:
+  - metadata:
+      name: AcceptAssistParameters
+    type: record
+    properties:
+      - metadata:
+          name: resellerToken
+        model:
+          module:
+            name: ai.vier.cvg.shared.tokens
+            version: '1'
+          name: ResellerToken
+      - metadata:
+          name: phoneNumber
+        model:
+          module:
+            name: ai.vier.cvg.shared.phone-number
+            version: '1'
+          name: E164Number
+      - metadata:
+          name: callbackUrl
+        model:
+          name: AssistCallbackUrl
+      - metadata:
+          name: authToken
+        nullable: true
+        default:
+          value: null
+        model:
+          name: AssistAuthToken
+  - metadata:
+      name: AssistCallbackUrl
+      description: The base URL for sending transcription events.
+      annotations:
+        tel.schich.idl.generator.openapi/primitive-format: uri
+    type: primitive
+    dataType:
+      type: string
+      lengthRange:
+        minimum: 1
+  - metadata:
+      name: AssistAuthToken
+      description: A token that is used to authenticate requests to the callback URL.
+    type: primitive
+    dataType:
+      type: string
+  - metadata:
+      name: TranscriptionStartParameters
+    type: record
+    properties:
+      - metadata:
+          name: resellerToken
+        model:
+          module:
+            name: ai.vier.cvg.shared.tokens
+            version: '1'
+          name: ResellerToken
+      - metadata:
+          name: dialogId
+        model:
+          module:
+            name: ai.vier.cvg.shared.tokens
+            version: '1'
+          name: DialogId
+      - metadata:
+          name: speakers
+        model:
+          module:
+            name: ai.vier.cvg.shared.speaker
+            version: '1'
+          name: SpeakerSelection
+  - metadata:
+      name: TranscriptionStopParameters
+    type: record
+    properties:
+      - metadata:
+          name: resellerToken
+        model:
+          module:
+            name: ai.vier.cvg.shared.tokens
+            version: '1'
+          name: ResellerToken
+      - metadata:
+          name: dialogId
+        model:
+          module:
+            name: ai.vier.cvg.shared.tokens
+            version: '1'
+          name: DialogId
+      - metadata:
+          name: speakers
+        model:
+          module:
+            name: ai.vier.cvg.shared.speaker
+            version: '1'
+          name: SpeakerSelection
+  - metadata:
+      name: AssistRecordingStartParameters
+    type: record
+    propertiesFrom:
+      - module:
+          name: ai.vier.cvg.shared.recording
+          version: '1'
+        name: RecordingStartParameters
+    properties:
+      - metadata:
+          name: resellerToken
+        model:
+          module:
+            name: ai.vier.cvg.shared.tokens
+            version: '1'
+          name: ResellerToken
+  - metadata:
+      name: AssistRecordingStopParameters
+    type: record
+    propertiesFrom:
+      - module:
+          name: ai.vier.cvg.shared.recording
+          version: '1'
+        name: RecordingStopParameters
+    properties:
+      - metadata:
+          name: resellerToken
+        model:
+          module:
+            name: ai.vier.cvg.shared.tokens
+            version: '1'
+          name: ResellerToken

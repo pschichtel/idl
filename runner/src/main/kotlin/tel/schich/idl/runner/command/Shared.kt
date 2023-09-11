@@ -7,7 +7,9 @@ import com.github.ajalt.clikt.parameters.options.OptionWithValues
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.path
+import tel.schich.idl.core.ModelReference
 import tel.schich.idl.core.Module
+import tel.schich.idl.core.ModuleReference
 import tel.schich.idl.core.validation.CommonPropertyDuplicatesTypePropertyInAdtError
 import tel.schich.idl.core.validation.ConstructorPropertyDuplicatesCommonPropertyInAdtError
 import tel.schich.idl.core.validation.ConstructorPropertyDuplicatesTypePropertyInAdtError
@@ -22,7 +24,10 @@ import tel.schich.idl.core.validation.DuplicatedDefinitionError
 import tel.schich.idl.core.validation.DuplicatedModuleError
 import tel.schich.idl.core.validation.EmptyRecordError
 import tel.schich.idl.core.validation.InvalidModuleNameError
+import tel.schich.idl.core.validation.NonRecordModelReferenceAsRecordPropertySourceError
 import tel.schich.idl.core.validation.NullDefaultInNonNullableRecordPropertyError
+import tel.schich.idl.core.validation.RecordPropertyOverlapsWithPropertySourcesError
+import tel.schich.idl.core.validation.RecordPropertySourcesOverlappingError
 import tel.schich.idl.core.validation.UndefinedDefinitionReferencedError
 import tel.schich.idl.core.validation.UndefinedModuleReferencedError
 import tel.schich.idl.runner.loadModule
@@ -64,6 +69,10 @@ internal fun CliktCommand.loadModules(sources: List<Path>): List<Module> {
 }
 
 internal fun CliktCommand.printValidationErrors(validationErrors: Set<ValidationError>) {
+    fun modelRef(module: ModuleReference, ref: ModelReference): String {
+        return "${ref.module ?: module}#${ref.name}"
+    }
+
     error("Validation errors:")
     for ((module, errors) in validationErrors.groupBy { it.module }) {
         error("    Module: $module")
@@ -75,15 +84,12 @@ internal fun CliktCommand.printValidationErrors(validationErrors: Set<Validation
                         error("            - $sourceFile")
                     }
                 }
-
                 is DuplicatedDefinitionError -> {
                     error("        There are multiple definitions named ${error.name}: ${error.indices.joinToString(", ")}")
                 }
-
                 is InvalidModuleNameError -> {
                     error("        The module name is invalid: ${error.reason}")
                 }
-
                 is UndefinedModuleReferencedError -> {
                     error("        An undefined module is referenced from definition ${error.definitionName}: ${error.referencedModule}")
                 }
@@ -128,6 +134,15 @@ internal fun CliktCommand.printValidationErrors(validationErrors: Set<Validation
                 }
                 is EmptyRecordError -> {
                     error("        Record ${error.definition} does not have any properties")
+                }
+                is NonRecordModelReferenceAsRecordPropertySourceError -> {
+                    error("        Record ${error.definition} tries to copy properties from the non-record definition ${modelRef(error.module, error.reference)}")
+                }
+                is RecordPropertyOverlapsWithPropertySourcesError -> {
+                    error("        Record ${error.definition} has properties that overlap with its property source ${modelRef(error.module, error.source)}: ${error.properties.joinToString(", ")}")
+                }
+                is RecordPropertySourcesOverlappingError -> {
+                    error("        Record ${error.definition} has overlapping property sources ${modelRef(error.module, error.sourceA)} and ${modelRef(error.module, error.sourceB)}, both define these properties: ${error.properties.joinToString(", ")}")
                 }
             }
         }
