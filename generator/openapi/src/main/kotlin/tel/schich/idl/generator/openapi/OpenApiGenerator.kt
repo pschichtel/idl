@@ -18,15 +18,15 @@ import tel.schich.idl.core.ModelReference
 import tel.schich.idl.core.ModuleReference
 import tel.schich.idl.core.PrimitiveDataType
 import tel.schich.idl.core.RecordProperty
-import tel.schich.idl.core.TaggedConstructor
+import tel.schich.idl.core.TaggedSumConstructor
 import tel.schich.idl.core.generate.GenerationRequest
 import tel.schich.idl.core.generate.GenerationResult
 import tel.schich.idl.core.generate.InvalidModuleException
 import tel.schich.idl.core.generate.getAnnotation
 import tel.schich.idl.core.generate.invalidModule
 import tel.schich.idl.core.getAnnotation
+import tel.schich.idl.core.resolveForeignProperties
 import tel.schich.idl.core.resolveModelReference
-import tel.schich.idl.core.resolveModuleReferenceOfType
 import tel.schich.idl.core.validation.GeneratorValidationError
 import tel.schich.idl.core.valueAsIs
 import tel.schich.idl.runner.command.JvmInProcessGenerator
@@ -102,37 +102,6 @@ class OpenApiGenerator : JvmInProcessGenerator {
         }
         val format = (metadata.getAnnotation(PrimitiveFormatAnnotation) ?: defaultFormat)?.let(::TypeFormat)
         return Pair(schemaType, format)
-    }
-
-    private
-    fun resolveForeignProperties(startModule: Module, startRecord: Model.Record, allModules: List<Module>): List<Pair<Module, RecordProperty>> {
-        val pending = ArrayDeque<Pair<Module, Model.Record>>()
-        val seen = mutableSetOf<Model.Record>()
-        val properties = mutableListOf<Pair<Module, RecordProperty>>()
-
-        fun next(module: Module, record: Model.Record) {
-            seen.add(record)
-            for (ref in record.propertiesFrom.asReversed()) {
-                resolveModuleReferenceOfType<Model.Record>(module, allModules, ref)?.let {
-                    if (it.second !in seen) {
-                        pending.addLast(it)
-                    }
-                }
-            }
-        }
-
-        next(startModule, startRecord)
-        while (pending.isNotEmpty()) {
-            val (currentModule, currentRecord) = pending.removeLast()
-
-            for (property in currentRecord.properties) {
-                properties.add(Pair(currentModule, property))
-            }
-
-            next(currentModule, currentRecord)
-        }
-
-        return properties
     }
 
     private fun generateSchema(
@@ -313,7 +282,6 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 }
             }
             is Model.Record -> {
-
                 val foreignProperties = resolveForeignProperties(module, definition, modules)
                 val properties = foreignProperties + definition.properties.map { Pair(module, it) }
                 SimpleSchema(
@@ -395,7 +363,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     emptyList()
                 }
 
-                fun createTagConstant(constructor: TaggedConstructor): Schema {
+                fun createTagConstant(constructor: TaggedSumConstructor): Schema {
                     val (type, format) = primitiveType(definition.tagDataType, definition.metadata)
                     return SimpleSchema(type = type?.let(::setOf), format = format, const = constructor.tag.tag)
                 }

@@ -88,7 +88,7 @@ object CyclicReferenceValidator : ModuleValidator {
                 is Model.Sum -> {
                     val constructors = definition.constructors
                     val paths = constructors.map {
-                        detectCycle(referencedModuleRef, it, path + ref)
+                        detectCycle(referencedModuleRef, it.model, path + ref)
                     }
                     // if any constructor exists that can be satisfied, then the other cycles are fine.
                     if (paths.any { it == null }) {

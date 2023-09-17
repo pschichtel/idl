@@ -12,7 +12,10 @@ definitions:
     metadata:
       name: untagged-sum
     constructors:
-      - name: test
+      - metadata:
+          name: name
+        model:
+          name: test
   - type: product
     metadata:
       name: product

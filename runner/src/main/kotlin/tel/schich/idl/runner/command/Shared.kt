@@ -16,6 +16,7 @@ import tel.schich.idl.core.validation.ConstructorPropertyDuplicatesTypePropertyI
 import tel.schich.idl.core.validation.CyclicReferenceError
 import tel.schich.idl.core.validation.DuplicateCommonPropertyInAdtError
 import tel.schich.idl.core.validation.DuplicateConstructorInAdtError
+import tel.schich.idl.core.validation.DuplicateConstructorInSumError
 import tel.schich.idl.core.validation.DuplicateConstructorInTaggedSumError
 import tel.schich.idl.core.validation.DuplicateConstructorPropertyInAdtError
 import tel.schich.idl.core.validation.DuplicateRecordPropertyError
@@ -108,8 +109,11 @@ internal fun CliktCommand.printValidationErrors(validationErrors: Set<Validation
                 is DuplicateRecordPropertyError -> {
                     error("        Property ${error.property} of record ${error.definition} is defined multiple times at indices: ${error.indices.joinToString(", ")}")
                 }
+                is DuplicateConstructorInSumError -> {
+                    error("        Constructor ${error.constructor} has been defined multiple times in sum ${error.definition}: ${error.indices.joinToString(", ")}")
+                }
                 is DuplicateConstructorInTaggedSumError -> {
-                    error("        Constructor ${error.constructor} has been defined multiple times in ${error.definition}: ${error.indices.joinToString(", ")}")
+                    error("        Constructor ${error.constructor} has been defined multiple times in tagged sum ${error.definition}: ${error.indices.joinToString(", ")}")
                 }
                 is DuplicateTagInTaggedSumError -> {
                     error("        Tagged-Sum ${error.definition} has the tag value ${error.tagValue} for multiple constructors: ${error.constructors.joinToString(", ")}")

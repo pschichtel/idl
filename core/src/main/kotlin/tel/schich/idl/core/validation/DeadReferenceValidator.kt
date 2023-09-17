@@ -70,7 +70,7 @@ object DeadReferenceValidator : ModuleValidator {
                 is Model.Primitive -> emptyList()
                 is Model.Product -> definition.components.flatMap { validateReference(definition, it) }
                 is Model.Record -> definition.properties.flatMap { validateReference(definition, it.model) } + definition.propertiesFrom.flatMap { validateReference(definition, it) }
-                is Model.Sum -> definition.constructors.flatMap { validateReference(definition, it) }
+                is Model.Sum -> definition.constructors.flatMap { validateReference(definition, it.model) }
                 is Model.TaggedSum -> definition.constructors.flatMap { validateReference(definition, it.model) }
                 is Model.Adt -> definition.commonProperties.flatMap { validateReference(definition, it.model) } + definition.constructors.flatMap { constructor -> constructor.properties.flatMap { validateReference(definition, it.model) } }
                 is Model.Unknown -> emptyList()

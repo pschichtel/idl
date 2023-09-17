@@ -79,16 +79,22 @@ value class Tag(
 )
 
 @Serializable
-data class TaggedConstructor(
+data class TaggedSumConstructor(
     val metadata: BasicMetadata,
     val tag: Tag,
     val model: ModelReference,
 )
 
 @Serializable
+data class SumConstructor(
+    val metadata: BasicMetadata,
+    val model: ModelReference,
+)
+
+@Serializable
 data class EnumerationEntry(
     val metadata: BasicMetadata,
-    val value: JsonElement = JsonPrimitive(metadata.name),
+    val value: JsonPrimitive = JsonPrimitive(metadata.name),
 )
 
 @Serializable
@@ -135,7 +141,7 @@ sealed interface Model : Definition {
     data class Constant(
         override val metadata: ModelMetadata,
         val dataType: PrimitiveDataType,
-        val value: JsonElement,
+        val value: JsonPrimitive,
     ) : Model
 
     @Serializable
@@ -191,7 +197,7 @@ sealed interface Model : Definition {
     @SerialName("sum")
     data class Sum(
         override val metadata: ModelMetadata,
-        val constructors: Set<ModelReference>,
+        val constructors: List<SumConstructor>,
     ) : Model
 
     @Serializable
@@ -199,7 +205,7 @@ sealed interface Model : Definition {
     data class TaggedSum(
         override val metadata: ModelMetadata,
         val tagDataType: PrimitiveDataType,
-        val constructors: List<TaggedConstructor>,
+        val constructors: List<TaggedSumConstructor>,
     ) : Model
 
     // TODO revamp naming of sum, tagged-sum and adt... ?

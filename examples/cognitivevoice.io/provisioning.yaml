@@ -140,11 +140,17 @@ definitions:
       name: ProvisionCallRequestLanguage
     type: sum
     constructors:
-      - name: ProvisioningLanguageSelection
-      - module:
-          name: ai.vier.cvg.shared.language
-          version: '1'
-        name: Language
+      - metadata:
+          name: Selection
+        model:
+          name: ProvisioningLanguageSelection
+      - metadata:
+          name: Single
+        model:
+          module:
+            name: ai.vier.cvg.shared.language
+            version: '1'
+          name: Language
   - metadata:
       name: ProvisioningLanguageSelection
     type: record

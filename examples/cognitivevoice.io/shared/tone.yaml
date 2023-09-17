@@ -52,7 +52,11 @@ definitions:
         value: D
       - metadata:
           name: TONE_*
+          annotations:
+            tel.schich.idl.generator.kotlin/symbol-name: TONE_STAR
         value: '*'
       - metadata:
           name: TONE_#
+          annotations:
+            tel.schich.idl.generator.kotlin/symbol-name: TONE_POUND
         value: '#'

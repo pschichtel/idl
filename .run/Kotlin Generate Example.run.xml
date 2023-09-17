@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Kotlin Generate Example" type="JetRunConfigurationType">
+    <option name="MAIN_CLASS_NAME" value="tel.schich.idl.runner.MainKt" />
+    <module name="kotlin-idl.generator.kotlin.main" />
+    <option name="PROGRAM_PARAMETERS" value="generate-in-process --subject tel.schich.idl.example:1 --source examples/simple.yaml -o build/example/kotlin-output/simple tel.schich.idl.generator.kotlin.KotlinGenerator" />
+    <shortenClasspath name="NONE" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

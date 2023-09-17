@@ -14,7 +14,7 @@ private val validations: List<ModuleValidator> = listOf(
     CyclicReferenceValidator,
     NullDefaultInNonNullableRecordPropertyValidator,
     DuplicateRecordPropertyValidator,
-    DuplicateConstructorInTaggedSumValidator,
+    DuplicateConstructorInSumValidator,
     DuplicateTagInTaggedSumValidator,
     DuplicateConstructorInAdtValidator,
     DuplicatePropertiesInAdtValidator,

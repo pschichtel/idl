@@ -67,6 +67,12 @@ definitions:
       name: BargeInOptions
     type: sum
     constructors:
-      - name: AdvancedBargeInOptions
-      - name: LegacyEnableBargeIn
+      - metadata:
+          name: Advanced
+        model:
+          name: AdvancedBargeInOptions
+      - metadata:
+          name: Legacy
+        model:
+          name: LegacyEnableBargeIn
 operations: [ ]

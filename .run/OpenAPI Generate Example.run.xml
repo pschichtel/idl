@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Generate Example" type="JetRunConfigurationType">
+  <configuration default="false" name="OpenAPI Generate Example" type="JetRunConfigurationType">
     <option name="MAIN_CLASS_NAME" value="tel.schich.idl.runner.MainKt" />
     <module name="kotlin-idl.generator.openapi.main" />
     <option name="PROGRAM_PARAMETERS" value="generate-in-process --subject tel.schich.idl.example:1 --source examples/simple.yaml -o build/example/openapi-output/simple tel.schich.idl.generator.openapi.OpenApiGenerator" />
