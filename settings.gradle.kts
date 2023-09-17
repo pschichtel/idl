@@ -5,6 +5,7 @@ include(
     "core",
     "runner",
     ":generator:openapi",
+    ":generator:kotlin",
 )
 
 pluginManagement {

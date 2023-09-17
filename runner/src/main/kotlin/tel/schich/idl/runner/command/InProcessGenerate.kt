@@ -34,6 +34,10 @@ internal abstract class GenerateCommand(name: String) : CliktCommand(name = name
         val modules = loadModules(moduleSources)
         validate(modules)
 
+        if (modules.isEmpty()) {
+            error("No modules have been loaded!")
+        }
+
         echo("Modules loaded:")
         for (module in modules) {
             echo("  - ${module.reference}")
@@ -53,6 +57,10 @@ internal abstract class GenerateCommand(name: String) : CliktCommand(name = name
                     exit(1)
                 }
             }
+        }
+
+        if (subjects.isEmpty()) {
+            error("No modules have been selected for generation!")
         }
 
         val request = GenerationRequest(
