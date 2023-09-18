@@ -348,7 +348,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     example = examples.firstOrNull(),
                     examples = examples,
                     oneOf = definition.constructors.map {
-                        referenceToModel(module, it)
+                        referenceToModel(module, it.model)
                     } + nullSchema,
                 )
             }
