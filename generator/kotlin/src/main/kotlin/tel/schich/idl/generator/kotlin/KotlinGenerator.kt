@@ -12,6 +12,7 @@ import tel.schich.idl.core.Module
 import tel.schich.idl.core.ModuleReference
 import tel.schich.idl.core.generate.GenerationRequest
 import tel.schich.idl.core.generate.GenerationResult
+import tel.schich.idl.core.generate.invalidModule
 import tel.schich.idl.core.getAnnotation
 import tel.schich.idl.core.resolveForeignProperties
 import tel.schich.idl.core.resolveModelReference
@@ -24,10 +25,17 @@ import kotlin.io.path.createDirectories
 class KotlinAnnotation<T : Any>(name: String, parser: AnnotationParser<T>) :
     Annotation<T>(namespace = "tel.schich.idl.generator.kotlin", name, parser)
 
+enum class TaggedSumEncoding {
+    RECORD_PROPERTY,
+    WRAPPER_RECORD,
+}
+
 val PackageAnnotation = KotlinAnnotation("package", ::valueAsIs)
 val FileNameAnnotation = KotlinAnnotation("file-name", ::valueAsIs)
 val SymbolNameAnnotation = KotlinAnnotation("symbol-name", ::valueAsIs)
 val ValueFieldNameAnnotation = KotlinAnnotation("value-field-name", ::valueAsIs)
+val TaggedSumTagFieldNameAnnotation = KotlinAnnotation(name = "tagged-sum-tag-field", ::valueAsIs)
+val TaggedSumEncodingAnnotation = KotlinAnnotation(name = "tagged-sum-encoding", TaggedSumEncoding::valueOf)
 
 class KotlinGenerator : JvmInProcessGenerator {
 
@@ -313,36 +321,53 @@ class KotlinGenerator : JvmInProcessGenerator {
                             }
                         }
                         is Model.TaggedSum -> {
-                            // TODO this is so far identical to the untagged some and has no concept of tag encodings
+                            val encoding = definition.metadata.getAnnotation(TaggedSumEncodingAnnotation) ?: TaggedSumEncoding.WRAPPER_RECORD
+                            val tagFieldName = definition.metadata.getAnnotation(TaggedSumTagFieldNameAnnotation) ?: "type"
                             docs(definition.metadata)
                             indent()
                             append("sealed interface ${symbolName(name)}")
-                            block {
-                                var firstConstructor = true
-                                for (constructor in definition.constructors) {
-                                    if (!firstConstructor) {
-                                        append("\n")
+                            when (encoding) {
+                                TaggedSumEncoding.RECORD_PROPERTY -> {
+                                    // just validate here, constructor records will add the interface impl and annotation
+                                    for (constructor in definition.constructors) {
+                                        val (referencedModule, referencedDefinition) = resolveModelReference(subjectModule, modules, constructor.model)!!
+                                        if (referencedModule != subjectModule) {
+                                            invalidModule(subjectModule.reference, "The ${TaggedSumEncoding.RECORD_PROPERTY} encoding requires all constructors to be defined in the same module!")
+                                        }
+                                        if (referencedDefinition !is Model.Record) {
+                                            invalidModule(subjectModule.reference, "The ${TaggedSumEncoding.RECORD_PROPERTY} encoding requires all constructors to be records!")
+                                        }
+                                        if (referencedDefinition.properties.any { property -> property.metadata.name == tagFieldName }) {
+                                            invalidModule(subjectModule.reference, "The ${TaggedSumEncoding.RECORD_PROPERTY} requires a tag field name that does not exist in any of its constructors, $tagFieldName already exists in ${constructor.metadata.name}!")
+                                        }
                                     }
-                                    firstConstructor = false
-                                    val constructorName = constructor.metadata.getAnnotation(SymbolNameAnnotation)
-                                        ?: idiomaticClassName(constructor.metadata.name)
-                                    docs(constructor.metadata)
-                                    line {
-                                        append("data class ${symbolName(constructorName)}(")
-                                    }
-                                    indented {
-                                        val (referencedModule, referencedDefinition) = resolveModelReference(
-                                            subjectModule,
-                                            modules,
-                                            constructor.model
-                                        )!!
-                                        value(
-                                            valueFieldName(constructor.metadata),
-                                            getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata),
-                                        )
-                                    }
-                                    line {
-                                        append(") : ${symbolName(name)}")
+                                    append("\n")
+                                }
+                                TaggedSumEncoding.WRAPPER_RECORD -> {
+                                    block {
+                                        var firstConstructor = true
+                                        for (constructor in definition.constructors) {
+                                            if (!firstConstructor) {
+                                                append("\n")
+                                            }
+                                            firstConstructor = false
+                                            val constructorName = constructor.metadata.getAnnotation(SymbolNameAnnotation)
+                                                ?: idiomaticClassName(constructor.metadata.name)
+                                            docs(constructor.metadata)
+                                            line {
+                                                append("data class ${symbolName(constructorName)}(")
+                                                val (referencedModule, referencedDefinition) = resolveModelReference(
+                                                    subjectModule,
+                                                    modules,
+                                                    constructor.model
+                                                )!!
+                                                value(
+                                                    valueFieldName(definition.metadata),
+                                                    getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata),
+                                                )
+                                                append(") : ${symbolName(name)}")
+                                            }
+                                        }
                                     }
                                 }
                             }

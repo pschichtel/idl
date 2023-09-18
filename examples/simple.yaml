@@ -46,6 +46,7 @@ definitions:
       name: tagged-sum-tuple
       annotations:
         tel.schich.idl.generator.openapi/tagged-sum-encoding: WRAPPER_TUPLE
+        tel.schich.idl.generator.kotlin/tagged-sum-encoding: WRAPPER_RECORD
     tagDataType:
       type: integer
       size: 32
@@ -65,6 +66,7 @@ definitions:
       name: tagged-sum-record
       annotations:
         tel.schich.idl.generator.openapi/tagged-sum-encoding: WRAPPER_RECORD
+        tel.schich.idl.generator.kotlin/tagged-sum-encoding: WRAPPER_RECORD
     tagDataType:
       type: integer
       size: 32
@@ -84,6 +86,7 @@ definitions:
       name: tagged-sum-property
       annotations:
         tel.schich.idl.generator.openapi/tagged-sum-encoding: RECORD_PROPERTY
+        tel.schich.idl.generator.kotlin/tagged-sum-encoding: RECORD_PROPERTY
     tagDataType:
       type: integer
       size: 32
