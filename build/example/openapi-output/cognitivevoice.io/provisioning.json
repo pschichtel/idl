@@ -1,0 +1,288 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "ai.vier.cvg.provisioning",
+        "description": "The Provisioning API provides contact centers with a way to announce a call to CVG before the call is actually\ntransferred to CVG. With this announcement of the call, there are two major advantages over direct call resp.\ndirect call transfer:\n\n1. The CVG project (bot configuration, voice provider selection, audio configuration, ...) can be dynamically\nconfigured for the announced call via the Provisioning API.\n\n2. Between the announcement of the call and the actual transfer of the call to CVG, there is a short time window in\nwhich CVG already knows about the upcoming dialog. This time window can be used by the contact center to attach\ncustom data fields to the call via the Dialog API. These custom data fields can be used by the bot or other\ndownstream systems.\n\nIf you are just looking for a way to pass data about a call from your contact center to your bot, and you are using\nSIP telephony, then this also can be achieved by adding custom SIP headers (starting with `X-`) to the call.\nCVG passes these custom SIP headers to the bot during session initialization.",
+        "version": "1.0.0"
+    },
+    "servers": [
+    ],
+    "tags": [
+    ],
+    "security": [
+    ],
+    "paths": {
+    },
+    "components": {
+        "schemas": {
+            "ProvisionCallRequest": {
+                "type": [
+                    "object"
+                ],
+                "examples": [
+                ],
+                "properties": {
+                    "resellerToken": {
+                        "$ref": "shared/tokens.json#/components/schemas/ResellerToken",
+                        "deprecated": false
+                    },
+                    "projectToken": {
+                        "$ref": "shared/tokens.json#/components/schemas/ProjectToken",
+                        "deprecated": false
+                    },
+                    "callId": {
+                        "$ref": "shared/tokens.json#/components/schemas/ExternalCallId",
+                        "deprecated": false
+                    },
+                    "botURL": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "URL to the server that implements the Bot API.",
+                        "default": null,
+                        "example": "http://echo-bot:9090",
+                        "examples": [
+                            "http://echo-bot:9090"
+                        ],
+                        "format": "uri"
+                    },
+                    "botAccessToken": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "A bearer token that is used for calls to the Bot API.",
+                        "default": null,
+                        "examples": [
+                        ]
+                    },
+                    "botConfiguration": {
+                        "description": "Advanced configuration for the bot. Can contain arbitrary JSON data, including `null`.\nPlease consult the documentation of the bot you are using for the required format.",
+                        "oneOf": [
+                            {
+                                "description": "Advanced configuration for the bot. Can contain arbitrary JSON data, including `null`.\nPlease consult the documentation of the bot you are using for the required format.",
+                                "default": null,
+                                "examples": [
+                                ]
+                            },
+                            {
+                                "type": [
+                                    "null"
+                                ]
+                            }
+                        ]
+                    },
+                    "language": {
+                        "examples": [
+                        ],
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ProvisioningLanguageSelection"
+                            },
+                            {
+                                "$ref": "shared/language.json#/components/schemas/Language"
+                            },
+                            {
+                                "type": [
+                                    "null"
+                                ]
+                            }
+                        ]
+                    },
+                    "transcriberVendors": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "description": "This parameter is optional. If specified, it overrides the transcriber list from the project settings.\n\nA list of transcriber vendor names like `\"GOOGLE\"`. When using custom transcriber profiles,\nthe profile name is attached as a suffix separated by a dash, e.g. `\"GOOGLE-profile\"`.\nAlternatively, the profile token can be used directly (without the vendor name).\n\nThe first transcriber in the list has the highest priority. Additional transcribers\nare used as a fallback (in order) in case a service is currently unreachable.\n\nThe following transcriber vendors are currently available:\n\n  - `GOOGLE`\n  - `MICROSOFT`\n  - `IBM`\n  - `EML`",
+                        "default": null,
+                        "examples": [
+                        ],
+                        "items": {
+                            "$ref": "shared/speech-service.json#/components/schemas/TranscriberName"
+                        },
+                        "minItems": 1,
+                        "uniqueItems": false
+                    },
+                    "synthesizerVendors": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "description": "This parameter is optional. If specified, it overrides the synthesizer list from the project settings.\n\nA list of synthesizer vendor names like `\"GOOGLE\"`. When using custom synthesizer profiles,\nthe profile name is attached as a suffix separated by a dash, e.g. `\"GOOGLE-profile\"`.\nAlternatively, the profile token can be used directly (without the vendor name).\n\nThe first synthesizer in the list has the highest priority. Additional synthesizers\nare used as a fallback (in order) in case a service is currently unreachable.\n\nThe following synthesizer vendors are currently available:\n\n  - `GOOGLE`\n  - `MICROSOFT`\n  - `IBM`\n  - `AMAZON`\n  - `NUANCE`",
+                        "default": null,
+                        "examples": [
+                        ],
+                        "items": {
+                            "$ref": "shared/speech-service.json#/components/schemas/SynthesizerName"
+                        },
+                        "minItems": 1,
+                        "uniqueItems": false
+                    },
+                    "writeDialogData": {
+                        "type": [
+                            "boolean"
+                        ],
+                        "default": true,
+                        "examples": [
+                        ]
+                    },
+                    "inactivityTimeout": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "Duration after which the inactivity detection timeout occurs.\nThe value is in milliseconds.",
+                        "default": null,
+                        "example": 15000,
+                        "examples": [
+                            15000
+                        ],
+                        "format": "int32",
+                        "maximum": 20000,
+                        "minimum": 2000
+                    },
+                    "minimumNoiseLevel": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "Optional transcription parameter. A level in dB that a signal must\nsurpass to be considered at all.",
+                        "default": null,
+                        "example": -45,
+                        "examples": [
+                            -45
+                        ],
+                        "format": "int32",
+                        "maximum": -30,
+                        "minimum": -60
+                    },
+                    "utteranceTimeout": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "Optional transcription parameter. The time (milliseconds) of silence\nthat must occur after non-noise to complete an utterance.",
+                        "default": null,
+                        "example": 500,
+                        "examples": [
+                            500
+                        ],
+                        "format": "int32",
+                        "maximum": 1000,
+                        "minimum": 200
+                    }
+                },
+                "required": [
+                    "resellerToken",
+                    "projectToken",
+                    "callId"
+                ]
+            },
+            "ProvisionCallRequestLanguage": {
+                "examples": [
+                ],
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/ProvisioningLanguageSelection"
+                    },
+                    {
+                        "$ref": "shared/language.json#/components/schemas/Language"
+                    }
+                ]
+            },
+            "ProvisioningLanguageSelection": {
+                "type": [
+                    "object"
+                ],
+                "examples": [
+                ],
+                "properties": {
+                    "transcriber": {
+                        "$ref": "shared/language.json#/components/schemas/Language",
+                        "deprecated": false
+                    },
+                    "synthesizer": {
+                        "$ref": "shared/language.json#/components/schemas/Language",
+                        "deprecated": false
+                    }
+                },
+                "required": [
+                    "transcriber",
+                    "synthesizer"
+                ]
+            },
+            "EnabledDialogData": {
+                "type": [
+                    "boolean"
+                ],
+                "examples": [
+                ]
+            },
+            "ProvisionCallResponse": {
+                "examples": [
+                ],
+                "oneOf": [
+                    {
+                        "type": [
+                            "object"
+                        ],
+                        "properties": {
+                            "type": {
+                                "type": [
+                                    "string"
+                                ],
+                                "const": "Success"
+                            },
+                            "target": {
+                                "$ref": "shared/phone-number.json#/components/schemas/E164Number",
+                                "deprecated": false
+                            },
+                            "dialogId": {
+                                "$ref": "shared/tokens.json#/components/schemas/DialogId",
+                                "deprecated": false
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "target",
+                            "dialogId"
+                        ]
+                    },
+                    {
+                        "type": [
+                            "object"
+                        ],
+                        "properties": {
+                            "type": {
+                                "type": [
+                                    "string"
+                                ],
+                                "const": "Error"
+                            },
+                            "message": {
+                                "$ref": "#/components/schemas/ProvisionCallErrorMessage",
+                                "deprecated": false
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "message"
+                        ]
+                    }
+                ]
+            },
+            "ProvisionCallErrorMessage": {
+                "type": [
+                    "string"
+                ],
+                "description": "The message describing the error",
+                "examples": [
+                ]
+            }
+        },
+        "securitySchemes": {
+        }
+    }
+}

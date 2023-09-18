@@ -1,0 +1,319 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "tel.schich.idl.example"
+    },
+    "servers": [
+    ],
+    "tags": [
+    ],
+    "security": [
+    ],
+    "paths": {
+    },
+    "components": {
+        "schemas": {
+            "test": {
+                "type": [
+                    "integer"
+                ],
+                "examples": [
+                ],
+                "format": "int32"
+            },
+            "untagged-sum": {
+                "examples": [
+                ],
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/test"
+                    }
+                ]
+            },
+            "product": {
+                "description": "product",
+                "examples": [
+                ],
+                "prefixItems": [
+                    {
+                        "$ref": "#/components/schemas/untagged-sum"
+                    },
+                    {
+                        "$ref": "#/components/schemas/test"
+                    }
+                ],
+                "type": [
+                    "array"
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "items": false
+            },
+            "record": {
+                "type": [
+                    "object"
+                ],
+                "examples": [
+                ],
+                "properties": {
+                    "prop1": {
+                        "description": "override",
+                        "examples": [
+                        ],
+                        "prefixItems": [
+                            {
+                                "$ref": "#/components/schemas/untagged-sum"
+                            },
+                            {
+                                "$ref": "#/components/schemas/test"
+                            }
+                        ],
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "maxItems": 2,
+                        "minItems": 2,
+                        "items": false
+                    }
+                },
+                "required": [
+                    "prop1"
+                ]
+            },
+            "constant": {
+                "type": [
+                    "integer"
+                ],
+                "deprecated": true,
+                "examples": [
+                ],
+                "const": 1,
+                "format": "int32"
+            },
+            "tagged-sum-tuple": {
+                "examples": [
+                ],
+                "oneOf": [
+                    {
+                        "prefixItems": [
+                            {
+                                "type": [
+                                    "integer"
+                                ],
+                                "const": 1,
+                                "format": "int32"
+                            },
+                            {
+                                "$ref": "#/components/schemas/record"
+                            }
+                        ],
+                        "type": [
+                            "array"
+                        ],
+                        "maxItems": 2,
+                        "minItems": 2,
+                        "items": false
+                    },
+                    {
+                        "prefixItems": [
+                            {
+                                "type": [
+                                    "integer"
+                                ],
+                                "const": 2,
+                                "format": "int32"
+                            },
+                            {
+                                "$ref": "#/components/schemas/record"
+                            }
+                        ],
+                        "type": [
+                            "array"
+                        ],
+                        "maxItems": 2,
+                        "minItems": 2,
+                        "items": false
+                    }
+                ]
+            },
+            "tagged-sum-record": {
+                "examples": [
+                ],
+                "oneOf": [
+                    {
+                        "type": [
+                            "object"
+                        ],
+                        "properties": {
+                            "type": {
+                                "type": [
+                                    "integer"
+                                ],
+                                "const": 1,
+                                "format": "int32"
+                            },
+                            "value": {
+                                "$ref": "#/components/schemas/record"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "value"
+                        ]
+                    },
+                    {
+                        "type": [
+                            "object"
+                        ],
+                        "properties": {
+                            "type": {
+                                "type": [
+                                    "integer"
+                                ],
+                                "const": 2,
+                                "format": "int32"
+                            },
+                            "value": {
+                                "$ref": "#/components/schemas/record"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "value"
+                        ]
+                    }
+                ]
+            },
+            "tagged-sum-property": {
+                "examples": [
+                ],
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "type": [
+                                    "object"
+                                ],
+                                "deprecated": false,
+                                "properties": {
+                                    "type": {
+                                        "type": [
+                                            "integer"
+                                        ],
+                                        "const": 1,
+                                        "format": "int32"
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "$ref": "#/components/schemas/record"
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "type": [
+                                    "object"
+                                ],
+                                "deprecated": false,
+                                "properties": {
+                                    "type": {
+                                        "type": [
+                                            "integer"
+                                        ],
+                                        "const": 2,
+                                        "format": "int32"
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "$ref": "#/components/schemas/record"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "adt": {
+                "description": "test-adt",
+                "example": {
+                    "type": "a",
+                    "timestamp": 123,
+                    "counter": 1
+                },
+                "examples": [
+                    {
+                        "type": "a",
+                        "timestamp": 123,
+                        "counter": 1
+                    }
+                ],
+                "oneOf": [
+                    {
+                        "type": [
+                            "object"
+                        ],
+                        "description": "test-adt",
+                        "properties": {
+                            "type": {
+                                "type": [
+                                    "string"
+                                ],
+                                "const": "a"
+                            },
+                            "timestamp": {
+                                "$ref": "#/components/schemas/test",
+                                "deprecated": false
+                            },
+                            "counter": {
+                                "$ref": "#/components/schemas/test",
+                                "deprecated": false
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "timestamp",
+                            "counter"
+                        ]
+                    },
+                    {
+                        "type": [
+                            "object"
+                        ],
+                        "description": "test-adt",
+                        "properties": {
+                            "type": {
+                                "type": [
+                                    "string"
+                                ],
+                                "const": "b"
+                            },
+                            "timestamp": {
+                                "$ref": "#/components/schemas/test",
+                                "deprecated": false
+                            },
+                            "hits": {
+                                "$ref": "#/components/schemas/test",
+                                "deprecated": false
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "timestamp",
+                            "hits"
+                        ]
+                    }
+                ]
+            }
+        },
+        "securitySchemes": {
+        }
+    }
+}

@@ -1,0 +1,145 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "ai.vier.cvg.shared.recording",
+        "version": "1.0.0"
+    },
+    "servers": [
+    ],
+    "tags": [
+    ],
+    "security": [
+    ],
+    "paths": {
+    },
+    "components": {
+        "schemas": {
+            "DialogPhase": {
+                "type": [
+                    "string"
+                ],
+                "description": "Overall health status for a project, determined by the health event with the worst status.\n`UNKNOWN` if no calls happened within the checked time period.",
+                "examples": [
+                ],
+                "enum": [
+                    "BOT",
+                    "ASSIST"
+                ]
+            },
+            "RecordingId": {
+                "type": [
+                    "string"
+                ],
+                "description": "Recording IDs are arbitrary strings which can by supplied to start a dedicated recording in addition to\nthe main recording. The ID must be unique within each dialog phase.\n\nIf the recording ID is omitted, `\"default\"` is used.",
+                "examples": [
+                ],
+                "maxLength": 50,
+                "minLength": 1
+            },
+            "RecordingStartParameters": {
+                "type": [
+                    "object"
+                ],
+                "examples": [
+                ],
+                "properties": {
+                    "dialogId": {
+                        "$ref": "tokens.json#/components/schemas/DialogId",
+                        "deprecated": false
+                    },
+                    "maxDuration": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "If set, the recording is automatically terminated after the specified duration.\n\nWhen a recording is terminated, it will be processed as soon as possible and can't be resumed.",
+                        "default": null,
+                        "example": 60000,
+                        "examples": [
+                            60000
+                        ],
+                        "format": "int32",
+                        "minimum": 0
+                    },
+                    "recordingId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Recording IDs are arbitrary strings which can by supplied to start a dedicated recording in addition to\nthe main recording. The ID must be unique within each dialog phase.\n\nIf the recording ID is omitted, `\"default\"` is used.",
+                        "default": null,
+                        "examples": [
+                        ],
+                        "maxLength": 50,
+                        "minLength": 1
+                    },
+                    "speakers": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "description": "Which speaker(s) to select, by default both.",
+                        "default": null,
+                        "examples": [
+                        ],
+                        "items": {
+                            "$ref": "speaker.json#/components/schemas/Speaker"
+                        },
+                        "minItems": 1,
+                        "uniqueItems": true
+                    }
+                },
+                "required": [
+                    "dialogId"
+                ]
+            },
+            "RecordingStopParameters": {
+                "type": [
+                    "object"
+                ],
+                "examples": [
+                ],
+                "properties": {
+                    "dialogId": {
+                        "$ref": "tokens.json#/components/schemas/DialogId",
+                        "deprecated": false
+                    },
+                    "recordingId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Recording IDs are arbitrary strings which can by supplied to start a dedicated recording in addition to\nthe main recording. The ID must be unique within each dialog phase.\n\nIf the recording ID is omitted, `\"default\"` is used.",
+                        "default": null,
+                        "examples": [
+                        ],
+                        "maxLength": 50,
+                        "minLength": 1
+                    },
+                    "terminate": {
+                        "type": [
+                            "boolean"
+                        ],
+                        "description": "Whether the recording should be terminated, rather than just paused. If terminated, the recording will be\nprocessed as soon as possible instead of deferring processing until the dialog has ended.\n\nA terminated recording can't be resumed again with `/recording/start`.",
+                        "default": false,
+                        "examples": [
+                        ]
+                    }
+                },
+                "required": [
+                    "dialogId"
+                ]
+            },
+            "TerminateRecordingOnStop": {
+                "type": [
+                    "boolean"
+                ],
+                "description": "Whether the recording should be terminated, rather than just paused. If terminated, the recording will be\nprocessed as soon as possible instead of deferring processing until the dialog has ended.\n\nA terminated recording can't be resumed again with `/recording/start`.",
+                "examples": [
+                ]
+            }
+        },
+        "securitySchemes": {
+        }
+    }
+}

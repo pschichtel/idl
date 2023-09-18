@@ -1,0 +1,232 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "ai.vier.cvg.assist",
+        "description": "With the CVG Assist API you can use live transcriptions of customers to provide in-call agent assistance.\n\nCVG Assist API requires some integration with contact center software to link ACD phone number, dialogID und agentID.\nThe call has to be bridged to the contact center head number of e.g. a hotline plus an extension.\nThe contact center then has to invoke `/assist/accept` with the phone number.\n\nIntegration with VIER Engage is available. Ask us if you are interested in integrating other contact center software.\n\nCVG Assist API is part of the VIER Cognitive Voice Gateway.\n\nFor more details, see [our documentation](/docs/Essential-Use-Cases.html#agent-assistance).",
+        "version": "1.0.0"
+    },
+    "servers": [
+    ],
+    "tags": [
+    ],
+    "security": [
+    ],
+    "paths": {
+    },
+    "components": {
+        "schemas": {
+            "AcceptAssistParameters": {
+                "type": [
+                    "object"
+                ],
+                "examples": [
+                ],
+                "properties": {
+                    "resellerToken": {
+                        "$ref": "shared/tokens.json#/components/schemas/ResellerToken",
+                        "deprecated": false
+                    },
+                    "phoneNumber": {
+                        "$ref": "shared/phone-number.json#/components/schemas/E164Number",
+                        "deprecated": false
+                    },
+                    "callbackUrl": {
+                        "$ref": "#/components/schemas/AssistCallbackUrl",
+                        "deprecated": false
+                    },
+                    "authToken": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "A token that is used to authenticate requests to the callback URL.",
+                        "default": null,
+                        "examples": [
+                        ]
+                    }
+                },
+                "required": [
+                    "resellerToken",
+                    "phoneNumber",
+                    "callbackUrl"
+                ]
+            },
+            "AssistCallbackUrl": {
+                "type": [
+                    "string"
+                ],
+                "description": "The base URL for sending transcription events.",
+                "examples": [
+                ],
+                "format": "uri",
+                "minLength": 1
+            },
+            "AssistAuthToken": {
+                "type": [
+                    "string"
+                ],
+                "description": "A token that is used to authenticate requests to the callback URL.",
+                "examples": [
+                ]
+            },
+            "TranscriptionStartParameters": {
+                "type": [
+                    "object"
+                ],
+                "examples": [
+                ],
+                "properties": {
+                    "resellerToken": {
+                        "$ref": "shared/tokens.json#/components/schemas/ResellerToken",
+                        "deprecated": false
+                    },
+                    "dialogId": {
+                        "$ref": "shared/tokens.json#/components/schemas/DialogId",
+                        "deprecated": false
+                    },
+                    "speakers": {
+                        "$ref": "shared/speaker.json#/components/schemas/SpeakerSelection",
+                        "deprecated": false
+                    }
+                },
+                "required": [
+                    "resellerToken",
+                    "dialogId",
+                    "speakers"
+                ]
+            },
+            "TranscriptionStopParameters": {
+                "type": [
+                    "object"
+                ],
+                "examples": [
+                ],
+                "properties": {
+                    "resellerToken": {
+                        "$ref": "shared/tokens.json#/components/schemas/ResellerToken",
+                        "deprecated": false
+                    },
+                    "dialogId": {
+                        "$ref": "shared/tokens.json#/components/schemas/DialogId",
+                        "deprecated": false
+                    },
+                    "speakers": {
+                        "$ref": "shared/speaker.json#/components/schemas/SpeakerSelection",
+                        "deprecated": false
+                    }
+                },
+                "required": [
+                    "resellerToken",
+                    "dialogId",
+                    "speakers"
+                ]
+            },
+            "AssistRecordingStartParameters": {
+                "type": [
+                    "object"
+                ],
+                "examples": [
+                ],
+                "properties": {
+                    "dialogId": {
+                        "$ref": "shared/tokens.json#/components/schemas/DialogId",
+                        "deprecated": false
+                    },
+                    "maxDuration": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "If set, the recording is automatically terminated after the specified duration.\n\nWhen a recording is terminated, it will be processed as soon as possible and can't be resumed.",
+                        "default": null,
+                        "example": 60000,
+                        "examples": [
+                            60000
+                        ],
+                        "format": "int32",
+                        "minimum": 0
+                    },
+                    "recordingId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Recording IDs are arbitrary strings which can by supplied to start a dedicated recording in addition to\nthe main recording. The ID must be unique within each dialog phase.\n\nIf the recording ID is omitted, `\"default\"` is used.",
+                        "default": null,
+                        "examples": [
+                        ],
+                        "maxLength": 50,
+                        "minLength": 1
+                    },
+                    "speakers": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "description": "Which speaker(s) to select, by default both.",
+                        "default": null,
+                        "examples": [
+                        ],
+                        "items": {
+                            "$ref": "shared/speaker.json#/components/schemas/Speaker"
+                        },
+                        "minItems": 1,
+                        "uniqueItems": true
+                    },
+                    "resellerToken": {
+                        "$ref": "shared/tokens.json#/components/schemas/ResellerToken",
+                        "deprecated": false
+                    }
+                },
+                "required": [
+                    "dialogId",
+                    "resellerToken"
+                ]
+            },
+            "AssistRecordingStopParameters": {
+                "type": [
+                    "object"
+                ],
+                "examples": [
+                ],
+                "properties": {
+                    "dialogId": {
+                        "$ref": "shared/tokens.json#/components/schemas/DialogId",
+                        "deprecated": false
+                    },
+                    "recordingId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Recording IDs are arbitrary strings which can by supplied to start a dedicated recording in addition to\nthe main recording. The ID must be unique within each dialog phase.\n\nIf the recording ID is omitted, `\"default\"` is used.",
+                        "default": null,
+                        "examples": [
+                        ],
+                        "maxLength": 50,
+                        "minLength": 1
+                    },
+                    "terminate": {
+                        "type": [
+                            "boolean"
+                        ],
+                        "description": "Whether the recording should be terminated, rather than just paused. If terminated, the recording will be\nprocessed as soon as possible instead of deferring processing until the dialog has ended.\n\nA terminated recording can't be resumed again with `/recording/start`.",
+                        "default": false,
+                        "examples": [
+                        ]
+                    },
+                    "resellerToken": {
+                        "$ref": "shared/tokens.json#/components/schemas/ResellerToken",
+                        "deprecated": false
+                    }
+                },
+                "required": [
+                    "dialogId",
+                    "resellerToken"
+                ]
+            }
+        },
+        "securitySchemes": {
+        }
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "ai.vier.cvg.shared.google",
+        "version": "1.0.0"
+    },
+    "servers": [
+    ],
+    "tags": [
+    ],
+    "security": [
+    ],
+    "paths": {
+    },
+    "components": {
+        "schemas": {
+            "GoogleServiceAccount": {
+                "description": "A google service account as JSON",
+                "examples": [
+                ]
+            },
+            "GoogleInsightsServiceAccount": {
+                "$ref": "#/components/schemas/GoogleServiceAccount",
+                "description": "A service account with privileges to access Google Insights and Google Cloud Storage",
+                "deprecated": false,
+                "examples": [
+                ]
+            }
+        },
+        "securitySchemes": {
+        }
+    }
+}

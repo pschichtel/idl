@@ -1,0 +1,114 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "ai.vier.cvg.shared.barge-in",
+        "version": "1.0.0"
+    },
+    "servers": [
+    ],
+    "tags": [
+    ],
+    "security": [
+    ],
+    "paths": {
+    },
+    "components": {
+        "schemas": {
+            "TriggeredBargeIn": {
+                "type": [
+                    "boolean"
+                ],
+                "description": "This flag is set to true if this message triggered barge-in and the bot was interrupted.",
+                "examples": [
+                ]
+            },
+            "LegacyEnableBargeIn": {
+                "type": [
+                    "boolean"
+                ],
+                "deprecated": true,
+                "examples": [
+                ]
+            },
+            "EnableBargeInOnSpeech": {
+                "type": [
+                    "boolean"
+                ],
+                "examples": [
+                ]
+            },
+            "EnableBargeInOnDtmf": {
+                "type": [
+                    "boolean"
+                ],
+                "examples": [
+                ]
+            },
+            "AdvancedBargeInOptions": {
+                "type": [
+                    "object"
+                ],
+                "description": "By default, transcriptions made while the bot is 'talking' (synthesis or audio file playback) are ignored.\nHowever, if barge-in is enabled, the audio output is interrupted and the transcription result is sent to the bot.\n\nNote that this feature is currently fairly sensitive to background noise, in which case audio output may be\ninterrupted erroneously.",
+                "examples": [
+                ],
+                "properties": {
+                    "onSpeech": {
+                        "$ref": "#/components/schemas/EnableBargeInOnSpeech",
+                        "deprecated": false
+                    },
+                    "onDtmf": {
+                        "$ref": "#/components/schemas/EnableBargeInOnDtmf",
+                        "deprecated": false
+                    },
+                    "confidence": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "The confidence of the transcription result as a percentage from 0 to 100,\nor 100 in case of DTMF.",
+                        "default": null,
+                        "examples": [
+                        ],
+                        "format": "int32",
+                        "maximum": 100,
+                        "minimum": 0
+                    },
+                    "phraseList": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "description": "If a phrase list is given, transcription results only trigger barge-in if they match one of the phrases.\nA phrase must not contain more than 80 characters, and there must not be more than 100 phrases.\n\nA phrase \"matches\" if the transcription result fully contains it. Some notes about matching:\n  - matching is case insensitive\n  - matching ignores delimiters\n  - only whole words are matched\n  - phrases can be single words",
+                        "default": null,
+                        "examples": [
+                        ],
+                        "items": {
+                            "$ref": "speech-service.json#/components/schemas/Phrase"
+                        },
+                        "maxItems": 100,
+                        "minItems": 1,
+                        "uniqueItems": false
+                    }
+                },
+                "required": [
+                    "onSpeech",
+                    "onDtmf"
+                ]
+            },
+            "BargeInOptions": {
+                "examples": [
+                ],
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/AdvancedBargeInOptions"
+                    },
+                    {
+                        "$ref": "#/components/schemas/LegacyEnableBargeIn"
+                    }
+                ]
+            }
+        },
+        "securitySchemes": {
+        }
+    }
+}

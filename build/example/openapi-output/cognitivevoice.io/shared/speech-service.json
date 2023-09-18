@@ -1,0 +1,85 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "ai.vier.cvg.shared.speech-service",
+        "version": "1.0.0"
+    },
+    "servers": [
+    ],
+    "tags": [
+    ],
+    "security": [
+    ],
+    "paths": {
+    },
+    "components": {
+        "schemas": {
+            "Phrase": {
+                "type": [
+                    "string"
+                ],
+                "description": "The confidence of the transcription result as a percentage from 0 to 100, or 100 in case of DTMF.",
+                "examples": [
+                ],
+                "maxLength": 80,
+                "minLength": 1
+            },
+            "PhraseList": {
+                "type": [
+                    "array"
+                ],
+                "description": "If a phrase list is given, transcription results only trigger barge-in if they match one of the phrases.\nA phrase must not contain more than 80 characters, and there must not be more than 100 phrases.\n\nA phrase \"matches\" if the transcription result fully contains it. Some notes about matching:\n  - matching is case insensitive\n  - matching ignores delimiters\n  - only whole words are matched\n  - phrases can be single words",
+                "examples": [
+                ],
+                "items": {
+                    "$ref": "#/components/schemas/Phrase"
+                },
+                "maxItems": 100,
+                "minItems": 1,
+                "uniqueItems": false
+            },
+            "SynthesizerName": {
+                "type": [
+                    "string"
+                ],
+                "examples": [
+                ]
+            },
+            "TranscriberName": {
+                "type": [
+                    "string"
+                ],
+                "examples": [
+                ]
+            },
+            "SynthesizerSelection": {
+                "type": [
+                    "array"
+                ],
+                "description": "This parameter is optional. If specified, it overrides the synthesizer list from the project settings.\n\nA list of synthesizer vendor names like `\"GOOGLE\"`. When using custom synthesizer profiles,\nthe profile name is attached as a suffix separated by a dash, e.g. `\"GOOGLE-profile\"`.\nAlternatively, the profile token can be used directly (without the vendor name).\n\nThe first synthesizer in the list has the highest priority. Additional synthesizers\nare used as a fallback (in order) in case a service is currently unreachable.\n\nThe following synthesizer vendors are currently available:\n\n  - `GOOGLE`\n  - `MICROSOFT`\n  - `IBM`\n  - `AMAZON`\n  - `NUANCE`",
+                "examples": [
+                ],
+                "items": {
+                    "$ref": "#/components/schemas/SynthesizerName"
+                },
+                "minItems": 1,
+                "uniqueItems": false
+            },
+            "TranscriberSelection": {
+                "type": [
+                    "array"
+                ],
+                "description": "This parameter is optional. If specified, it overrides the transcriber list from the project settings.\n\nA list of transcriber vendor names like `\"GOOGLE\"`. When using custom transcriber profiles,\nthe profile name is attached as a suffix separated by a dash, e.g. `\"GOOGLE-profile\"`.\nAlternatively, the profile token can be used directly (without the vendor name).\n\nThe first transcriber in the list has the highest priority. Additional transcribers\nare used as a fallback (in order) in case a service is currently unreachable.\n\nThe following transcriber vendors are currently available:\n\n  - `GOOGLE`\n  - `MICROSOFT`\n  - `IBM`\n  - `EML`",
+                "examples": [
+                ],
+                "items": {
+                    "$ref": "#/components/schemas/TranscriberName"
+                },
+                "minItems": 1,
+                "uniqueItems": false
+            }
+        },
+        "securitySchemes": {
+        }
+    }
+}

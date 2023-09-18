@@ -1,0 +1,115 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "ai.vier.cvg.shared.project",
+        "version": "1.0.0"
+    },
+    "servers": [
+    ],
+    "tags": [
+    ],
+    "security": [
+    ],
+    "paths": {
+    },
+    "components": {
+        "schemas": {
+            "BotUrl": {
+                "type": [
+                    "string"
+                ],
+                "description": "URL to the server that implements the Bot API.",
+                "example": "http://echo-bot:9090",
+                "examples": [
+                    "http://echo-bot:9090"
+                ],
+                "format": "uri"
+            },
+            "BotToken": {
+                "type": [
+                    "string"
+                ],
+                "description": "A bearer token that is used for calls to the Bot API.",
+                "examples": [
+                ]
+            },
+            "BotConfiguration": {
+                "description": "Advanced configuration for the bot. Can contain arbitrary JSON data, including `null`.\nPlease consult the documentation of the bot you are using for the required format.",
+                "examples": [
+                ]
+            },
+            "InactivityTimeout": {
+                "type": [
+                    "integer"
+                ],
+                "description": "Duration after which the inactivity detection timeout occurs.\nThe value is in milliseconds.",
+                "example": 15000,
+                "examples": [
+                    15000
+                ],
+                "format": "int32",
+                "maximum": 20000,
+                "minimum": 2000
+            },
+            "MinimumNoiseLevel": {
+                "type": [
+                    "integer"
+                ],
+                "description": "Optional transcription parameter. A level in dB that a signal must\nsurpass to be considered at all.",
+                "example": -45,
+                "examples": [
+                    -45
+                ],
+                "format": "int32",
+                "maximum": -30,
+                "minimum": -60
+            },
+            "UtteranceTimeout": {
+                "type": [
+                    "integer"
+                ],
+                "description": "Optional transcription parameter. The time (milliseconds) of silence\nthat must occur after non-noise to complete an utterance.",
+                "example": 500,
+                "examples": [
+                    500
+                ],
+                "format": "int32",
+                "maximum": 1000,
+                "minimum": 200
+            },
+            "Callback": {
+                "type": [
+                    "string"
+                ],
+                "description": "The base URL against which API calls should be made, e.g. https://cognitivevoice.io/v1 for the\nproduction environment and https://stage.cognitivevoice.io/v1 for the staging environment.",
+                "examples": [
+                ],
+                "format": "uri"
+            },
+            "FeatureFlag": {
+                "type": [
+                    "string"
+                ],
+                "examples": [
+                ],
+                "enum": [
+                    "SIP_URI_IN_SESSION_REQUEST",
+                    "SIP_URI_PARAMS_AS_HEADERS"
+                ]
+            },
+            "FeatureFlagSet": {
+                "type": [
+                    "array"
+                ],
+                "examples": [
+                ],
+                "items": {
+                    "$ref": "#/components/schemas/FeatureFlag"
+                },
+                "uniqueItems": true
+            }
+        },
+        "securitySchemes": {
+        }
+    }
+}

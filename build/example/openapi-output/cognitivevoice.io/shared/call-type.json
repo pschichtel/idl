@@ -1,0 +1,33 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "ai.vier.cvg.shared.call-type",
+        "version": "1.0.0"
+    },
+    "servers": [
+    ],
+    "tags": [
+    ],
+    "security": [
+    ],
+    "paths": {
+    },
+    "components": {
+        "schemas": {
+            "CallType": {
+                "type": [
+                    "string"
+                ],
+                "examples": [
+                ],
+                "enum": [
+                    "INBOUND",
+                    "INBOUND_PROVISIONED",
+                    "OUTBOUND"
+                ]
+            }
+        },
+        "securitySchemes": {
+        }
+    }
+}

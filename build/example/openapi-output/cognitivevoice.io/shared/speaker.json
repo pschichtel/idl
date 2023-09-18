@@ -1,0 +1,46 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "ai.vier.cvg.shared.speaker",
+        "version": "1.0.0"
+    },
+    "servers": [
+    ],
+    "tags": [
+    ],
+    "security": [
+    ],
+    "paths": {
+    },
+    "components": {
+        "schemas": {
+            "Speaker": {
+                "type": [
+                    "string"
+                ],
+                "description": "The speaker describes a participant of the dialog.\n\n- `CUSTOMER` is the human caller/callee\n- `AGENT` can be a virtual agent (bot), or a human agent during the assist use case",
+                "examples": [
+                ],
+                "enum": [
+                    "CUSTOMER",
+                    "AGENT"
+                ]
+            },
+            "SpeakerSelection": {
+                "type": [
+                    "array"
+                ],
+                "description": "Which speaker(s) to select, by default both.",
+                "examples": [
+                ],
+                "items": {
+                    "$ref": "#/components/schemas/Speaker"
+                },
+                "minItems": 1,
+                "uniqueItems": true
+            }
+        },
+        "securitySchemes": {
+        }
+    }
+}

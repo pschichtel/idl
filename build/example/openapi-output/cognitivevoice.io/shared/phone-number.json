@@ -1,0 +1,81 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "ai.vier.cvg.shared.phone-number",
+        "version": "1.0.0"
+    },
+    "servers": [
+    ],
+    "tags": [
+    ],
+    "security": [
+    ],
+    "paths": {
+    },
+    "components": {
+        "schemas": {
+            "E164Number": {
+                "type": [
+                    "string"
+                ],
+                "description": "A phone number in +E.164 format.",
+                "example": "+49721123456789",
+                "examples": [
+                    "+49721123456789"
+                ]
+            },
+            "OutboundCallDestination": {
+                "type": [
+                    "string"
+                ],
+                "description": "A phone number (+E.164 format) or a SIP URI (RFC 3261) for outgoing calls.\n\nNote that when using a SIP URI, the call is routed via public Internet,\nso there are no quality of service guarantees.",
+                "example": "+49721123456789",
+                "examples": [
+                    "+49721123456789"
+                ]
+            },
+            "CustomerLocalParty": {
+                "type": [
+                    "string"
+                ],
+                "description": "A phone number (+E.164 format) or a SIP URI (RFC 3261) of the callee (inbound) or caller (outbound).",
+                "example": "+49721123456789",
+                "examples": [
+                    "+49721123456789"
+                ]
+            },
+            "CustomerRemoteParty": {
+                "type": [
+                    "string"
+                ],
+                "description": "A phone number (+E.164 format) or a SIP URI (RFC 3261) of the caller (inbound) or callee (outbound).",
+                "example": "+49721123456789",
+                "examples": [
+                    "+49721123456789"
+                ]
+            },
+            "LegacyCustomerRemoteParty": {
+                "type": [
+                    "string"
+                ],
+                "description": "A phone number (+E.164 format) of the caller (inbound) or callee (outbound).\nIf the number is unknown / suppressed, this is an empty string (`\"\"`).",
+                "example": "+49721123456789",
+                "examples": [
+                    "+49721123456789"
+                ]
+            },
+            "CallerId": {
+                "type": [
+                    "string"
+                ],
+                "description": "The number to display to the callee. This is a best-effort feature since we cannot guarantee that all\ngateways the traffic flows through will retain this information.\n\nSetting this value to `\"anonymous\"` will signal a suppressed number to the callee.",
+                "example": "+49721123456789",
+                "examples": [
+                    "+49721123456789"
+                ]
+            }
+        },
+        "securitySchemes": {
+        }
+    }
+}

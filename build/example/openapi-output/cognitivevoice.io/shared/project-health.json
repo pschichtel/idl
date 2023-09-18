@@ -1,0 +1,35 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "ai.vier.cvg.shared.project-health",
+        "version": "1.0.0"
+    },
+    "servers": [
+    ],
+    "tags": [
+    ],
+    "security": [
+    ],
+    "paths": {
+    },
+    "components": {
+        "schemas": {
+            "HealthStatus": {
+                "type": [
+                    "string"
+                ],
+                "description": "Overall health status for a project, determined by the health event with the worst status.\n`UNKNOWN` if no calls happened within the checked time period.",
+                "examples": [
+                ],
+                "enum": [
+                    "UNKNOWN",
+                    "OK",
+                    "WARNING",
+                    "CRITICAL"
+                ]
+            }
+        },
+        "securitySchemes": {
+        }
+    }
+}

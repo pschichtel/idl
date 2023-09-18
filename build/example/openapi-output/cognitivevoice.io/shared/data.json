@@ -1,0 +1,144 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "ai.vier.cvg.shared.data",
+        "version": "1.0.0"
+    },
+    "servers": [
+    ],
+    "tags": [
+    ],
+    "security": [
+    ],
+    "paths": {
+    },
+    "components": {
+        "schemas": {
+            "CustomHeaderName": {
+                "type": [
+                    "string"
+                ],
+                "examples": [
+                ]
+            },
+            "CustomHeaderValue": {
+                "type": [
+                    "string"
+                ],
+                "examples": [
+                ]
+            },
+            "CustomHeaderValues": {
+                "type": [
+                    "array"
+                ],
+                "examples": [
+                ],
+                "items": {
+                    "$ref": "#/components/schemas/CustomHeaderValue"
+                },
+                "uniqueItems": false
+            },
+            "CustomSipHeaders": {
+                "type": [
+                    "object"
+                ],
+                "description": "This object has a property for each custom SIP header. A header is considered a custom header if its name\nstarts with `X-`, no other header names are allowed. Header names are case-insensitive and thus unique in\nthis object. Each header has a list of header values as its value. The order of the header values per header\nis consistent with the order in which the headers appeared in the SIP message.\n\n**Notes**:\n * All header names will have their letter casing converted to lowercase.\n * The amount of data that can be transferred via SIP headers is *very* limited. Only 128 bytes of data will be\n   accepted. The User-to-User Information (UUI) header is also included in this limit.\n * Custom SIP headers are a best-effort API, any SIP proxy on the path to the system, that is supposed to read\n   the information, can manipulate or drop headers.",
+                "example": {
+                    "X-CustomHeader": [
+                        "some-value"
+                    ]
+                },
+                "examples": [
+                    {
+                        "X-CustomHeader": [
+                            "some-value"
+                        ]
+                    },
+                    {
+                        "X-ASecondCustomHeader": [
+                            "more values",
+                            "even more values"
+                        ]
+                    }
+                ],
+                "additionalProperties": {
+                    "$ref": "#/components/schemas/CustomHeaderValues"
+                }
+            },
+            "UserToUserInformationValue": {
+                "type": [
+                    "string"
+                ],
+                "examples": [
+                ]
+            },
+            "UserToUserInformation": {
+                "type": [
+                    "array"
+                ],
+                "description": "The User-to-User Information (UUI) header is a mechanism for transmitting custom data in a SIP message.\n\nCustom SIP headers and the UUI header combined must not exceed 128 bytes of data.",
+                "examples": [
+                ],
+                "items": {
+                    "$ref": "#/components/schemas/UserToUserInformationValue"
+                },
+                "uniqueItems": false
+            },
+            "CustomDialogDataKey": {
+                "type": [
+                    "string"
+                ],
+                "examples": [
+                ]
+            },
+            "CustomDialogDataValue": {
+                "type": [
+                    "string"
+                ],
+                "examples": [
+                ]
+            },
+            "CustomDialogDataValues": {
+                "type": [
+                    "array"
+                ],
+                "examples": [
+                ],
+                "items": {
+                    "$ref": "#/components/schemas/CustomHeaderValue"
+                },
+                "uniqueItems": false
+            },
+            "CustomDialogData": {
+                "type": [
+                    "object"
+                ],
+                "description": "Contains custom data that was attached to the dialog via the Dialog API before the session request.\nThis is only possible when using the Provisioning API, otherwise the map is always empty.\n",
+                "example": {
+                    "CustomKey": [
+                        "some-value"
+                    ]
+                },
+                "examples": [
+                    {
+                        "CustomKey": [
+                            "some-value"
+                        ]
+                    },
+                    {
+                        "ASecondCustomKey": [
+                            "more values",
+                            "even more values"
+                        ]
+                    }
+                ],
+                "additionalProperties": {
+                    "$ref": "#/components/schemas/CustomDialogDataValues"
+                }
+            }
+        },
+        "securitySchemes": {
+        }
+    }
+}

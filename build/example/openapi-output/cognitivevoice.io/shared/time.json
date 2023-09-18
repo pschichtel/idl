@@ -1,0 +1,61 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "ai.vier.cvg.shared.time",
+        "version": "1.0.0"
+    },
+    "servers": [
+    ],
+    "tags": [
+    ],
+    "security": [
+    ],
+    "paths": {
+    },
+    "components": {
+        "schemas": {
+            "Timestamp": {
+                "type": [
+                    "integer"
+                ],
+                "description": "An instant of time, measured in milliseconds since the epoch (1970-01-01) in UTC.",
+                "example": 1535546718115,
+                "examples": [
+                    1535546718115
+                ],
+                "format": "int64"
+            },
+            "Duration": {
+                "type": [
+                    "integer"
+                ],
+                "description": "An amount of time, measured in milliseconds.",
+                "example": 60000,
+                "examples": [
+                    60000
+                ],
+                "format": "int32",
+                "minimum": 0
+            },
+            "InactivityDuration": {
+                "$ref": "#/components/schemas/Duration",
+                "description": "The duration of the inactivity period in milliseconds.\nThe timestamp of the last activity in this call can be calculated with `timestamp - duration`.\n\nWhen an inactivity timeout triggers within a potential utterance, we can't yet know whether that utterance\nwill result in a successful transcription or if it was likely just background noise. To make sure\ninactivity events aren't sent in the former case, the events are delayed to the end of the utterance.\nAs a result, this duration may be longer than the inactivity timeout configured in the project settings.",
+                "deprecated": false,
+                "examples": [
+                ]
+            },
+            "Timezone": {
+                "type": [
+                    "string"
+                ],
+                "description": "A timezone name or time offset to UTC.",
+                "example": "+01:00",
+                "examples": [
+                    "+01:00"
+                ]
+            }
+        },
+        "securitySchemes": {
+        }
+    }
+}

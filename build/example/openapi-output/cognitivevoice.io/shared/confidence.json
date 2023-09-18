@@ -1,0 +1,32 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "ai.vier.cvg.shared.confidence",
+        "version": "1.0.0"
+    },
+    "servers": [
+    ],
+    "tags": [
+    ],
+    "security": [
+    ],
+    "paths": {
+    },
+    "components": {
+        "schemas": {
+            "Confidence": {
+                "type": [
+                    "integer"
+                ],
+                "description": "The confidence of the transcription result as a percentage from 0 to 100,\nor 100 in case of DTMF.",
+                "examples": [
+                ],
+                "format": "int32",
+                "maximum": 100,
+                "minimum": 0
+            }
+        },
+        "securitySchemes": {
+        }
+    }
+}
