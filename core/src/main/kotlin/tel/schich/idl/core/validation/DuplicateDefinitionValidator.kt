@@ -11,6 +11,7 @@ data class DuplicatedDefinitionError(
 
 object DuplicateDefinitionValidator : ModuleValidator {
     override fun validate(module: Module, allModules: List<Module>): ValidationResult {
+        // TODO compare definition names in normalized form (w.g. word-split + lowercase)
         val errors = module.definitions
             .asSequence()
             .map { it.metadata.name }

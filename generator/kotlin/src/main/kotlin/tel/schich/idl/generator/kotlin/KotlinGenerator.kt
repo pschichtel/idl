@@ -12,6 +12,7 @@ import tel.schich.idl.core.Module
 import tel.schich.idl.core.ModuleReference
 import tel.schich.idl.core.generate.GenerationRequest
 import tel.schich.idl.core.generate.GenerationResult
+import tel.schich.idl.core.generate.getAnnotation
 import tel.schich.idl.core.generate.invalidModule
 import tel.schich.idl.core.getAnnotation
 import tel.schich.idl.core.resolveForeignProperties
@@ -30,12 +31,24 @@ enum class TaggedSumEncoding {
     WRAPPER_RECORD,
 }
 
+enum class SerializationLibary {
+    KOTLINX_SERIALIZATION,
+}
+
+val SerializationLibraryAnnotation = KotlinAnnotation("serialization-library") {
+    when (it.lowercase()) {
+        "kotlinx.serialization" -> SerializationLibary.KOTLINX_SERIALIZATION
+        else -> error("Unknown serialization-library value $it")
+    }
+}
 val PackageAnnotation = KotlinAnnotation("package", ::valueAsIs)
 val FileNameAnnotation = KotlinAnnotation("file-name", ::valueAsIs)
 val SymbolNameAnnotation = KotlinAnnotation("symbol-name", ::valueAsIs)
 val ValueFieldNameAnnotation = KotlinAnnotation("value-field-name", ::valueAsIs)
-val TaggedSumTagFieldNameAnnotation = KotlinAnnotation(name = "tagged-sum-tag-field", ::valueAsIs)
+val DiscriminatorFieldNameAnnotation = KotlinAnnotation(name = "discriminator-field", ::valueAsIs)
+val DiscriminatorValueAnnotation = KotlinAnnotation(name = "discriminator-value", ::valueAsIs)
 val TaggedSumEncodingAnnotation = KotlinAnnotation(name = "tagged-sum-encoding", TaggedSumEncoding::valueOf)
+val UnknownRepresentationAnnotation = KotlinAnnotation(name = "unknown-representation", ::valueAsIs)
 
 class KotlinGenerator : JvmInProcessGenerator {
 
@@ -56,6 +69,10 @@ class KotlinGenerator : JvmInProcessGenerator {
         return metadata.getAnnotation(ValueFieldNameAnnotation) ?: "value"
     }
 
+    private fun discriminatorFieldName(metadata: Metadata): String {
+        return metadata.getAnnotation(DiscriminatorFieldNameAnnotation) ?: "type"
+    }
+
     private fun FileBuilder.docs(metadata: Metadata) {
         metadata.description?.let {
             docBlock(it)
@@ -67,7 +84,47 @@ class KotlinGenerator : JvmInProcessGenerator {
         return (value as? JsonPrimitive)?.let(::primitiveValue) ?: "null"
     }
 
+    private fun FileBuilder.serializableAnnotation(serializationLibrary: SerializationLibary?) {
+        if (serializationLibrary == SerializationLibary.KOTLINX_SERIALIZATION) {
+            line {
+                annotation("kotlinx.serialization.Serializable")
+            }
+        }
+    }
+
+    private fun FileBuilder.jsonClassDiscriminatorAnnotation(serializationLibrary: SerializationLibary?, discriminatorFieldName: String) {
+        if (serializationLibrary == SerializationLibary.KOTLINX_SERIALIZATION && discriminatorFieldName != "type") {
+            line {
+                annotation("kotlin.OptIn")
+                append("(${useImported("kotlinx.serialization.ExperimentalSerializationApi")}::class)")
+            }
+            line {
+                annotation("kotlinx.serialization.json.JsonClassDiscriminator")
+                append("(\"${discriminatorFieldName}\")")
+            }
+        }
+    }
+
+    private fun FileBuilder.serialNameAnnotation(serializationLibrary: SerializationLibary?, metadata: Metadata, value: String? = null) {
+        if (serializationLibrary == SerializationLibary.KOTLINX_SERIALIZATION) {
+            val serialName = metadata.getAnnotation(DiscriminatorValueAnnotation) ?: value ?: metadata.name
+            line {
+                annotation("kotlinx.serialization.SerialName")
+                append("(\"${serialName}\")")
+            }
+        }
+    }
+
+    private fun FileBuilder.contextualAnnotation(serializationLibrary: SerializationLibary?, referencedDefinition: Definition) {
+        if (serializationLibrary == SerializationLibary.KOTLINX_SERIALIZATION && (referencedDefinition is Model.Sum || referencedDefinition is Model.TaggedSum)) {
+            line {
+                annotation("kotlinx.serialization.Contextual")
+            }
+        }
+    }
+
     override fun generate(request: GenerationRequest): GenerationResult {
+        val serializationLibrary = request.getAnnotation(SerializationLibraryAnnotation)
         val modules = request.modules
         if (modules.isEmpty()) {
             error("No modules have been requested!")
@@ -90,6 +147,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                             val type = kotlinTypeFromDataType(definition.dataType)
 
                             docs(definition.metadata)
+                            serializableAnnotation(serializationLibrary)
                             valueClass(name, valueFieldName(definition.metadata), type)
                         }
                         is Model.HomogenousList -> {
@@ -97,6 +155,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                             val type = "${useImported("kotlin.collections.List")}<" + useImported(getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata)) + ">"
 
                             docs(definition.metadata)
+                            serializableAnnotation(serializationLibrary)
                             valueClass(name, valueFieldName(definition.metadata), type)
                         }
                         is Model.HomogenousSet -> {
@@ -104,6 +163,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                             val type = "${useImported("kotlin.collections.Set")}<" + useImported(getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata)) + ">"
 
                             docs(definition.metadata)
+                            serializableAnnotation(serializationLibrary)
                             valueClass(name, valueFieldName(definition.metadata), type)
                         }
                         is Model.HomogenousMap -> {
@@ -112,6 +172,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                             val type = "${useImported("kotlin.collections.Map")}<${useImported(getPackage(keyModule) + "." + definitionName(keyDef.metadata))}, ${useImported(getPackage(valueModule) + "." + definitionName(valueDef.metadata))}>"
 
                             docs(definition.metadata)
+                            serializableAnnotation(serializationLibrary)
                             valueClass(name, valueFieldName(definition.metadata), type)
                         }
                         is Model.Constant -> {
@@ -129,19 +190,27 @@ class KotlinGenerator : JvmInProcessGenerator {
                         }
                         is Model.Unknown -> {
                             docs(definition.metadata)
-                            typeAlias(name, "kotlin.Any")
+                            val type = definition.metadata.getAnnotation(UnknownRepresentationAnnotation) ?: "kotlin.Any"
+                            typeAlias(name, type)
                         }
                         is Model.Enumeration -> {
                             val valueType = kotlinTypeFromDataType(definition.dataType)
                             val valueFieldName = valueFieldName(definition.metadata)
 
                             docs(definition.metadata)
+                            serializableAnnotation(serializationLibrary)
                             indent()
-                            append("enum class ${symbolName(name)}(val $valueFieldName: ${useImported(valueType)})")
+                            append("enum class ${symbolName(name)}(")
+                            value(valueFieldName, valueType)
+                            append(")")
                             block {
                                 for (entry in definition.entries) {
                                     val value = entry.value
-                                    val entryName = entry.metadata.getAnnotation(SymbolNameAnnotation) ?: entry.metadata.name
+                                    val entryName = entry.metadata.getAnnotation(SymbolNameAnnotation)
+                                        ?: idiomaticEnumEntryName(entry.metadata.name)
+                                    docs(entry.metadata)
+                                    val stringValue = if (value.isString) value.content else null
+                                    serialNameAnnotation(serializationLibrary, entry.metadata, stringValue)
                                     line {
                                         append("${symbolName(entryName)}(${valueFieldName} = ${primitiveValue(value)}),")
                                     }
@@ -150,6 +219,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                         }
                         is Model.Product -> {
                             docs(definition.metadata)
+                            serializableAnnotation(serializationLibrary)
                             line {
                                 append("data class ${symbolName(name)}(")
                             }
@@ -160,6 +230,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                                         modules,
                                         component
                                     )!!
+                                    contextualAnnotation(serializationLibrary, referencedDefinition)
                                     line {
                                         value(
                                             tupleFieldName(i + 1),
@@ -175,6 +246,8 @@ class KotlinGenerator : JvmInProcessGenerator {
                         }
                         is Model.Adt -> {
                             docs(definition.metadata)
+                            jsonClassDiscriminatorAnnotation(serializationLibrary, discriminatorFieldName(definition.metadata))
+                            serializableAnnotation(serializationLibrary)
                             indent()
                             append("sealed interface ${symbolName(name)}")
                             block {
@@ -206,6 +279,8 @@ class KotlinGenerator : JvmInProcessGenerator {
                                     val constructorName = constructor.metadata.getAnnotation(SymbolNameAnnotation)
                                         ?: idiomaticClassName(constructor.metadata.name)
                                     docs(constructor.metadata)
+                                    serializableAnnotation(serializationLibrary)
+                                    serialNameAnnotation(serializationLibrary, constructor.metadata)
                                     line {
                                         append("data class ${symbolName(constructorName)}(")
                                     }
@@ -219,6 +294,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                                                 property.model
                                             )!!
                                             docs(property.metadata)
+                                            contextualAnnotation(serializationLibrary, referencedDefinition)
                                             line {
                                                 value(
                                                     propertyName,
@@ -237,6 +313,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                                                 property.model
                                             )!!
                                             docs(property.metadata)
+                                            contextualAnnotation(serializationLibrary, referencedDefinition)
                                             line {
                                                 value(
                                                     propertyName,
@@ -254,8 +331,10 @@ class KotlinGenerator : JvmInProcessGenerator {
                         }
                         is Model.Record -> {
                             docs(definition.metadata)
+                            serializableAnnotation(serializationLibrary)
+                            // TODO add @SerialName if used in tagged sum and implement interfaces accordingly
                             line {
-                                append("data class $name(")
+                                append("data class ${symbolName(name)}(")
                             }
                             val foreignProperties = resolveForeignProperties(subjectModule, definition, modules)
                             val properties = foreignProperties + definition.properties.map { Pair(subjectModule, it) }
@@ -269,6 +348,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                                         property.model
                                     )!!
                                     docs(definition.metadata)
+                                    contextualAnnotation(serializationLibrary, referencedDefinition)
                                     line {
                                         value(
                                             propertyName,
@@ -322,12 +402,16 @@ class KotlinGenerator : JvmInProcessGenerator {
                         }
                         is Model.TaggedSum -> {
                             val encoding = definition.metadata.getAnnotation(TaggedSumEncodingAnnotation) ?: TaggedSumEncoding.WRAPPER_RECORD
-                            val tagFieldName = definition.metadata.getAnnotation(TaggedSumTagFieldNameAnnotation) ?: "type"
-                            docs(definition.metadata)
-                            indent()
-                            append("sealed interface ${symbolName(name)}")
+                            val discriminatorFieldName = discriminatorFieldName(definition.metadata)
+
                             when (encoding) {
                                 TaggedSumEncoding.RECORD_PROPERTY -> {
+                                    docs(definition.metadata)
+                                    serializableAnnotation(serializationLibrary)
+                                    jsonClassDiscriminatorAnnotation(serializationLibrary, discriminatorFieldName)
+                                    line {
+                                        append("sealed interface ${symbolName(name)}")
+                                    }
                                     // just validate here, constructor records will add the interface impl and annotation
                                     for (constructor in definition.constructors) {
                                         val (referencedModule, referencedDefinition) = resolveModelReference(subjectModule, modules, constructor.model)!!
@@ -337,13 +421,16 @@ class KotlinGenerator : JvmInProcessGenerator {
                                         if (referencedDefinition !is Model.Record) {
                                             invalidModule(subjectModule.reference, "The ${TaggedSumEncoding.RECORD_PROPERTY} encoding requires all constructors to be records!")
                                         }
-                                        if (referencedDefinition.properties.any { property -> property.metadata.name == tagFieldName }) {
-                                            invalidModule(subjectModule.reference, "The ${TaggedSumEncoding.RECORD_PROPERTY} requires a tag field name that does not exist in any of its constructors, $tagFieldName already exists in ${constructor.metadata.name}!")
+                                        if (referencedDefinition.properties.any { property -> property.metadata.name == discriminatorFieldName }) {
+                                            invalidModule(subjectModule.reference, "The ${TaggedSumEncoding.RECORD_PROPERTY} requires a discriminator field name that does not exist in any of its constructors, $discriminatorFieldName already exists in ${constructor.metadata.name}!")
                                         }
                                     }
                                     append("\n")
                                 }
                                 TaggedSumEncoding.WRAPPER_RECORD -> {
+                                    docs(definition.metadata)
+                                    indent()
+                                    append("sealed interface ${symbolName(name)}")
                                     block {
                                         var firstConstructor = true
                                         for (constructor in definition.constructors) {

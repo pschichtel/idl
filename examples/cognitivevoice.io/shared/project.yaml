@@ -25,6 +25,8 @@ definitions:
       description: |-
         Advanced configuration for the bot. Can contain arbitrary JSON data, including `null`.
         Please consult the documentation of the bot you are using for the required format.
+      annotations:
+        tel.schich.idl.generator.kotlin/unknown-representation: kotlinx.serialization.json.JsonElement
     type: unknown
   - metadata:
       name: InactivityTimeout

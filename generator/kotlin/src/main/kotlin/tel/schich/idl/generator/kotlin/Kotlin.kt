@@ -67,6 +67,10 @@ fun idiomaticName(name: String): String {
     return words.first().lowercase() + words.drop(1).joinToString("") { it.lowercase().replaceFirstChar { c -> c.uppercase() } }
 }
 
+fun idiomaticEnumEntryName(name: String): String {
+    return splitIntoWords(name).joinToString("_") { it.uppercase() }
+}
+
 fun symbolName(s: String): String {
     if (s in hardKeywords) {
         return "`$s`"
