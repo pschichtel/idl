@@ -17,6 +17,7 @@ import tel.schich.idl.core.generate.invalidModule
 import tel.schich.idl.core.getAnnotation
 import tel.schich.idl.core.resolveForeignProperties
 import tel.schich.idl.core.resolveModelReference
+import tel.schich.idl.core.valueAsBoolean
 import tel.schich.idl.core.valueAsIs
 import tel.schich.idl.runner.command.JvmInProcessGenerator
 import java.io.File
@@ -48,7 +49,8 @@ val ValueFieldNameAnnotation = KotlinAnnotation("value-field-name", ::valueAsIs)
 val DiscriminatorFieldNameAnnotation = KotlinAnnotation(name = "discriminator-field", ::valueAsIs)
 val DiscriminatorValueAnnotation = KotlinAnnotation(name = "discriminator-value", ::valueAsIs)
 val TaggedSumEncodingAnnotation = KotlinAnnotation(name = "tagged-sum-encoding", TaggedSumEncoding::valueOf)
-val UnknownRepresentationAnnotation = KotlinAnnotation(name = "unknown-representation", ::valueAsIs)
+val RepresentAsAnnotation = KotlinAnnotation(name = "represent-as", ::valueAsIs)
+val NewTypeAnnotation = KotlinAnnotation(name = "new-type", ::valueAsBoolean)
 
 class KotlinGenerator : JvmInProcessGenerator {
 
@@ -141,39 +143,58 @@ class KotlinGenerator : JvmInProcessGenerator {
                 val fileName = definition.metadata.getAnnotation(FileNameAnnotation) ?: name
                 val filePath = modulePath.resolve("$fileName.kt")
 
+                fun FileBuilder.typeWrappingDefinition(type: String) {
+                    val representationType = definition.metadata.getAnnotation(RepresentAsAnnotation) ?: type
+                    val newType = definition.metadata.getAnnotation(NewTypeAnnotation) ?: true
+
+                    docs(definition.metadata)
+                    if (newType) {
+                        serializableAnnotation(serializationLibrary)
+                        valueClass(name, valueFieldName(definition.metadata), representationType)
+                    } else {
+                        typeAlias(name, representationType)
+                    }
+                }
+
+                fun FileBuilder.collectionDefinition(defaultCollectionType: String, types: List<String>) {
+                    val collectionType = definition.metadata.getAnnotation(RepresentAsAnnotation) ?: defaultCollectionType
+                    val typeSignature = types.joinToString(", ", transform = ::useImported)
+                    val type = "${useImported(collectionType)}<$typeSignature>"
+                    val newType = definition.metadata.getAnnotation(NewTypeAnnotation) ?: true
+
+                    docs(definition.metadata)
+                    if (newType) {
+                        serializableAnnotation(serializationLibrary)
+                        valueClass(name, valueFieldName(definition.metadata), type)
+                    } else {
+                        typeAlias(name, type)
+                    }
+                }
+
                 val code = buildFile(packageName) {
                     when (definition) {
                         is Model.Primitive -> {
-                            val type = kotlinTypeFromDataType(definition.dataType)
-
-                            docs(definition.metadata)
-                            serializableAnnotation(serializationLibrary)
-                            valueClass(name, valueFieldName(definition.metadata), type)
+                            typeWrappingDefinition(kotlinTypeFromDataType(definition.dataType))
                         }
                         is Model.HomogenousList -> {
                             val (referencedModule, referencedDefinition) = resolveModelReference(subjectModule, modules, definition.itemModel)!!
-                            val type = "${useImported("kotlin.collections.List")}<" + useImported(getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata)) + ">"
+                            val type = getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata)
 
-                            docs(definition.metadata)
-                            serializableAnnotation(serializationLibrary)
-                            valueClass(name, valueFieldName(definition.metadata), type)
+                            collectionDefinition(defaultCollectionType = "kotlin.collections.List", listOf(type))
                         }
                         is Model.HomogenousSet -> {
                             val (referencedModule, referencedDefinition) = resolveModelReference(subjectModule, modules, definition.itemModel)!!
-                            val type = "${useImported("kotlin.collections.Set")}<" + useImported(getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata)) + ">"
+                            val type = getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata)
 
-                            docs(definition.metadata)
-                            serializableAnnotation(serializationLibrary)
-                            valueClass(name, valueFieldName(definition.metadata), type)
+                            collectionDefinition(defaultCollectionType = "kotlin.collections.Set", listOf(type))
                         }
                         is Model.HomogenousMap -> {
                             val (keyModule, keyDef) = resolveModelReference(subjectModule, modules, definition.keyModel)!!
                             val (valueModule, valueDef) = resolveModelReference(subjectModule, modules, definition.valueModel)!!
-                            val type = "${useImported("kotlin.collections.Map")}<${useImported(getPackage(keyModule) + "." + definitionName(keyDef.metadata))}, ${useImported(getPackage(valueModule) + "." + definitionName(valueDef.metadata))}>"
+                            val keyType = getPackage(keyModule) + "." + definitionName(keyDef.metadata)
+                            val valueType = getPackage(valueModule) + "." + definitionName(valueDef.metadata)
 
-                            docs(definition.metadata)
-                            serializableAnnotation(serializationLibrary)
-                            valueClass(name, valueFieldName(definition.metadata), type)
+                            collectionDefinition(defaultCollectionType = "kotlin.collections.Map", listOf(keyType, valueType))
                         }
                         is Model.Constant -> {
                             val type = kotlinTypeFromDataType(definition.dataType)
@@ -185,13 +206,11 @@ class KotlinGenerator : JvmInProcessGenerator {
                         }
                         is Alias -> {
                             val (referencedModule, referencedDefinition) = resolveModelReference(subjectModule, modules, definition.aliasedModel)!!
-                            docs(definition.metadata)
-                            typeAlias(name, getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata))
+                            val type = getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata)
+                            typeWrappingDefinition(type)
                         }
                         is Model.Unknown -> {
-                            docs(definition.metadata)
-                            val type = definition.metadata.getAnnotation(UnknownRepresentationAnnotation) ?: "kotlin.Any"
-                            typeAlias(name, type)
+                            typeWrappingDefinition(type = "kotlin.Any")
                         }
                         is Model.Enumeration -> {
                             val valueType = kotlinTypeFromDataType(definition.dataType)

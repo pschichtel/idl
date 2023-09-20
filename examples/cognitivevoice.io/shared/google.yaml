@@ -6,7 +6,8 @@ definitions:
       name: GoogleServiceAccount
       description: A google service account as JSON
       annotations:
-        tel.schich.idl.generator.kotlin/unknown-representation: kotlinx.serialization.json.JsonElement
+        tel.schich.idl.generator.kotlin/new-type: 'false'
+        tel.schich.idl.generator.kotlin/represent-as: kotlinx.serialization.json.JsonElement
     type: unknown
   - metadata:
       name: GoogleInsightsServiceAccount

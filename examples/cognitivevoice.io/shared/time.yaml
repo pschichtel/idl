@@ -9,6 +9,9 @@ definitions:
         - metadata:
             name: Wed Aug 29 2018 12:45:18
           example: 1535546718115
+      annotations:
+        tel.schich.idl.generator.kotlin/new-type: 'false'
+        tel.schich.idl.generator.kotlin/represent-as: java.time.Instant
     type: primitive
     dataType:
       type: integer
@@ -20,6 +23,11 @@ definitions:
         - metadata:
             name: 1 minute
           example: 60000
+      annotations:
+        tel.schich.idl.generator.kotlin/new-type: 'false'
+        # TODO this breaks the generator, because it will end up as `typealias Duration = Duration`, which is obviously cyclic.
+        #      the useImported helper should be aware of symbols in scope.
+        # tel.schich.idl.generator.kotlin/represent-as: java.time.Duration
     type: primitive
     dataType:
       type: integer
@@ -35,6 +43,8 @@ definitions:
         will result in a successful transcription or if it was likely just background noise. To make sure
         inactivity events aren't sent in the former case, the events are delayed to the end of the utterance.
         As a result, this duration may be longer than the inactivity timeout configured in the project settings.
+      annotations:
+        tel.schich.idl.generator.kotlin/new-type: 'false'
     type: alias
     aliasedModel:
       name: Duration

@@ -7,6 +7,8 @@ definitions:
       description: |-
         The confidence of the transcription result as a percentage from 0 to 100,
         or 100 in case of DTMF.
+      annotations:
+        tel.schich.idl.generator.kotlin/new-type: 'false'
     type: primitive
     dataType:
       type: integer
