@@ -52,7 +52,7 @@ val DiscriminatorValueAnnotation = KotlinAnnotation(name = "discriminator-value"
 val TaggedSumEncodingAnnotation = KotlinAnnotation(name = "tagged-sum-encoding", valueFromJson<TaggedSumEncoding>())
 val RepresentAsAnnotation = KotlinAnnotation(name = "represent-as", ::valueAsString)
 val NewTypeAnnotation = KotlinAnnotation(name = "new-type", ::valueAsBoolean)
-val ModelSuffixAnnotation = KotlinAnnotation(name = "model-suffix", ::valueAsString)
+val ModelNameFormatAnnotation = KotlinAnnotation(name = "model-name-format", ::valueAsString)
 
 class KotlinGenerator : JvmInProcessGenerator {
 
@@ -132,11 +132,11 @@ class KotlinGenerator : JvmInProcessGenerator {
         val subjectModules = modules.filter { it.reference in request.subjects }
 
         fun definitionName(module: Module, metadata: Metadata): String {
-            val suffix = metadata.getAnnotation(ModelSuffixAnnotation)
-                ?: module.metadata.getAnnotation(ModelSuffixAnnotation)
-                ?: request.getAnnotation(ModelSuffixAnnotation)
-                ?: ""
-            return metadata.getAnnotation(SymbolNameAnnotation) ?: idiomaticClassName(metadata.name + suffix)
+            val format = metadata.getAnnotation(ModelNameFormatAnnotation)
+                ?: module.metadata.getAnnotation(ModelNameFormatAnnotation)
+                ?: request.getAnnotation(ModelNameFormatAnnotation)
+                ?: "%s"
+            return metadata.getAnnotation(SymbolNameAnnotation) ?: idiomaticClassName(format.format(metadata.name))
         }
 
         val generatedFiles = subjectModules.flatMap { subjectModule ->
