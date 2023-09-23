@@ -10,6 +10,7 @@ import tel.schich.idl.core.AnnotationParser
 import tel.schich.idl.core.Definition
 import tel.schich.idl.core.Metadata
 import tel.schich.idl.core.Model
+import tel.schich.idl.core.ModelReference
 import tel.schich.idl.core.Module
 import tel.schich.idl.core.ModuleReference
 import tel.schich.idl.core.generate.GenerationRequest
@@ -139,10 +140,19 @@ class KotlinGenerator : JvmInProcessGenerator {
             return metadata.getAnnotation(SymbolNameAnnotation) ?: idiomaticClassName(format.format(metadata.name))
         }
 
+        fun definitionType(module: Module, definition: Definition): String {
+            return getPackage(module) + "." + definitionName(module, definition.metadata)
+        }
+
         val generatedFiles = subjectModules.flatMap { subjectModule ->
             val packageName = getPackage(subjectModule)
             val modulePath = request.outputPath.resolve(packageName.replace('.', File.separatorChar))
             modulePath.createDirectories()
+
+            fun definitionType(modelReference: ModelReference): String {
+                val (referencedModule, referencedDefinition) = resolveModelReference(subjectModule, modules, modelReference)!!
+                return definitionType(referencedModule, referencedDefinition)
+            }
 
             subjectModule.definitions.map { definition ->
                 val name = definitionName(subjectModule, definition.metadata)
@@ -193,23 +203,16 @@ class KotlinGenerator : JvmInProcessGenerator {
                             typeWrappingDefinition(kotlinTypeFromDataType(definition.dataType))
                         }
                         is Model.HomogenousList -> {
-                            val (referencedModule, referencedDefinition) = resolveModelReference(subjectModule, modules, definition.itemModel)!!
-                            val type = getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata)
-
+                            val type = definitionType(definition.itemModel)
                             collectionDefinition(defaultCollectionType = "kotlin.collections.List", listOf(type))
                         }
                         is Model.HomogenousSet -> {
-                            val (referencedModule, referencedDefinition) = resolveModelReference(subjectModule, modules, definition.itemModel)!!
-                            val type = getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata)
-
+                            val type = definitionType(definition.itemModel)
                             collectionDefinition(defaultCollectionType = "kotlin.collections.Set", listOf(type))
                         }
                         is Model.HomogenousMap -> {
-                            val (keyModule, keyDef) = resolveModelReference(subjectModule, modules, definition.keyModel)!!
-                            val (valueModule, valueDef) = resolveModelReference(subjectModule, modules, definition.valueModel)!!
-                            val keyType = getPackage(keyModule) + "." + definitionName(keyModule, keyDef.metadata)
-                            val valueType = getPackage(valueModule) + "." + definitionName(valueModule, valueDef.metadata)
-
+                            val keyType = definitionType(definition.keyModel)
+                            val valueType = definitionType(definition.valueModel)
                             collectionDefinition(defaultCollectionType = "kotlin.collections.Map", listOf(keyType, valueType))
                         }
                         is Model.Constant -> {
@@ -221,9 +224,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                             }
                         }
                         is Alias -> {
-                            val (referencedModule, referencedDefinition) = resolveModelReference(subjectModule, modules, definition.aliasedModel)!!
-                            val type = getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata)
-                            typeWrappingDefinition(type)
+                            typeWrappingDefinition(definitionType(definition.aliasedModel))
                         }
                         is Model.Unknown -> {
                             typeWrappingDefinition(type = "kotlin.Any")
@@ -265,12 +266,10 @@ class KotlinGenerator : JvmInProcessGenerator {
                                         modules,
                                         component
                                     )!!
+                                    val type = definitionType(referencedModule, referencedDefinition)
                                     contextualAnnotation(serializationLibrary, referencedDefinition)
                                     line {
-                                        value(
-                                            tupleFieldName(i + 1),
-                                            getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata)
-                                        )
+                                        value(tupleFieldName(i + 1), type)
                                         append(",")
                                     }
                                 }
@@ -290,17 +289,10 @@ class KotlinGenerator : JvmInProcessGenerator {
                                     for (property in definition.commonProperties) {
                                         val propertyName = property.metadata.getAnnotation(SymbolNameAnnotation)
                                             ?: idiomaticName(property.metadata.name)
-                                        val (referencedModule, referencedDefinition) = resolveModelReference(
-                                            subjectModule,
-                                            modules,
-                                            property.model
-                                        )!!
+                                        val type = definitionType(property.model)
                                         docs(property.metadata)
                                         line {
-                                            value(
-                                                propertyName,
-                                                getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata)
-                                            )
+                                            value(propertyName, type)
                                         }
                                     }
                                     append("\n")
@@ -328,14 +320,11 @@ class KotlinGenerator : JvmInProcessGenerator {
                                                 modules,
                                                 property.model
                                             )!!
+                                            val type = definitionType(referencedModule, referencedDefinition)
                                             docs(property.metadata)
                                             contextualAnnotation(serializationLibrary, referencedDefinition)
                                             line {
-                                                value(
-                                                    propertyName,
-                                                    getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata),
-                                                    override = true,
-                                                )
+                                                value(propertyName, type, override = true)
                                                 append(",")
                                             }
                                         }
@@ -347,13 +336,11 @@ class KotlinGenerator : JvmInProcessGenerator {
                                                 modules,
                                                 property.model
                                             )!!
+                                            val type = definitionType(referencedModule, referencedDefinition)
                                             docs(property.metadata)
                                             contextualAnnotation(serializationLibrary, referencedDefinition)
                                             line {
-                                                value(
-                                                    propertyName,
-                                                    getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata),
-                                                )
+                                                value(propertyName, type)
                                                 append(",")
                                             }
                                         }
@@ -382,12 +369,13 @@ class KotlinGenerator : JvmInProcessGenerator {
                                         modules,
                                         property.model
                                     )!!
+                                    val type = definitionType(referencedModule, referencedDefinition)
                                     docs(definition.metadata)
                                     contextualAnnotation(serializationLibrary, referencedDefinition)
                                     line {
                                         value(
                                             propertyName,
-                                            getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata)
+                                            type
                                         )
                                         if (property.nullable) {
                                             append("?")
@@ -418,18 +406,11 @@ class KotlinGenerator : JvmInProcessGenerator {
                                     firstConstructor = false
                                     val constructorName = constructor.metadata.getAnnotation(SymbolNameAnnotation)
                                         ?: idiomaticClassName(constructor.metadata.name)
-                                    val (referencedModule, referencedDefinition) = resolveModelReference(
-                                        subjectModule,
-                                        modules,
-                                        constructor.model
-                                    )!!
+                                    val type = definitionType(constructor.model)
                                     docs(constructor.metadata)
                                     line {
                                         append("data class ${symbolName(constructorName)}(")
-                                        value(
-                                            valueFieldName(constructor.metadata),
-                                            getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata),
-                                        )
+                                        value(valueFieldName(constructor.metadata), type)
                                         append(") : ${symbolName(name)}")
                                     }
                                 }
@@ -478,15 +459,8 @@ class KotlinGenerator : JvmInProcessGenerator {
                                             docs(constructor.metadata)
                                             line {
                                                 append("data class ${symbolName(constructorName)}(")
-                                                val (referencedModule, referencedDefinition) = resolveModelReference(
-                                                    subjectModule,
-                                                    modules,
-                                                    constructor.model
-                                                )!!
-                                                value(
-                                                    valueFieldName(definition.metadata),
-                                                    getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata),
-                                                )
+                                                val type = definitionType(constructor.model)
+                                                value(valueFieldName(definition.metadata), type)
                                                 append(") : ${symbolName(name)}")
                                             }
                                         }
