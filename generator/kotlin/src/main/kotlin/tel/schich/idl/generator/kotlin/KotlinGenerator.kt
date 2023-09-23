@@ -41,6 +41,9 @@ enum class TaggedSumEncoding {
 enum class SerializationLibrary {
     @SerialName("kotlinx.serialization")
     KOTLINX_SERIALIZATION,
+
+    @SerialName("jackson")
+    JACKSON,
 }
 
 val SerializationLibraryAnnotation = KotlinAnnotation("serialization-library", valueFromJson<SerializationLibrary>())
