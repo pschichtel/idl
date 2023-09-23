@@ -48,3 +48,58 @@ fun resolveForeignProperties(startModule: Module, startRecord: Model.Record, all
 
     return properties
 }
+
+@JvmInline
+value class CanonicalName(val words: List<String>) {
+    override fun toString(): String {
+        return words.joinToString(prefix = "CanonicalName(", separator = ", ", postfix = ")")
+    }
+}
+
+fun canonicalName(name: String) =
+    CanonicalName(splitIntoWords(name).map { it.lowercase() })
+
+private val nameWordSeparator = "[\\s._-]+".toRegex()
+fun splitIntoWords(name: String): List<String> {
+    return name.split(nameWordSeparator)
+        .asSequence()
+        .flatMap(::splitCamelCase)
+        .toList()
+}
+
+private fun splitCamelCase(word: String): List<String> {
+    if (word.isEmpty()) {
+        return emptyList()
+    }
+    if (word.length == 1) {
+        return listOf(word)
+    }
+
+    val words = mutableListOf<String>()
+    val currentWord = StringBuilder()
+
+    currentWord.append(word.first())
+    for (index in word.indices.drop(1)) {
+        val current = word[index]
+
+        // splits can only happen on uppercase chars
+        if (!current.isLowerCase()) {
+            val previousIsLowerCase = word[index - 1].isLowerCase()
+            val nextIsLowerCase = word.getOrNull(index + 1)?.isLowerCase()
+            // first of new word or end of an uppercase-run
+            if (previousIsLowerCase || nextIsLowerCase == true) {
+                words.add(currentWord.toString())
+                currentWord.clear()
+                currentWord.append(current)
+                continue
+            }
+        }
+
+        currentWord.append(current)
+    }
+    if (currentWord.isNotEmpty()) {
+        words.add(currentWord.toString())
+    }
+
+    return words
+}

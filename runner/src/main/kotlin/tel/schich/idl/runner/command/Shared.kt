@@ -22,6 +22,7 @@ import tel.schich.idl.core.validation.DuplicateConstructorPropertyInAdtError
 import tel.schich.idl.core.validation.DuplicateRecordPropertyError
 import tel.schich.idl.core.validation.DuplicateTagInTaggedSumError
 import tel.schich.idl.core.validation.DuplicatedDefinitionError
+import tel.schich.idl.core.validation.DuplicatedEnumerationEntryError
 import tel.schich.idl.core.validation.DuplicatedModuleError
 import tel.schich.idl.core.validation.EmptyRecordError
 import tel.schich.idl.core.validation.InvalidModuleNameError
@@ -64,13 +65,9 @@ internal fun CliktCommand.loadModules(sources: List<Path>): List<Module> {
         exitProcess(1)
     }
 
-    return inputFiles.mapNotNull { inputFile ->
-        try {
-            val module = loadModule(inputFile)
-            module.copy(metadata = module.metadata.copy(sourcePath = inputFile))
-        } catch (e: LoaderException) {
-            null
-        }
+    return inputFiles.map { inputFile ->
+        val module = loadModule(inputFile)
+        module.copy(metadata = module.metadata.copy(sourcePath = inputFile))
     }
 }
 
@@ -152,6 +149,9 @@ internal fun CliktCommand.printValidationErrors(validationErrors: Set<Validation
                 }
                 is RecordPropertySourcesOverlappingError -> {
                     error("        Record ${error.definition} has overlapping property sources ${modelRef(error.module, error.sourceA)} and ${modelRef(error.module, error.sourceB)}, both define these properties: ${error.properties.joinToString(", ")}")
+                }
+                is DuplicatedEnumerationEntryError -> {
+                    error("        Enumeration ${error.definition} has multiple entries named ${error.entry}: ${error.indices.joinToString(", ")}")
                 }
             }
         }

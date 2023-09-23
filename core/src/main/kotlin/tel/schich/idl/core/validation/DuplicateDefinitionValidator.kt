@@ -1,20 +1,21 @@
 package tel.schich.idl.core.validation
 
+import tel.schich.idl.core.CanonicalName
 import tel.schich.idl.core.Module
 import tel.schich.idl.core.ModuleReference
+import tel.schich.idl.core.canonicalName
 
 data class DuplicatedDefinitionError(
     override val module: ModuleReference,
-    val name: String,
+    val name: CanonicalName,
     val indices: List<Int>,
 ) : ValidationError
 
 object DuplicateDefinitionValidator : ModuleValidator {
     override fun validate(module: Module, allModules: List<Module>): ValidationResult {
-        // TODO compare definition names in normalized form (w.g. word-split + lowercase)
         val errors = module.definitions
             .asSequence()
-            .map { it.metadata.name }
+            .map { canonicalName(it.metadata.name) }
             .withIndex()
             .groupBy({ it.value }, { it.index })
             .filter { it.value.size > 1 }

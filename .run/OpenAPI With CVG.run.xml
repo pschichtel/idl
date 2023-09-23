@@ -2,7 +2,7 @@
   <configuration default="false" name="OpenAPI With CVG" type="JetRunConfigurationType">
     <option name="MAIN_CLASS_NAME" value="tel.schich.idl.runner.MainKt" />
     <module name="kotlin-idl.generator.openapi.main" />
-    <option name="PROGRAM_PARAMETERS" value="generate-in-process --source examples/cognitivevoice.io -a examples/cognitivevoice.io/annotations.yaml -o build/example/openapi-output/cognitivevoice.io tel.schich.idl.generator.openapi.OpenApiGenerator" />
+    <option name="PROGRAM_PARAMETERS" value="generate-in-process --source examples/cognitivevoice.io -a examples/cognitivevoice.io-annotations.yaml -o build/example/openapi-output/cognitivevoice.io tel.schich.idl.generator.openapi.OpenApiGenerator" />
     <shortenClasspath name="NONE" />
     <method v="2">
       <option name="Make" enabled="true" />

@@ -5,54 +5,10 @@ import com.ibm.icu.util.ULocale
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
 import tel.schich.idl.core.PrimitiveDataType
+import tel.schich.idl.core.splitIntoWords
 
 val preImportedPackage = setOf("kotlin", "kotlin.collections", "kotlin.jvm")
 val hardKeywords = setOf("class", "interface", "val", "var")
-
-val nameWordSeparator = "[\\s._-]+".toRegex()
-private fun splitIntoWords(name: String): List<String> {
-    return name.split(nameWordSeparator)
-        .asSequence()
-        .flatMap(::splitCamelCase)
-        .toList()
-}
-
-private fun splitCamelCase(word: String): List<String> {
-    if (word.isEmpty()) {
-        return emptyList()
-    }
-    if (word.length == 1) {
-        return listOf(word)
-    }
-
-    val words = mutableListOf<String>()
-    val currentWord = StringBuilder()
-
-    currentWord.append(word.first())
-    for (index in word.indices.drop(1)) {
-        val current = word[index]
-
-        // splits can only happen on uppercase chars
-        if (!current.isLowerCase()) {
-            val previousIsLowerCase = word[index - 1].isLowerCase()
-            val nextIsLowerCase = word.getOrNull(index + 1)?.isLowerCase()
-            // first of new word or end of an uppercase-run
-            if (previousIsLowerCase || nextIsLowerCase == true) {
-                words.add(currentWord.toString())
-                currentWord.clear()
-                currentWord.append(current)
-                continue
-            }
-        }
-
-        currentWord.append(current)
-    }
-    if (currentWord.isNotEmpty()) {
-        words.add(currentWord.toString())
-    }
-
-    return words
-}
 
 fun idiomaticPackageName(name: String): String {
     return name.replace("-", "")

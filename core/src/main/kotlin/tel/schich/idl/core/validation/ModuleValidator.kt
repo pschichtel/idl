@@ -6,7 +6,6 @@ interface ModuleValidator {
     fun validate(module: Module, allModules: List<Module>): ValidationResult
 }
 
-// TODO detect duplicate enum entries
 private val validations: List<ModuleValidator> = listOf(
     DuplicateModuleValidator,
     ModuleNameValidator,
@@ -19,6 +18,7 @@ private val validations: List<ModuleValidator> = listOf(
     DuplicateTagInTaggedSumValidator,
     DuplicateConstructorInAdtValidator,
     DuplicatePropertiesInAdtValidator,
+    DuplicateEnumerationEntryValidator,
     EmptyRecordValidator,
     NonRecordModelReferenceAsRecordPropertySourceValidator,
 )
