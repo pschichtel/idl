@@ -51,6 +51,7 @@ enum class TaggedSumEncoding {
 }
 
 val SpecVersionAnnotation = OpenApiAnnotation(name = "spec-version", ::valueAsString)
+val SpecTitleAnnotation = OpenApiAnnotation(name = "title", ::valueAsString)
 val SpecLicenseAnnotation = OpenApiAnnotation(name = "license", valueFromJson<License>())
 val SpecServersAnnotation = OpenApiAnnotation(name = "servers", valueFromJson<List<Server>>())
 val SpecContactAnnotation = OpenApiAnnotation(name = "contact", valueFromJson<Contact>())
@@ -531,7 +532,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
             val contact = module.metadata.getAnnotation(SpecContactAnnotation)
                 ?: request.getAnnotation(SpecContactAnnotation)
             val info = Info(
-                title = module.metadata.name,
+                title = module.metadata.getAnnotation(SpecTitleAnnotation) ?: module.metadata.name,
                 version = module.metadata.getAnnotation(SpecVersionAnnotation) ?: defaultSpecVersion,
                 summary = module.metadata.summary,
                 description = module.metadata.description,

@@ -8,31 +8,21 @@ import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.path
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonNull
-import kotlinx.serialization.json.JsonPrimitive
+import tel.schich.idl.core.Annotations
 import tel.schich.idl.core.ModuleReference
 import tel.schich.idl.core.generate.GenerationRequest
 import tel.schich.idl.core.generate.GenerationResult
+import tel.schich.idl.runner.loadAnnotations
 import java.nio.file.Path
+
+private fun mergeAnnotations(all: List<Annotations>): Annotations {
+    return all.fold(emptyMap()) { out, current -> out + current }
+}
 
 internal abstract class GenerateCommand(name: String) : CliktCommand(name = name) {
     private val moduleSources: List<Path> by moduleSourcesOption()
-    private val annotations: List<Pair<String, JsonElement>> by option("--annotation", "-a").convert {
-        val equalsPosition = it.indexOf(char = '=')
-        if (equalsPosition == -1) {
-            Pair(it, JsonNull)
-        } else {
-            val rawValue = it.substring(equalsPosition + 1)
-            val value = try {
-                Json.parseToJsonElement(rawValue)
-            } catch (e: SerializationException) {
-                JsonPrimitive(rawValue)
-            }
-            Pair(it.substring(0, equalsPosition), value)
-        }
+    private val annotations: List<Annotations> by option("--annotations", "-a").path().convert {
+        loadAnnotations(it)
     }.multiple()
     private val subjectReferences by option("--subject").convert { arg ->
         ModuleReference.parse(arg)
@@ -76,7 +66,7 @@ internal abstract class GenerateCommand(name: String) : CliktCommand(name = name
         val request = GenerationRequest(
             modules,
             subjects,
-            annotations.toMap(),
+            mergeAnnotations(annotations),
             outputPath,
         )
         return block(request)

@@ -35,6 +35,7 @@ import tel.schich.idl.runner.loadModule
 import tel.schich.idl.core.validation.ValidationError
 import tel.schich.idl.core.validation.ValidationResult
 import tel.schich.idl.core.validation.validateModule
+import tel.schich.idl.runner.LoaderException
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.streams.asSequence
@@ -63,9 +64,13 @@ internal fun CliktCommand.loadModules(sources: List<Path>): List<Module> {
         exitProcess(1)
     }
 
-    return inputFiles.map { inputFile ->
-        val module = loadModule(inputFile)
-        module.copy(metadata = module.metadata.copy(sourcePath = inputFile))
+    return inputFiles.mapNotNull { inputFile ->
+        try {
+            val module = loadModule(inputFile)
+            module.copy(metadata = module.metadata.copy(sourcePath = inputFile))
+        } catch (e: LoaderException) {
+            null
+        }
     }
 }
 

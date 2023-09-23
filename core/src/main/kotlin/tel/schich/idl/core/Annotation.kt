@@ -13,7 +13,7 @@ typealias AnnotationParser<T> = (JsonElement) -> T
 
 const val ANNOTATION_NAMESPACE_SEPARATOR = '/'
 
-fun valueAsString(value: JsonElement): String = value.toString()
+fun valueAsString(value: JsonElement): String = (value as? JsonPrimitive)?.content ?: value.toString()
 fun valueAsBoolean(value: JsonElement): Boolean = when (value) {
     is JsonArray -> value.isNotEmpty()
     is JsonObject -> value.values.isNotEmpty()

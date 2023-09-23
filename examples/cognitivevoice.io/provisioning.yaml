@@ -18,17 +18,7 @@ metadata:
     SIP telephony, then this also can be achieved by adding custom SIP headers (starting with `X-`) to the call.
     CVG passes these custom SIP headers to the bot during session initialization.
   annotations:
-    tel.schich.idl.generator.openapi/servers:
-      - description: Production
-        url: https://cognitivevoice.io/v1
-      - description: Production US
-        url: https://us.cognitivevoice.io/v1
-      - description: Staging
-        url: https://stage.cognitivevoice.io/v1
-      - description: Local Server
-        url: https://localhost/v1
-    tel.schich.idl.generator.openapi/contact:
-      email: support@vier.ai
+    tel.schich.idl.generator.openapi/title: VIER Cognitive Voice Gateway - Provisioning API
 definitions:
   - metadata:
       name: ProvisionCallRequest

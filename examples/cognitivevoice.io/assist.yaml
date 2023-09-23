@@ -14,17 +14,7 @@ metadata:
 
     For more details, see [our documentation](/docs/Essential-Use-Cases.html#agent-assistance).
   annotations:
-    tel.schich.idl.generator.openapi/servers:
-    - description: Production
-      url: https://cognitivevoice.io/v1
-    - description: Production US
-      url: https://us.cognitivevoice.io/v1
-    - description: Staging
-      url: https://stage.cognitivevoice.io/v1
-    - description: Local Server
-      url: https://localhost/v1
-    tel.schich.idl.generator.openapi/contact:
-      email: support@vier.ai
+    tel.schich.idl.generator.openapi/title: VIER Cognitive Voice Gateway - Assist API
 definitions:
   - metadata:
       name: AcceptAssistParameters
