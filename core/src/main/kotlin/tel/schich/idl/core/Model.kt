@@ -62,7 +62,7 @@ data class ModelMetadata(
     override val name: String,
     override val description: String? = null,
     override val deprecated: Boolean = false,
-    override val annotations: Map<String, String> = emptyMap(),
+    override val annotations: Annotations = emptyMap(),
     val examples: Set<Example> = emptySet(),
 ) : Metadata
 

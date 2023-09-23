@@ -3,6 +3,7 @@ package tel.schich.idl.core.generate
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import tel.schich.idl.core.Annotation
+import tel.schich.idl.core.Annotations
 import tel.schich.idl.core.Module
 import tel.schich.idl.core.ModuleReference
 import tel.schich.idl.core.validation.GeneratorValidationError
@@ -12,7 +13,7 @@ import java.nio.file.Path
 data class GenerationRequest(
     val modules: List<Module>,
     val subjects: Set<ModuleReference>,
-    val annotations: Map<String, String>,
+    val annotations: Annotations,
     val outputPath: Path,
 )
 

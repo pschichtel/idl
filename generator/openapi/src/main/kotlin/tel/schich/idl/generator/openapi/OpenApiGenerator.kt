@@ -1,6 +1,7 @@
 package tel.schich.idl.generator.openapi
 
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -28,7 +29,9 @@ import tel.schich.idl.core.getAnnotation
 import tel.schich.idl.core.resolveForeignProperties
 import tel.schich.idl.core.resolveModelReference
 import tel.schich.idl.core.validation.GeneratorValidationError
-import tel.schich.idl.core.valueAsIs
+import tel.schich.idl.core.valueAsString
+import tel.schich.idl.core.valueFromJson
+import tel.schich.idl.core.valueFromString
 import tel.schich.idl.runner.command.JvmInProcessGenerator
 import java.io.File
 import java.math.BigDecimal
@@ -41,18 +44,19 @@ import kotlin.io.path.createDirectories
 class OpenApiAnnotation<T : Any>(name: String, parser: AnnotationParser<T>) :
     Annotation<T>(namespace = "tel.schich.idl.generator.openapi", name, parser)
 
+@Serializable
 enum class TaggedSumEncoding {
     RECORD_PROPERTY,
     WRAPPER_RECORD,
     WRAPPER_TUPLE,
 }
 
-val SpecVersionAnnotation = OpenApiAnnotation(name = "spec-version", ::valueAsIs)
-val SchemaNameAnnotation = OpenApiAnnotation(name = "schema-name", ::valueAsIs)
-val PrimitiveFormatAnnotation = OpenApiAnnotation(name = "primitive-format", ::valueAsIs)
-val TaggedSumEncodingAnnotation = OpenApiAnnotation(name = "tagged-sum-encoding", TaggedSumEncoding::valueOf)
-val TaggedSumTagFieldNameAnnotation = OpenApiAnnotation(name = "tagged-sum-tag-field", ::PropertyName)
-val TaggedSumValueFieldNameAnnotation = OpenApiAnnotation(name = "tagged-sum-value-field", ::PropertyName)
+val SpecVersionAnnotation = OpenApiAnnotation(name = "spec-version", ::valueAsString)
+val SchemaNameAnnotation = OpenApiAnnotation(name = "schema-name", ::valueAsString)
+val PrimitiveFormatAnnotation = OpenApiAnnotation(name = "primitive-format", ::valueAsString)
+val TaggedSumEncodingAnnotation = OpenApiAnnotation(name = "tagged-sum-encoding", valueFromJson<TaggedSumEncoding>())
+val TaggedSumTagFieldNameAnnotation = OpenApiAnnotation(name = "tagged-sum-tag-field", valueFromJson<PropertyName>())
+val TaggedSumValueFieldNameAnnotation = OpenApiAnnotation(name = "tagged-sum-value-field", valueFromJson<PropertyName>())
 
 class OpenApiGenerator : JvmInProcessGenerator {
     @OptIn(ExperimentalSerializationApi::class)

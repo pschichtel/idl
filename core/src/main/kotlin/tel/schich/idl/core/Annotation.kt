@@ -1,12 +1,31 @@
 package tel.schich.idl.core
 
-typealias Annotations = Map<String, String>
-typealias AnnotationParser<T> = (String) -> T
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.decodeFromJsonElement
+
+typealias Annotations = Map<String, JsonElement>
+typealias AnnotationParser<T> = (JsonElement) -> T
 
 const val ANNOTATION_NAMESPACE_SEPARATOR = '/'
 
-fun <T> valueAsIs(value: T): T = value
-fun valueAsBoolean(value: String): Boolean = value.toBoolean()
+fun valueAsString(value: JsonElement): String = value.toString()
+fun valueAsBoolean(value: JsonElement): Boolean = when (value) {
+    is JsonArray -> value.isNotEmpty()
+    is JsonObject -> value.values.isNotEmpty()
+    is JsonPrimitive -> value.content.toBoolean()
+    is JsonNull -> false
+}
+fun <T> valueFromString(stringParser: (String) -> T): AnnotationParser<T> {
+    return { stringParser(valueAsString(it)) }
+}
+inline fun <reified T> valueFromJson(json: Json = Json): AnnotationParser<T> {
+    return { json.decodeFromJsonElement<T>(it) }
+}
 
 open class Annotation<T : Any>(val namespace: String, val name: String, val parser: AnnotationParser<T>) {
     val fullName = "$namespace$ANNOTATION_NAMESPACE_SEPARATOR$name"

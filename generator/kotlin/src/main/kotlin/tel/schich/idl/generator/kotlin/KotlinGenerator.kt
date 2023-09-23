@@ -1,5 +1,7 @@
 package tel.schich.idl.generator.kotlin
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import tel.schich.idl.core.Alias
@@ -18,7 +20,8 @@ import tel.schich.idl.core.getAnnotation
 import tel.schich.idl.core.resolveForeignProperties
 import tel.schich.idl.core.resolveModelReference
 import tel.schich.idl.core.valueAsBoolean
-import tel.schich.idl.core.valueAsIs
+import tel.schich.idl.core.valueAsString
+import tel.schich.idl.core.valueFromJson
 import tel.schich.idl.runner.command.JvmInProcessGenerator
 import java.io.File
 import java.nio.file.Files
@@ -27,29 +30,27 @@ import kotlin.io.path.createDirectories
 class KotlinAnnotation<T : Any>(name: String, parser: AnnotationParser<T>) :
     Annotation<T>(namespace = "tel.schich.idl.generator.kotlin", name, parser)
 
+@Serializable
 enum class TaggedSumEncoding {
     RECORD_PROPERTY,
     WRAPPER_RECORD,
 }
 
-enum class SerializationLibary {
+@Serializable
+enum class SerializationLibrary {
+    @SerialName("kotlinx.serialization")
     KOTLINX_SERIALIZATION,
 }
 
-val SerializationLibraryAnnotation = KotlinAnnotation("serialization-library") {
-    when (it.lowercase()) {
-        "kotlinx.serialization" -> SerializationLibary.KOTLINX_SERIALIZATION
-        else -> error("Unknown serialization-library value $it")
-    }
-}
-val PackageAnnotation = KotlinAnnotation("package", ::valueAsIs)
-val FileNameAnnotation = KotlinAnnotation("file-name", ::valueAsIs)
-val SymbolNameAnnotation = KotlinAnnotation("symbol-name", ::valueAsIs)
-val ValueFieldNameAnnotation = KotlinAnnotation("value-field-name", ::valueAsIs)
-val DiscriminatorFieldNameAnnotation = KotlinAnnotation(name = "discriminator-field", ::valueAsIs)
-val DiscriminatorValueAnnotation = KotlinAnnotation(name = "discriminator-value", ::valueAsIs)
-val TaggedSumEncodingAnnotation = KotlinAnnotation(name = "tagged-sum-encoding", TaggedSumEncoding::valueOf)
-val RepresentAsAnnotation = KotlinAnnotation(name = "represent-as", ::valueAsIs)
+val SerializationLibraryAnnotation = KotlinAnnotation("serialization-library", valueFromJson<SerializationLibrary>())
+val PackageAnnotation = KotlinAnnotation("package", ::valueAsString)
+val FileNameAnnotation = KotlinAnnotation("file-name", ::valueAsString)
+val SymbolNameAnnotation = KotlinAnnotation("symbol-name", ::valueAsString)
+val ValueFieldNameAnnotation = KotlinAnnotation("value-field-name", ::valueAsString)
+val DiscriminatorFieldNameAnnotation = KotlinAnnotation(name = "discriminator-field", ::valueAsString)
+val DiscriminatorValueAnnotation = KotlinAnnotation(name = "discriminator-value", ::valueAsString)
+val TaggedSumEncodingAnnotation = KotlinAnnotation(name = "tagged-sum-encoding", valueFromJson<TaggedSumEncoding>())
+val RepresentAsAnnotation = KotlinAnnotation(name = "represent-as", ::valueAsString)
 val NewTypeAnnotation = KotlinAnnotation(name = "new-type", ::valueAsBoolean)
 
 class KotlinGenerator : JvmInProcessGenerator {
@@ -86,16 +87,16 @@ class KotlinGenerator : JvmInProcessGenerator {
         return (value as? JsonPrimitive)?.let(::primitiveValue) ?: "null"
     }
 
-    private fun FileBuilder.serializableAnnotation(serializationLibrary: SerializationLibary?) {
-        if (serializationLibrary == SerializationLibary.KOTLINX_SERIALIZATION) {
+    private fun FileBuilder.serializableAnnotation(serializationLibrary: SerializationLibrary?) {
+        if (serializationLibrary == SerializationLibrary.KOTLINX_SERIALIZATION) {
             line {
                 annotation("kotlinx.serialization.Serializable")
             }
         }
     }
 
-    private fun FileBuilder.jsonClassDiscriminatorAnnotation(serializationLibrary: SerializationLibary?, discriminatorFieldName: String) {
-        if (serializationLibrary == SerializationLibary.KOTLINX_SERIALIZATION && discriminatorFieldName != "type") {
+    private fun FileBuilder.jsonClassDiscriminatorAnnotation(serializationLibrary: SerializationLibrary?, discriminatorFieldName: String) {
+        if (serializationLibrary == SerializationLibrary.KOTLINX_SERIALIZATION && discriminatorFieldName != "type") {
             line {
                 annotation("kotlin.OptIn")
                 append("(${useImported("kotlinx.serialization.ExperimentalSerializationApi")}::class)")
@@ -107,8 +108,8 @@ class KotlinGenerator : JvmInProcessGenerator {
         }
     }
 
-    private fun FileBuilder.serialNameAnnotation(serializationLibrary: SerializationLibary?, metadata: Metadata, value: String? = null) {
-        if (serializationLibrary == SerializationLibary.KOTLINX_SERIALIZATION) {
+    private fun FileBuilder.serialNameAnnotation(serializationLibrary: SerializationLibrary?, metadata: Metadata, value: String? = null) {
+        if (serializationLibrary == SerializationLibrary.KOTLINX_SERIALIZATION) {
             val serialName = metadata.getAnnotation(DiscriminatorValueAnnotation) ?: value ?: metadata.name
             line {
                 annotation("kotlinx.serialization.SerialName")
@@ -117,8 +118,8 @@ class KotlinGenerator : JvmInProcessGenerator {
         }
     }
 
-    private fun FileBuilder.contextualAnnotation(serializationLibrary: SerializationLibary?, referencedDefinition: Definition) {
-        if (serializationLibrary == SerializationLibary.KOTLINX_SERIALIZATION && (referencedDefinition is Model.Sum || referencedDefinition is Model.TaggedSum)) {
+    private fun FileBuilder.contextualAnnotation(serializationLibrary: SerializationLibrary?, referencedDefinition: Definition) {
+        if (serializationLibrary == SerializationLibrary.KOTLINX_SERIALIZATION && (referencedDefinition is Model.Sum || referencedDefinition is Model.TaggedSum)) {
             line {
                 annotation("kotlinx.serialization.Contextual")
             }

@@ -6,7 +6,7 @@ sealed interface Metadata {
     val name: String
     val description: String?
     val deprecated: Boolean
-    val annotations: Map<String, String>
+    val annotations: Annotations
 }
 
 @Serializable
@@ -14,5 +14,5 @@ data class BasicMetadata(
     override val name: String,
     override val description: String? = null,
     override val deprecated: Boolean = false,
-    override val annotations: Map<String, String> = emptyMap(),
+    override val annotations: Annotations = emptyMap(),
 ) : Metadata

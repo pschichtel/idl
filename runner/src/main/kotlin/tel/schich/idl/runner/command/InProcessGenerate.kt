@@ -8,7 +8,11 @@ import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.path
-import tel.schich.idl.core.ANNOTATION_NAMESPACE_SEPARATOR
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonPrimitive
 import tel.schich.idl.core.ModuleReference
 import tel.schich.idl.core.generate.GenerationRequest
 import tel.schich.idl.core.generate.GenerationResult
@@ -16,12 +20,18 @@ import java.nio.file.Path
 
 internal abstract class GenerateCommand(name: String) : CliktCommand(name = name) {
     private val moduleSources: List<Path> by moduleSourcesOption()
-    private val annotations: List<Pair<String, String>> by option("--annotation", "-a").convert {
+    private val annotations: List<Pair<String, JsonElement>> by option("--annotation", "-a").convert {
         val equalsPosition = it.indexOf(char = '=')
         if (equalsPosition == -1) {
-            Pair(it, "")
+            Pair(it, JsonNull)
         } else {
-            Pair(it.substring(0, equalsPosition), it.substring(equalsPosition + 1))
+            val rawValue = it.substring(equalsPosition + 1)
+            val value = try {
+                Json.parseToJsonElement(rawValue)
+            } catch (e: SerializationException) {
+                JsonPrimitive(rawValue)
+            }
+            Pair(it.substring(0, equalsPosition), value)
         }
     }.multiple()
     private val subjectReferences by option("--subject").convert { arg ->
