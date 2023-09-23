@@ -31,7 +31,6 @@ import tel.schich.idl.core.resolveModelReference
 import tel.schich.idl.core.validation.GeneratorValidationError
 import tel.schich.idl.core.valueAsString
 import tel.schich.idl.core.valueFromJson
-import tel.schich.idl.core.valueFromString
 import tel.schich.idl.runner.command.JvmInProcessGenerator
 import java.io.File
 import java.math.BigDecimal
@@ -52,6 +51,10 @@ enum class TaggedSumEncoding {
 }
 
 val SpecVersionAnnotation = OpenApiAnnotation(name = "spec-version", ::valueAsString)
+val SpecLicenseAnnotation = OpenApiAnnotation(name = "license", valueFromJson<License>())
+val SpecServersAnnotation = OpenApiAnnotation(name = "servers", valueFromJson<List<Server>>())
+val SpecContactAnnotation = OpenApiAnnotation(name = "contact", valueFromJson<Contact>())
+
 val SchemaNameAnnotation = OpenApiAnnotation(name = "schema-name", ::valueAsString)
 val PrimitiveFormatAnnotation = OpenApiAnnotation(name = "primitive-format", ::valueAsString)
 val TaggedSumEncodingAnnotation = OpenApiAnnotation(name = "tagged-sum-encoding", valueFromJson<TaggedSumEncoding>())
@@ -525,11 +528,15 @@ class OpenApiGenerator : JvmInProcessGenerator {
         println(commonNamePrefix)
 
         val generatedFiles = subjectModules.map { module ->
+            val contact = module.metadata.getAnnotation(SpecContactAnnotation)
+                ?: request.getAnnotation(SpecContactAnnotation)
             val info = Info(
                 title = module.metadata.name,
                 version = module.metadata.getAnnotation(SpecVersionAnnotation) ?: defaultSpecVersion,
                 summary = module.metadata.summary,
                 description = module.metadata.description,
+                license = module.metadata.getAnnotation(SpecLicenseAnnotation),
+                contact = contact,
             )
 
             val schemas: Map<SchemaName, Schema> = module.definitions.associate { definition ->
@@ -553,9 +560,13 @@ class OpenApiGenerator : JvmInProcessGenerator {
             val components = Components(
                 schemas = schemas,
             )
+            val servers = module.metadata.getAnnotation(SpecServersAnnotation)
+                ?: request.getAnnotation(SpecServersAnnotation)
+                ?: emptyList()
             val spec = OpenApiSpec(
                 openapi = "3.1.0",
                 info = info,
+                servers = servers,
                 components = components,
             )
             val json = encoder.encodeToString(spec)
