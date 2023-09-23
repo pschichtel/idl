@@ -1,5 +1,6 @@
-tel.schich.idl.generator.openapi/spec-version: 1.0.0
+tel.schich.idl.generator.kotlin/model-suffix: Model
 tel.schich.idl.generator.kotlin/serialization-library: kotlinx.serialization
+tel.schich.idl.generator.openapi/spec-version: 1.0.0
 tel.schich.idl.generator.openapi/servers:
   - description: Production
     url: https://cognitivevoice.io/v1

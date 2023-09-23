@@ -113,17 +113,17 @@ fun tupleFieldName(n: Int): String {
 class FileBuilder(
     private val packageName: String,
     private val imports: MutableSet<String>,
-    private val globalScopeSymbols: MutableSet<String>,
+    private val topLevelSymbols: MutableSet<String>,
     private val builder: StringBuilder,
     val indentionLevel: UInt,
 ) {
     private val indention = "    "
 
-    fun globalSymbolName(name: String): String {
-        if (name in globalScopeSymbols) {
+    fun topLevelSymbolName(name: String): String {
+        if (name in topLevelSymbols) {
             error("Global symbol $name was defined repeatedly!")
         }
-        globalScopeSymbols.add(name)
+        topLevelSymbols.add(name)
         return symbolName(name)
     }
 
@@ -142,10 +142,10 @@ class FileBuilder(
             error("Symbol has illegal name: $qualifiedName")
         }
 
-        if (symbolName in globalScopeSymbols) {
+        if (symbolName in topLevelSymbols) {
             return symbolName(qualifiedName)
         }
-        globalScopeSymbols += symbolName
+        topLevelSymbols += symbolName
 
         if (referencedPackageName != this.packageName && referencedPackageName !in preImportedPackage) {
             imports.add(qualifiedName)
@@ -165,7 +165,7 @@ class FileBuilder(
     }
 
     fun indented(block: FileBuilder.() -> Unit) {
-        FileBuilder(packageName, imports, globalScopeSymbols, builder, indentionLevel + 1u).also(block)
+        FileBuilder(packageName, imports, topLevelSymbols, builder, indentionLevel + 1u).also(block)
     }
 
     fun block(block: FileBuilder.() -> Unit) {
@@ -204,7 +204,7 @@ class FileBuilder(
             annotation(type = JvmInline::class.qualifiedName!!)
         }
         line {
-            append("value class ${globalSymbolName(name)}(")
+            append("value class ${topLevelSymbolName(name)}(")
             value(valueFieldName, type)
             append(")")
         }
@@ -212,7 +212,7 @@ class FileBuilder(
 
     fun typeAlias(name: String, referencedType: String) {
         line {
-            append("typealias ${globalSymbolName(name)} = ${useImported(referencedType)}")
+            append("typealias ${topLevelSymbolName(name)} = ${useImported(referencedType)}")
         }
     }
 

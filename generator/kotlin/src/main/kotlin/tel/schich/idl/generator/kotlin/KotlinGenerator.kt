@@ -52,6 +52,7 @@ val DiscriminatorValueAnnotation = KotlinAnnotation(name = "discriminator-value"
 val TaggedSumEncodingAnnotation = KotlinAnnotation(name = "tagged-sum-encoding", valueFromJson<TaggedSumEncoding>())
 val RepresentAsAnnotation = KotlinAnnotation(name = "represent-as", ::valueAsString)
 val NewTypeAnnotation = KotlinAnnotation(name = "new-type", ::valueAsBoolean)
+val ModelSuffixAnnotation = KotlinAnnotation(name = "model-suffix", ::valueAsString)
 
 class KotlinGenerator : JvmInProcessGenerator {
 
@@ -62,10 +63,6 @@ class KotlinGenerator : JvmInProcessGenerator {
     private fun getPackage(module: Module): String {
         return module.metadata.getAnnotation(PackageAnnotation)
             ?: derivePackageName(module.reference)
-    }
-
-    private fun definitionName(metadata: Metadata): String {
-        return metadata.getAnnotation(SymbolNameAnnotation) ?: idiomaticClassName(metadata.name)
     }
 
     private fun valueFieldName(metadata: Metadata): String {
@@ -134,13 +131,21 @@ class KotlinGenerator : JvmInProcessGenerator {
         }
         val subjectModules = modules.filter { it.reference in request.subjects }
 
+        fun definitionName(module: Module, metadata: Metadata): String {
+            val suffix = metadata.getAnnotation(ModelSuffixAnnotation)
+                ?: module.metadata.getAnnotation(ModelSuffixAnnotation)
+                ?: request.getAnnotation(ModelSuffixAnnotation)
+                ?: ""
+            return metadata.getAnnotation(SymbolNameAnnotation) ?: idiomaticClassName(metadata.name + suffix)
+        }
+
         val generatedFiles = subjectModules.flatMap { subjectModule ->
             val packageName = getPackage(subjectModule)
             val modulePath = request.outputPath.resolve(packageName.replace('.', File.separatorChar))
             modulePath.createDirectories()
 
             subjectModule.definitions.map { definition ->
-                val name = definitionName(definition.metadata)
+                val name = definitionName(subjectModule, definition.metadata)
                 val fileName = definition.metadata.getAnnotation(FileNameAnnotation) ?: name
                 val filePath = modulePath.resolve("$fileName.kt")
 
@@ -173,27 +178,37 @@ class KotlinGenerator : JvmInProcessGenerator {
                 }
 
                 val code = buildFile(packageName) {
+
+                    fun unlessOtherwiseRepresented(block: () -> Unit) {
+                        val representationType = definition.metadata.getAnnotation(RepresentAsAnnotation)
+                        if (representationType != null) {
+                            typeAlias(name, representationType)
+                        } else {
+                            block()
+                        }
+                    }
+
                     when (definition) {
                         is Model.Primitive -> {
                             typeWrappingDefinition(kotlinTypeFromDataType(definition.dataType))
                         }
                         is Model.HomogenousList -> {
                             val (referencedModule, referencedDefinition) = resolveModelReference(subjectModule, modules, definition.itemModel)!!
-                            val type = getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata)
+                            val type = getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata)
 
                             collectionDefinition(defaultCollectionType = "kotlin.collections.List", listOf(type))
                         }
                         is Model.HomogenousSet -> {
                             val (referencedModule, referencedDefinition) = resolveModelReference(subjectModule, modules, definition.itemModel)!!
-                            val type = getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata)
+                            val type = getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata)
 
                             collectionDefinition(defaultCollectionType = "kotlin.collections.Set", listOf(type))
                         }
                         is Model.HomogenousMap -> {
                             val (keyModule, keyDef) = resolveModelReference(subjectModule, modules, definition.keyModel)!!
                             val (valueModule, valueDef) = resolveModelReference(subjectModule, modules, definition.valueModel)!!
-                            val keyType = getPackage(keyModule) + "." + definitionName(keyDef.metadata)
-                            val valueType = getPackage(valueModule) + "." + definitionName(valueDef.metadata)
+                            val keyType = getPackage(keyModule) + "." + definitionName(keyModule, keyDef.metadata)
+                            val valueType = getPackage(valueModule) + "." + definitionName(valueModule, valueDef.metadata)
 
                             collectionDefinition(defaultCollectionType = "kotlin.collections.Map", listOf(keyType, valueType))
                         }
@@ -207,20 +222,20 @@ class KotlinGenerator : JvmInProcessGenerator {
                         }
                         is Alias -> {
                             val (referencedModule, referencedDefinition) = resolveModelReference(subjectModule, modules, definition.aliasedModel)!!
-                            val type = getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata)
+                            val type = getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata)
                             typeWrappingDefinition(type)
                         }
                         is Model.Unknown -> {
                             typeWrappingDefinition(type = "kotlin.Any")
                         }
-                        is Model.Enumeration -> {
+                        is Model.Enumeration -> unlessOtherwiseRepresented {
                             val valueType = kotlinTypeFromDataType(definition.dataType)
                             val valueFieldName = valueFieldName(definition.metadata)
 
                             docs(definition.metadata)
                             serializableAnnotation(serializationLibrary)
                             indent()
-                            append("enum class ${globalSymbolName(name)}(")
+                            append("enum class ${topLevelSymbolName(name)}(")
                             value(valueFieldName, valueType)
                             append(")")
                             block {
@@ -237,11 +252,11 @@ class KotlinGenerator : JvmInProcessGenerator {
                                 }
                             }
                         }
-                        is Model.Product -> {
+                        is Model.Product -> unlessOtherwiseRepresented {
                             docs(definition.metadata)
                             serializableAnnotation(serializationLibrary)
                             line {
-                                append("data class ${globalSymbolName(name)}(")
+                                append("data class ${topLevelSymbolName(name)}(")
                             }
                             indented {
                                 for ((i, component) in definition.components.withIndex()) {
@@ -254,7 +269,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                                     line {
                                         value(
                                             tupleFieldName(i + 1),
-                                            getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata)
+                                            getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata)
                                         )
                                         append(",")
                                     }
@@ -264,12 +279,12 @@ class KotlinGenerator : JvmInProcessGenerator {
                                 append(")")
                             }
                         }
-                        is Model.Adt -> {
+                        is Model.Adt -> unlessOtherwiseRepresented {
                             docs(definition.metadata)
                             jsonClassDiscriminatorAnnotation(serializationLibrary, discriminatorFieldName(definition.metadata))
                             serializableAnnotation(serializationLibrary)
                             indent()
-                            append("sealed interface ${globalSymbolName(name)}")
+                            append("sealed interface ${topLevelSymbolName(name)}")
                             block {
                                 if (definition.commonProperties.isNotEmpty()) {
                                     for (property in definition.commonProperties) {
@@ -284,7 +299,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                                         line {
                                             value(
                                                 propertyName,
-                                                getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata)
+                                                getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata)
                                             )
                                         }
                                     }
@@ -302,7 +317,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                                     serializableAnnotation(serializationLibrary)
                                     serialNameAnnotation(serializationLibrary, constructor.metadata)
                                     line {
-                                        append("data class ${globalSymbolName(constructorName)}(")
+                                        append("data class ${topLevelSymbolName(constructorName)}(")
                                     }
                                     indented {
                                         for (property in definition.commonProperties) {
@@ -318,7 +333,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                                             line {
                                                 value(
                                                     propertyName,
-                                                    getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata),
+                                                    getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata),
                                                     override = true,
                                                 )
                                                 append(",")
@@ -337,7 +352,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                                             line {
                                                 value(
                                                     propertyName,
-                                                    getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata),
+                                                    getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata),
                                                 )
                                                 append(",")
                                             }
@@ -349,12 +364,12 @@ class KotlinGenerator : JvmInProcessGenerator {
                                 }
                             }
                         }
-                        is Model.Record -> {
+                        is Model.Record -> unlessOtherwiseRepresented {
                             docs(definition.metadata)
                             serializableAnnotation(serializationLibrary)
                             // TODO add @SerialName if used in tagged sum and implement interfaces accordingly
                             line {
-                                append("data class ${globalSymbolName(name)}(")
+                                append("data class ${topLevelSymbolName(name)}(")
                             }
                             val foreignProperties = resolveForeignProperties(subjectModule, definition, modules)
                             val properties = foreignProperties + definition.properties.map { Pair(subjectModule, it) }
@@ -372,7 +387,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                                     line {
                                         value(
                                             propertyName,
-                                            getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata)
+                                            getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata)
                                         )
                                         if (property.nullable) {
                                             append("?")
@@ -390,10 +405,10 @@ class KotlinGenerator : JvmInProcessGenerator {
                                 append(")")
                             }
                         }
-                        is Model.Sum -> {
+                        is Model.Sum -> unlessOtherwiseRepresented {
                             docs(definition.metadata)
                             indent()
-                            append("sealed interface ${globalSymbolName(name)}")
+                            append("sealed interface ${topLevelSymbolName(name)}")
                             block {
                                 var firstConstructor = true
                                 for (constructor in definition.constructors) {
@@ -413,14 +428,14 @@ class KotlinGenerator : JvmInProcessGenerator {
                                         append("data class ${symbolName(constructorName)}(")
                                         value(
                                             valueFieldName(constructor.metadata),
-                                            getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata),
+                                            getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata),
                                         )
                                         append(") : ${symbolName(name)}")
                                     }
                                 }
                             }
                         }
-                        is Model.TaggedSum -> {
+                        is Model.TaggedSum -> unlessOtherwiseRepresented {
                             val encoding = definition.metadata.getAnnotation(TaggedSumEncodingAnnotation) ?: TaggedSumEncoding.WRAPPER_RECORD
                             val discriminatorFieldName = discriminatorFieldName(definition.metadata)
 
@@ -430,7 +445,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                                     serializableAnnotation(serializationLibrary)
                                     jsonClassDiscriminatorAnnotation(serializationLibrary, discriminatorFieldName)
                                     line {
-                                        append("sealed interface ${globalSymbolName(name)}")
+                                        append("sealed interface ${topLevelSymbolName(name)}")
                                     }
                                     // just validate here, constructor records will add the interface impl and annotation
                                     for (constructor in definition.constructors) {
@@ -450,7 +465,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                                 TaggedSumEncoding.WRAPPER_RECORD -> {
                                     docs(definition.metadata)
                                     indent()
-                                    append("sealed interface ${globalSymbolName(name)}")
+                                    append("sealed interface ${topLevelSymbolName(name)}")
                                     block {
                                         var firstConstructor = true
                                         for (constructor in definition.constructors) {
@@ -470,7 +485,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                                                 )!!
                                                 value(
                                                     valueFieldName(definition.metadata),
-                                                    getPackage(referencedModule) + "." + definitionName(referencedDefinition.metadata),
+                                                    getPackage(referencedModule) + "." + definitionName(referencedModule, referencedDefinition.metadata),
                                                 )
                                                 append(") : ${symbolName(name)}")
                                             }
