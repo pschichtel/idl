@@ -113,29 +113,44 @@ fun tupleFieldName(n: Int): String {
 class FileBuilder(
     private val packageName: String,
     private val imports: MutableSet<String>,
+    private val globalScopeSymbols: MutableSet<String>,
     private val builder: StringBuilder,
     val indentionLevel: UInt,
 ) {
     private val indention = "    "
 
-    fun useImported(symbol: String): String {
-        val lastDotPos = symbol.lastIndexOf('.')
+    fun globalSymbolName(name: String): String {
+        if (name in globalScopeSymbols) {
+            error("Global symbol $name was defined repeatedly!")
+        }
+        globalScopeSymbols.add(name)
+        return symbolName(name)
+    }
+
+    fun useImported(qualifiedName: String): String {
+        val lastDotPos = qualifiedName.lastIndexOf('.')
         if (lastDotPos == -1) {
             // nothing to import
-            return symbol
+            return symbolName(qualifiedName)
         }
-        val referencedPackageName = symbol.substring(0, lastDotPos)
+        val referencedPackageName = qualifiedName.substring(0, lastDotPos)
         if (referencedPackageName.isBlank()) {
-            error("Symbol has illegal package name: $symbol")
+            error("Symbol has illegal package name: $qualifiedName")
         }
-        val symbolName = symbol.substring(lastDotPos + 1)
+        val symbolName = qualifiedName.substring(lastDotPos + 1)
         if (symbolName.isBlank()) {
-            error("Symbol has illegal name: $symbol")
+            error("Symbol has illegal name: $qualifiedName")
         }
 
-        if (referencedPackageName != this.packageName && referencedPackageName !in preImportedPackage) {
-            imports.add(symbol)
+        if (symbolName in globalScopeSymbols) {
+            return symbolName(qualifiedName)
         }
+        globalScopeSymbols += symbolName
+
+        if (referencedPackageName != this.packageName && referencedPackageName !in preImportedPackage) {
+            imports.add(qualifiedName)
+        }
+
         return symbolName
     }
 
@@ -150,7 +165,7 @@ class FileBuilder(
     }
 
     fun indented(block: FileBuilder.() -> Unit) {
-        FileBuilder(packageName, imports, builder, indentionLevel + 1u).also(block)
+        FileBuilder(packageName, imports, globalScopeSymbols, builder, indentionLevel + 1u).also(block)
     }
 
     fun block(block: FileBuilder.() -> Unit) {
@@ -189,7 +204,7 @@ class FileBuilder(
             annotation(type = JvmInline::class.qualifiedName!!)
         }
         line {
-            append("value class ${symbolName(name)}(")
+            append("value class ${globalSymbolName(name)}(")
             value(valueFieldName, type)
             append(")")
         }
@@ -197,7 +212,7 @@ class FileBuilder(
 
     fun typeAlias(name: String, referencedType: String) {
         line {
-            append("typealias ${symbolName(name)} = ${useImported(referencedType)}")
+            append("typealias ${globalSymbolName(name)} = ${useImported(referencedType)}")
         }
     }
 
@@ -215,13 +230,23 @@ class FileBuilder(
         }
     }
 
+    private fun quoteName(name: String): String {
+        return name.split('.').joinToString(".") {
+            if (it in hardKeywords) {
+                "`$it`"
+            } else {
+                it
+            }
+        }
+    }
+
     override fun toString(): String {
         val output = StringBuilder()
-        output.append("package $packageName\n\n")
+        output.append("package ${quoteName(packageName)}\n\n")
         val sortedImports = imports.toList().sorted()
         if (sortedImports.isNotEmpty()) {
             for (import in sortedImports) {
-                output.append("import $import\n")
+                output.append("import ${quoteName(import)}\n")
             }
             output.append("\n")
         }
@@ -231,7 +256,7 @@ class FileBuilder(
 }
 
 fun buildFile(packageName: String, block: FileBuilder.() -> Unit): String {
-    return FileBuilder(packageName, mutableSetOf(), StringBuilder(), indentionLevel = 0u).also(block).toString()
+    return FileBuilder(packageName, mutableSetOf(), mutableSetOf(), StringBuilder(), indentionLevel = 0u).also(block).toString()
 }
 
 fun kotlinTypeFromDataType(dataType: PrimitiveDataType): String {

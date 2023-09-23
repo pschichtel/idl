@@ -220,7 +220,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                             docs(definition.metadata)
                             serializableAnnotation(serializationLibrary)
                             indent()
-                            append("enum class ${symbolName(name)}(")
+                            append("enum class ${globalSymbolName(name)}(")
                             value(valueFieldName, valueType)
                             append(")")
                             block {
@@ -241,7 +241,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                             docs(definition.metadata)
                             serializableAnnotation(serializationLibrary)
                             line {
-                                append("data class ${symbolName(name)}(")
+                                append("data class ${globalSymbolName(name)}(")
                             }
                             indented {
                                 for ((i, component) in definition.components.withIndex()) {
@@ -269,7 +269,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                             jsonClassDiscriminatorAnnotation(serializationLibrary, discriminatorFieldName(definition.metadata))
                             serializableAnnotation(serializationLibrary)
                             indent()
-                            append("sealed interface ${symbolName(name)}")
+                            append("sealed interface ${globalSymbolName(name)}")
                             block {
                                 if (definition.commonProperties.isNotEmpty()) {
                                     for (property in definition.commonProperties) {
@@ -302,7 +302,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                                     serializableAnnotation(serializationLibrary)
                                     serialNameAnnotation(serializationLibrary, constructor.metadata)
                                     line {
-                                        append("data class ${symbolName(constructorName)}(")
+                                        append("data class ${globalSymbolName(constructorName)}(")
                                     }
                                     indented {
                                         for (property in definition.commonProperties) {
@@ -354,7 +354,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                             serializableAnnotation(serializationLibrary)
                             // TODO add @SerialName if used in tagged sum and implement interfaces accordingly
                             line {
-                                append("data class ${symbolName(name)}(")
+                                append("data class ${globalSymbolName(name)}(")
                             }
                             val foreignProperties = resolveForeignProperties(subjectModule, definition, modules)
                             val properties = foreignProperties + definition.properties.map { Pair(subjectModule, it) }
@@ -393,7 +393,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                         is Model.Sum -> {
                             docs(definition.metadata)
                             indent()
-                            append("sealed interface ${symbolName(name)}")
+                            append("sealed interface ${globalSymbolName(name)}")
                             block {
                                 var firstConstructor = true
                                 for (constructor in definition.constructors) {
@@ -430,7 +430,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                                     serializableAnnotation(serializationLibrary)
                                     jsonClassDiscriminatorAnnotation(serializationLibrary, discriminatorFieldName)
                                     line {
-                                        append("sealed interface ${symbolName(name)}")
+                                        append("sealed interface ${globalSymbolName(name)}")
                                     }
                                     // just validate here, constructor records will add the interface impl and annotation
                                     for (constructor in definition.constructors) {
@@ -450,7 +450,7 @@ class KotlinGenerator : JvmInProcessGenerator {
                                 TaggedSumEncoding.WRAPPER_RECORD -> {
                                     docs(definition.metadata)
                                     indent()
-                                    append("sealed interface ${symbolName(name)}")
+                                    append("sealed interface ${globalSymbolName(name)}")
                                     block {
                                         var firstConstructor = true
                                         for (constructor in definition.constructors) {

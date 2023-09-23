@@ -1,0 +1,11 @@
+metadata:
+  name: tel.schich.idl.example.class
+  version: "1"
+  description: keyword in package name
+definitions:
+  - type: primitive
+    metadata:
+      name: test
+    dataType:
+      type: integer
+      size: 32

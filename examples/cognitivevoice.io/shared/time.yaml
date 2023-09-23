@@ -25,9 +25,7 @@ definitions:
           example: 60000
       annotations:
         tel.schich.idl.generator.kotlin/new-type: false
-        # TODO this breaks the generator, because it will end up as `typealias Duration = Duration`, which is obviously cyclic.
-        #      the useImported helper should be aware of symbols in scope.
-        # tel.schich.idl.generator.kotlin/represent-as: java.time.Duration
+        tel.schich.idl.generator.kotlin/represent-as: java.time.Duration
     type: primitive
     dataType:
       type: integer

@@ -2,12 +2,6 @@ metadata:
   name: tel.schich.idl.example
   version: "1"
 definitions:
-  - type: primitive
-    metadata:
-      name: test
-    dataType:
-      type: integer
-      size: 32
   - type: sum
     metadata:
       name: untagged-sum
@@ -15,6 +9,9 @@ definitions:
       - metadata:
           name: name
         model:
+          module:
+            name: tel.schich.idl.example.class
+            version: '1'
           name: test
   - type: product
     metadata:
@@ -22,7 +19,10 @@ definitions:
       description: product
     components:
       - name: untagged-sum
-      - name: test
+      - module:
+          name: tel.schich.idl.example.class
+          version: '1'
+        name: test
   - type: record
     metadata:
       name: record
@@ -116,6 +116,9 @@ definitions:
       - metadata:
           name: timestamp
         model:
+          module:
+            name: tel.schich.idl.example.class
+            version: '1'
           name: test
     constructors:
       - metadata:
@@ -124,6 +127,9 @@ definitions:
           - metadata:
               name: counter
             model:
+              module:
+                name: tel.schich.idl.example.class
+                version: '1'
               name: test
       - metadata:
           name: b
@@ -131,5 +137,17 @@ definitions:
           - metadata:
               name: hits
             model:
+              module:
+                name: tel.schich.idl.example.class
+                version: '1'
               name: test
+  - metadata:
+      name: Duration
+      description: This type is incidentally "self-referential"
+      annotations:
+        tel.schich.idl.generator.kotlin/new-type: false
+        tel.schich.idl.generator.kotlin/represent-as: java.time.Duration
+    type: primitive
+    dataType:
+      type: integer
 operations: [ ]
