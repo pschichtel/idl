@@ -18,5 +18,6 @@ class UtilKtTest {
         assertEquals(listOf("A"), splitIntoWords("_A"))
         assertEquals(listOf("Ab", "Cd"), splitIntoWords("AbCd"))
         assertEquals(listOf("ab", "Cd"), splitIntoWords("abCd"))
+        assertEquals(listOf("on", "Dtmf"), splitIntoWords("onDtmf"))
     }
 }

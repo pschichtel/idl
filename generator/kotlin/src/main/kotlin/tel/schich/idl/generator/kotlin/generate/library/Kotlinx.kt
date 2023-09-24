@@ -1,5 +1,6 @@
 package tel.schich.idl.generator.kotlin.generate.library
 
+import kotlinx.serialization.json.JsonPrimitive
 import tel.schich.idl.core.Definition
 import tel.schich.idl.core.Metadata
 import tel.schich.idl.core.Model
@@ -8,6 +9,7 @@ import tel.schich.idl.generator.kotlin.DiscriminatorValueAnnotation
 import tel.schich.idl.generator.kotlin.generate.FileBuilder
 import tel.schich.idl.generator.kotlin.SerializationLibrary
 import tel.schich.idl.generator.kotlin.generate.annotation
+import tel.schich.idl.generator.kotlin.generate.primitiveValue
 
 fun FileBuilder.serializableAnnotation(serializationLibrary: SerializationLibrary?) {
     if (serializationLibrary == SerializationLibrary.KOTLINX_SERIALIZATION) {
@@ -18,24 +20,25 @@ fun FileBuilder.serializableAnnotation(serializationLibrary: SerializationLibrar
 }
 
 fun FileBuilder.jsonClassDiscriminatorAnnotation(serializationLibrary: SerializationLibrary?, discriminatorFieldName: String) {
-    if (serializationLibrary == SerializationLibrary.KOTLINX_SERIALIZATION && discriminatorFieldName != "type") {
-        line {
-            annotation("kotlin.OptIn")
-            append("(${useImported("kotlinx.serialization.ExperimentalSerializationApi")}::class)")
-        }
-        line {
-            annotation("kotlinx.serialization.json.JsonClassDiscriminator")
-            append("(\"${discriminatorFieldName}\")")
-        }
+    if (serializationLibrary != SerializationLibrary.KOTLINX_SERIALIZATION || discriminatorFieldName == "type") {
+        return
+    }
+
+    line {
+        annotation("kotlin.OptIn")
+        append("(${useImported("kotlinx.serialization.ExperimentalSerializationApi")}::class)")
+    }
+    line {
+        annotation("kotlinx.serialization.json.JsonClassDiscriminator")
+        append("(\"${discriminatorFieldName}\")")
     }
 }
 
-fun FileBuilder.serialNameAnnotation(serializationLibrary: SerializationLibrary?, metadata: Metadata, value: String? = null) {
+fun FileBuilder.serialNameAnnotation(serializationLibrary: SerializationLibrary?, discriminatorValue: JsonPrimitive) {
     if (serializationLibrary == SerializationLibrary.KOTLINX_SERIALIZATION) {
-        val serialName = metadata.getAnnotation(DiscriminatorValueAnnotation) ?: value ?: metadata.name
         line {
             annotation("kotlinx.serialization.SerialName")
-            append("(\"${serialName}\")")
+            append("(${primitiveValue(discriminatorValue)})")
         }
     }
 }

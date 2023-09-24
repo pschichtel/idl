@@ -14,6 +14,7 @@ import tel.schich.idl.core.getAnnotation
 import tel.schich.idl.core.resolveModelReference
 import tel.schich.idl.core.splitIntoWords
 import tel.schich.idl.core.valueAsString
+import tel.schich.idl.generator.kotlin.DiscriminatorValueAnnotation
 import tel.schich.idl.generator.kotlin.KotlinAnnotation
 import tel.schich.idl.generator.kotlin.KotlinGeneratorContext
 import tel.schich.idl.generator.kotlin.ModelNameFormatAnnotation
@@ -100,12 +101,31 @@ fun kotlinTypeFromDataType(dataType: PrimitiveDataType): String {
     }
 }
 
+fun literalString(string: String): String {
+    if (string.isEmpty()) {
+        return "\"\""
+    }
+    val kotlinString = string.asSequence().flatMap {
+        when (it) {
+            '\n' -> sequenceOf('\\', 'n')
+            '\r' -> sequenceOf('\\', 'r')
+            '\t' -> sequenceOf('\\', 't')
+            '\b' -> sequenceOf('\\', 'b')
+            '\\' -> sequenceOf('\\', '\\')
+            '"' -> sequenceOf('\\', '"')
+            '$' -> sequenceOf('\\', '$')
+            else -> sequenceOf(it)
+        }
+    }.joinToString("")
+    return "\"${kotlinString}\""
+}
+
 fun primitiveValue(json: JsonPrimitive): String {
     if (json is JsonNull) {
         return "null"
     }
     if (json.isString) {
-        return "\"" + json.content.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+        return literalString(json.content)
     }
     return json.content
 }
@@ -119,7 +139,7 @@ fun idiomaticClassName(name: String): String {
 }
 
 fun idiomaticName(name: String): String {
-    val words = splitIntoWords(name, String::uppercase).asSequence()
+    val words = splitIntoWords(name, String::lowercase).asSequence()
     return words.first() + words.drop(1).joinToString("") { it.replaceFirstChar { c -> c.uppercase() } }
 }
 
@@ -194,8 +214,26 @@ fun FileBuilder.deprecatedAnnotation(metadata: Metadata) {
         annotation("kotlin.Deprecated")
         if (message != null) {
             append("(message = ")
-            append(primitiveValue(JsonPrimitive(message)))
+            append(literalString(message))
             append(")")
         }
     }
+}
+
+fun FileBuilder.lineComment(comment: String) {
+    line {
+        append("// $comment")
+    }
+}
+
+fun discriminatorValue(metadata: Metadata, explicitValue: JsonPrimitive? = null): JsonPrimitive {
+    return metadata.getAnnotation(DiscriminatorValueAnnotation)?.let(::JsonPrimitive)
+        ?: explicitValue
+        ?: JsonPrimitive(metadata.name)
+}
+
+fun discriminatorStringValue(metadata: Metadata, explicitValue: JsonPrimitive? = null): JsonPrimitive {
+    return metadata.getAnnotation(DiscriminatorValueAnnotation)?.let(::JsonPrimitive)
+        ?: explicitValue?.content?.let(::JsonPrimitive)
+        ?: JsonPrimitive(metadata.name)
 }

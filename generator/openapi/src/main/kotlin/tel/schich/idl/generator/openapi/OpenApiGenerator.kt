@@ -106,7 +106,6 @@ class OpenApiGenerator : JvmInProcessGenerator {
             }
             is PrimitiveDataType.String -> Pair(SchemaType.STRING, null)
             is PrimitiveDataType.Bool -> Pair(SchemaType.BOOLEAN, null)
-            is PrimitiveDataType.Custom -> Pair(null, null)
         }
         val format = (metadata.getAnnotation(PrimitiveFormatAnnotation) ?: defaultFormat)?.let(::TypeFormat)
         return Pair(schemaType, format)
@@ -266,17 +265,6 @@ class OpenApiGenerator : JvmInProcessGenerator {
                         )
                     }
                     is PrimitiveDataType.Bool -> {
-                        SimpleSchema(
-                            type = type?.let(::typeWithNull),
-                            format = format,
-                            description = description,
-                            deprecated = deprecated,
-                            example = examples.firstOrNull(),
-                            examples = examples,
-                            default = withDefault,
-                        )
-                    }
-                    is PrimitiveDataType.Custom -> {
                         SimpleSchema(
                             type = type?.let(::typeWithNull),
                             format = format,

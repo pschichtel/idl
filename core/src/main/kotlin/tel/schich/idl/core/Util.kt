@@ -109,7 +109,7 @@ fun splitIntoWords(word: String, transform: (String) -> String = { it }): List<S
         currentWord.append(current)
     }
     if (currentWord.isNotEmpty()) {
-        words.add(currentWord.toString())
+        addWord()
     }
 
     return words

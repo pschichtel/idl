@@ -13,6 +13,7 @@ import tel.schich.idl.generator.kotlin.KotlinGeneratorContext
 import tel.schich.idl.generator.kotlin.SymbolNameAnnotation
 import tel.schich.idl.generator.kotlin.generate.library.contextualAnnotation
 import tel.schich.idl.generator.kotlin.generate.library.jsonClassDiscriminatorAnnotation
+import tel.schich.idl.generator.kotlin.generate.library.jsonTypeInfoAnnotation
 import tel.schich.idl.generator.kotlin.generate.library.serialNameAnnotation
 import tel.schich.idl.generator.kotlin.generate.library.serializableAnnotation
 
@@ -34,15 +35,7 @@ fun KotlinGeneratorContext<Model.TaggedSum>.generateTaggedSum() {
 
     when (encoding) {
         TaggedSumEncoding.RECORD_PROPERTY -> {
-            docs(definition.metadata)
-            serializableAnnotation(serializationLibrary)
-            jsonClassDiscriminatorAnnotation(serializationLibrary, discriminatorFieldName)
-            deprecatedAnnotation(definition.metadata)
-            line {
-                append("sealed interface ${topLevelSymbolName(name)}")
-            }
-            // just validate here, constructor records will add the interface impl and annotation
-            for (constructor in definition.constructors) {
+            val subTypes = definition.constructors.associate { constructor ->
                 val (referencedModule, referencedDefinition) = resolveModelReference(subjectModule, modules, constructor.model)!!
                 if (referencedModule != subjectModule) {
                     invalidModule(subjectModule.reference, "The ${TaggedSumEncoding.RECORD_PROPERTY} encoding requires all constructors to be defined in the same module!")
@@ -53,6 +46,16 @@ fun KotlinGeneratorContext<Model.TaggedSum>.generateTaggedSum() {
                 if (referencedDefinition.properties.any { property -> property.metadata.name == discriminatorFieldName }) {
                     invalidModule(subjectModule.reference, "The ${TaggedSumEncoding.RECORD_PROPERTY} requires a discriminator field name that does not exist in any of its constructors, $discriminatorFieldName already exists in ${constructor.metadata.name}!")
                 }
+
+                definitionType(referencedModule, referencedDefinition) to discriminatorStringValue(constructor.metadata, constructor.tag.tag)
+            }
+            docs(definition.metadata)
+            serializableAnnotation(serializationLibrary)
+            jsonClassDiscriminatorAnnotation(serializationLibrary, discriminatorFieldName)
+            jsonTypeInfoAnnotation(serializationLibrary, discriminatorFieldName, subTypes)
+            deprecatedAnnotation(definition.metadata)
+            line {
+                append("sealed interface ${topLevelSymbolName(name)}")
             }
             append("\n")
         }
@@ -83,10 +86,21 @@ fun KotlinGeneratorContext<Model.TaggedSum>.generateTaggedSum() {
     }
 }
 
+private fun constructorName(metadata: Metadata): String {
+    return metadata.getAnnotation(SymbolNameAnnotation)
+        ?: idiomaticClassName(metadata.name)
+}
+
 fun KotlinGeneratorContext<Model.Adt>.generateAdt() {
+    val discriminatorFieldName = discriminatorFieldName(definition.metadata)
+
     docs(definition.metadata)
-    jsonClassDiscriminatorAnnotation(serializationLibrary, discriminatorFieldName(definition.metadata))
+    jsonClassDiscriminatorAnnotation(serializationLibrary, discriminatorFieldName)
     serializableAnnotation(serializationLibrary)
+    val subTypes = definition.constructors.associate {
+        constructorName(it.metadata) to discriminatorValue(it.metadata)
+    }
+    jsonTypeInfoAnnotation(serializationLibrary, discriminatorFieldName, subTypes)
     deprecatedAnnotation(definition.metadata)
     indent()
     append("sealed interface ${topLevelSymbolName(name)}")
@@ -113,7 +127,7 @@ fun KotlinGeneratorContext<Model.Adt>.generateAdt() {
                 ?: idiomaticClassName(constructor.metadata.name)
             docs(constructor.metadata)
             serializableAnnotation(serializationLibrary)
-            serialNameAnnotation(serializationLibrary, constructor.metadata)
+            serialNameAnnotation(serializationLibrary, discriminatorValue(constructor.metadata))
             deprecatedAnnotation(definition.metadata)
             line {
                 append("data class ${topLevelSymbolName(constructorName)}(")

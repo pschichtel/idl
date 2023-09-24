@@ -46,6 +46,9 @@ class SimpleFileBuilder private constructor(
             error("Symbol has illegal name: $qualifiedName")
         }
 
+        if (qualifiedName in imports) {
+            return symbolName(symbolName)
+        }
         if (symbolName in topLevelSymbols) {
             return symbolName(qualifiedName)
         }
