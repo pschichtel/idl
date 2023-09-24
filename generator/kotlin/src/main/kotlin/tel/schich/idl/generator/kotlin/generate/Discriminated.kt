@@ -1,19 +1,28 @@
 package tel.schich.idl.generator.kotlin.generate
 
+import kotlinx.serialization.Serializable
 import tel.schich.idl.core.Metadata
 import tel.schich.idl.core.Model
 import tel.schich.idl.core.generate.invalidModule
 import tel.schich.idl.core.getAnnotation
 import tel.schich.idl.core.resolveModelReference
+import tel.schich.idl.core.valueFromJson
 import tel.schich.idl.generator.kotlin.DiscriminatorFieldNameAnnotation
+import tel.schich.idl.generator.kotlin.KotlinAnnotation
 import tel.schich.idl.generator.kotlin.KotlinGeneratorContext
 import tel.schich.idl.generator.kotlin.SymbolNameAnnotation
-import tel.schich.idl.generator.kotlin.TaggedSumEncoding
-import tel.schich.idl.generator.kotlin.TaggedSumEncodingAnnotation
 import tel.schich.idl.generator.kotlin.generate.library.contextualAnnotation
 import tel.schich.idl.generator.kotlin.generate.library.jsonClassDiscriminatorAnnotation
 import tel.schich.idl.generator.kotlin.generate.library.serialNameAnnotation
 import tel.schich.idl.generator.kotlin.generate.library.serializableAnnotation
+
+@Serializable
+enum class TaggedSumEncoding {
+    RECORD_PROPERTY,
+    WRAPPER_RECORD,
+}
+
+private val TaggedSumEncodingAnnotation = KotlinAnnotation(name = "tagged-sum-encoding", valueFromJson<TaggedSumEncoding>())
 
 private fun discriminatorFieldName(metadata: Metadata): String {
     return metadata.getAnnotation(DiscriminatorFieldNameAnnotation) ?: "type"
@@ -50,7 +59,7 @@ fun KotlinGeneratorContext<Model.TaggedSum>.generateTaggedSum() {
             docs(definition.metadata)
             indent()
             append("sealed interface ${topLevelSymbolName(name)}")
-            block {
+            codeBlock {
                 var firstConstructor = true
                 for (constructor in definition.constructors) {
                     if (!firstConstructor) {
@@ -78,7 +87,7 @@ fun KotlinGeneratorContext<Model.Adt>.generateAdt() {
     serializableAnnotation(serializationLibrary)
     indent()
     append("sealed interface ${topLevelSymbolName(name)}")
-    block {
+    codeBlock {
         if (definition.commonProperties.isNotEmpty()) {
             for (property in definition.commonProperties) {
                 val propertyName = property.metadata.getAnnotation(SymbolNameAnnotation)

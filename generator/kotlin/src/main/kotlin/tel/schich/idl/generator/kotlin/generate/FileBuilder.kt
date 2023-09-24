@@ -8,7 +8,7 @@ interface FileBuilder {
     fun indent()
     fun append(s: String)
     fun indented(block: FileBuilder.() -> Unit)
-    fun block(block: FileBuilder.() -> Unit)
+    fun codeBlock(block: FileBuilder.() -> Unit)
     fun line(block: FileBuilder.() -> Unit)
 }
 
@@ -72,7 +72,7 @@ class SimpleFileBuilder private constructor(
         SimpleFileBuilder(packageName, imports, topLevelSymbols, builder, indentionLevel + 1u).also(block)
     }
 
-    override fun block(block: FileBuilder.() -> Unit) {
+    override fun codeBlock(block: FileBuilder.() -> Unit) {
         append(" {\n")
         indented(block)
         line {

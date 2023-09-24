@@ -9,7 +9,7 @@ fun KotlinGeneratorContext<Model.Sum>.generateSum() {
     docs(definition.metadata)
     indent()
     append("sealed interface ${topLevelSymbolName(name)}")
-    block {
+    codeBlock {
         var firstConstructor = true
         for (constructor in definition.constructors) {
             if (!firstConstructor) {

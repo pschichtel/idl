@@ -16,6 +16,7 @@ import tel.schich.idl.core.valueAsBoolean
 import tel.schich.idl.core.valueAsString
 import tel.schich.idl.core.valueFromJson
 import tel.schich.idl.generator.kotlin.generate.FileBuilder
+import tel.schich.idl.generator.kotlin.generate.PACKAGE_SEPARATOR
 import tel.schich.idl.generator.kotlin.generate.SimpleFileBuilder
 import tel.schich.idl.generator.kotlin.generate.definitionName
 import tel.schich.idl.generator.kotlin.generate.generateAdt
@@ -39,15 +40,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 
-class KotlinAnnotation<T : Any>(name: String, parser: AnnotationParser<T>) :
-    Annotation<T>(namespace = "tel.schich.idl.generator.kotlin", name, parser)
-
-@Serializable
-enum class TaggedSumEncoding {
-    RECORD_PROPERTY,
-    WRAPPER_RECORD,
-}
-
 @Serializable
 enum class SerializationLibrary {
     @SerialName("kotlinx.serialization")
@@ -57,6 +49,9 @@ enum class SerializationLibrary {
     JACKSON,
 }
 
+class KotlinAnnotation<T : Any>(name: String, parser: AnnotationParser<T>) :
+    Annotation<T>(namespace = "tel.schich.idl.generator.kotlin", name, parser)
+
 val SerializationLibraryAnnotation = KotlinAnnotation("serialization-library", valueFromJson<SerializationLibrary>())
 val PackageAnnotation = KotlinAnnotation("package", ::valueAsString)
 val FileNameAnnotation = KotlinAnnotation("file-name", ::valueAsString)
@@ -64,7 +59,6 @@ val SymbolNameAnnotation = KotlinAnnotation("symbol-name", ::valueAsString)
 val ValueFieldNameAnnotation = KotlinAnnotation("value-field-name", ::valueAsString)
 val DiscriminatorFieldNameAnnotation = KotlinAnnotation(name = "discriminator-field", ::valueAsString)
 val DiscriminatorValueAnnotation = KotlinAnnotation(name = "discriminator-value", ::valueAsString)
-val TaggedSumEncodingAnnotation = KotlinAnnotation(name = "tagged-sum-encoding", valueFromJson<TaggedSumEncoding>())
 val RepresentAsAnnotation = KotlinAnnotation(name = "represent-as", ::valueAsString)
 val NewTypeAnnotation = KotlinAnnotation(name = "new-type", ::valueAsBoolean)
 val ModelNameFormatAnnotation = KotlinAnnotation(name = "model-name-format", ::valueAsString)
@@ -72,35 +66,32 @@ val ModelNameFormatAnnotation = KotlinAnnotation(name = "model-name-format", ::v
 data class KotlinGeneratorContext<T : Definition>(
     val request: GenerationRequest,
     val subjectModule: Module,
-    val modules: List<Module>,
-    val serializationLibrary: SerializationLibrary?,
     val fileBuilder: FileBuilder,
     val name: String,
     val definition: T,
-) : FileBuilder by fileBuilder
+) : FileBuilder by fileBuilder {
+    val modules = request.modules
+    val serializationLibrary = request.getAnnotation(SerializationLibraryAnnotation)
+}
 
 class KotlinGenerator : JvmInProcessGenerator {
     private fun generateModule(
         request: GenerationRequest,
         subjectModule: Module,
-        modules: List<Module>,
-        serializationLibrary: SerializationLibrary?
     ): List<Path> {
         val packageName = getPackage(subjectModule)
+        val packagePath = request.outputPath
+            .resolve(packageName.replace(PACKAGE_SEPARATOR, File.separator))
 
         return subjectModule.definitions.map { definition ->
             val name = definitionName(request, subjectModule, definition.metadata)
             val fileName = definition.metadata.getAnnotation(FileNameAnnotation) ?: name
-            val filePath = request.outputPath
-                .resolve(packageName.replace('.', File.separatorChar))
-                .resolve("$fileName.kt")
-
+            val filePath = packagePath.resolve("$fileName.kt")
             val builder = SimpleFileBuilder(packageName)
+
             fun <T : Definition> ctx(def: T): KotlinGeneratorContext<T> = KotlinGeneratorContext(
                 request,
                 subjectModule,
-                modules,
-                serializationLibrary,
                 builder,
                 name,
                 def,
@@ -157,26 +148,17 @@ class KotlinGenerator : JvmInProcessGenerator {
                 }
             }
 
-
             filePath.also {
-                it.parent.createDirectories()
+                packagePath.createDirectories()
                 Files.newBufferedWriter(it).use(builder::write)
             }
         }
     }
 
     override fun generate(request: GenerationRequest): GenerationResult {
-        val serializationLibrary = request.getAnnotation(SerializationLibraryAnnotation)
-        val modules = request.modules
-        if (modules.isEmpty()) {
-            error("No modules have been requested!")
-        }
-        val subjectModules = modules.filter { it.reference in request.subjects }
-
-        val generatedFiles = subjectModules.flatMap { subjectModule ->
-            generateModule(request, subjectModule, modules, serializationLibrary)
-        }
-
-        return GenerationResult.Success(generatedFiles)
+        return request.modules
+            .filter { it.reference in request.subjects }
+            .flatMap { generateModule(request, it) }
+            .let(GenerationResult::Success)
     }
 }

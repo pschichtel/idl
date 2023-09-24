@@ -17,7 +17,7 @@ fun KotlinGeneratorContext<Model.Enumeration>.generateEnumeration() {
     append("enum class ${topLevelSymbolName(name)}(")
     value(valueFieldName, valueType)
     append(")")
-    block {
+    codeBlock {
         for (entry in definition.entries) {
             val value = entry.value
             val entryName = entry.metadata.getAnnotation(SymbolNameAnnotation)
