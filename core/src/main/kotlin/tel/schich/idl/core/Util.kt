@@ -59,39 +59,50 @@ value class CanonicalName(val words: List<String>) {
 fun canonicalName(name: String) =
     CanonicalName(splitIntoWords(name).map { it.lowercase() })
 
-private val nameWordSeparator = "[\\s._-]+".toRegex()
-fun splitIntoWords(name: String): List<String> {
-    return name.split(nameWordSeparator)
-        .asSequence()
-        .flatMap(::splitCamelCase)
-        .toList()
+private fun isNonWordCharacter(c: Char): Boolean = when {
+    c.isWhitespace() -> true
+    c == '_' || c == '-' || c == '.' || c == ':' -> true
+    else -> false
 }
 
-private fun splitCamelCase(word: String): List<String> {
+fun splitIntoWords(word: String, transform: (String) -> String = { it }): List<String> {
     if (word.isEmpty()) {
         return emptyList()
     }
-    if (word.length == 1) {
-        return listOf(word)
-    }
 
     val words = mutableListOf<String>()
-    val currentWord = StringBuilder()
+    val currentWord = StringBuilder(30)
 
-    currentWord.append(word.first())
+    fun addWord() {
+        words.add(transform(currentWord.toString()))
+        currentWord.clear()
+    }
+
+    word.first().let {
+        if (!isNonWordCharacter(it)) {
+            currentWord.append(it)
+        }
+    }
     for (index in word.indices.drop(1)) {
         val current = word[index]
 
-        // splits can only happen on uppercase chars
-        if (!current.isLowerCase()) {
-            val previousIsLowerCase = word[index - 1].isLowerCase()
-            val nextIsLowerCase = word.getOrNull(index + 1)?.isLowerCase()
-            // first of new word or end of an uppercase-run
-            if (previousIsLowerCase || nextIsLowerCase == true) {
-                words.add(currentWord.toString())
-                currentWord.clear()
-                currentWord.append(current)
+        when {
+            isNonWordCharacter(current) -> {
+                if (currentWord.isNotEmpty()) {
+                    addWord()
+                }
                 continue
+            }
+            // splits can only happen on uppercase chars
+            !current.isLowerCase() -> {
+                val previousIsLowerCase = word[index - 1].isLowerCase()
+                val nextIsLowerCase = word.getOrNull(index + 1)?.isLowerCase()
+                // first of new word or end of an uppercase-run
+                if (previousIsLowerCase || nextIsLowerCase == true) {
+                    addWord()
+                    currentWord.append(current)
+                    continue
+                }
             }
         }
 

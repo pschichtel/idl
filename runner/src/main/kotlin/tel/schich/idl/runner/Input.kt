@@ -70,10 +70,22 @@ object JsonLoader : Loader {
 
 @OptIn(ExperimentalSerializationApi::class)
 private fun convertJacksonTreeToJsonElement(jackson: JsonNode): JsonElement = when (jackson) {
-    is ObjectNode ->
-        JsonObject(jackson.fields().asSequence().map { (key, value) -> Pair(key, convertJacksonTreeToJsonElement(value)) }.toMap())
-    is ArrayNode ->
-        JsonArray(jackson.elements().asSequence().map { convertJacksonTreeToJsonElement(it) }.toList())
+    is ObjectNode -> {
+        val obj = buildMap(jackson.size()) {
+            for ((key, value) in jackson.fields()) {
+                put(key, convertJacksonTreeToJsonElement(value))
+            }
+        }
+        JsonObject(obj)
+    }
+    is ArrayNode -> {
+        val array = buildList(jackson.size()) {
+            for (element in jackson.elements()) {
+                add(convertJacksonTreeToJsonElement(element))
+            }
+        }
+        JsonArray(array)
+    }
     is NullNode ->
         JsonNull
     is BooleanNode ->

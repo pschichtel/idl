@@ -15,16 +15,16 @@ fun idiomaticPackageName(name: String): String {
 }
 
 fun idiomaticClassName(name: String): String {
-    return idiomaticName(name).replaceFirstChar { it.uppercase() }
+    return splitIntoWords(name) { it.lowercase().replaceFirstChar { c -> c.uppercase() } }.joinToString("")
 }
 
 fun idiomaticName(name: String): String {
-    val words = splitIntoWords(name).asSequence()
-    return words.first().lowercase() + words.drop(1).joinToString("") { it.lowercase().replaceFirstChar { c -> c.uppercase() } }
+    val words = splitIntoWords(name, String::uppercase).asSequence()
+    return words.first() + words.drop(1).joinToString("") { it.replaceFirstChar { c -> c.uppercase() } }
 }
 
 fun idiomaticEnumEntryName(name: String): String {
-    return splitIntoWords(name).joinToString("_") { it.uppercase() }
+    return splitIntoWords(name, String::uppercase).joinToString("_")
 }
 
 fun symbolName(s: String): String {

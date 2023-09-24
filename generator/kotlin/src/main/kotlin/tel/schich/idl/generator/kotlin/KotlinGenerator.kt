@@ -149,8 +149,6 @@ class KotlinGenerator : JvmInProcessGenerator {
 
         val generatedFiles = subjectModules.flatMap { subjectModule ->
             val packageName = getPackage(subjectModule)
-            val modulePath = request.outputPath.resolve(packageName.replace('.', File.separatorChar))
-            modulePath.createDirectories()
 
             fun definitionType(modelReference: ModelReference): String {
                 val (referencedModule, referencedDefinition) = resolveModelReference(subjectModule, modules, modelReference)!!
@@ -160,7 +158,9 @@ class KotlinGenerator : JvmInProcessGenerator {
             subjectModule.definitions.map { definition ->
                 val name = definitionName(subjectModule, definition.metadata)
                 val fileName = definition.metadata.getAnnotation(FileNameAnnotation) ?: name
-                val filePath = modulePath.resolve("$fileName.kt")
+                val filePath = request.outputPath
+                    .resolve(packageName.replace('.', File.separatorChar))
+                    .resolve("$fileName.kt")
 
                 fun FileBuilder.typeWrappingDefinition(type: String) {
                     val representationType = definition.metadata.getAnnotation(RepresentAsAnnotation) ?: type
@@ -473,6 +473,8 @@ class KotlinGenerator : JvmInProcessGenerator {
                         }
                     }
                 }
+
+                filePath.parent.createDirectories()
                 Files.write(filePath, code.toByteArray())
 
                 filePath
