@@ -218,7 +218,6 @@ fun buildFile(packageName: String, block: FileBuilder.() -> Unit): String {
 fun kotlinTypeFromDataType(dataType: PrimitiveDataType): String {
     return when (dataType) {
         is PrimitiveDataType.Bool -> "kotlin.Boolean"
-        is PrimitiveDataType.Custom -> TODO()
         is PrimitiveDataType.Float -> {
             val size = dataType.size
             when {

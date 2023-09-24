@@ -45,10 +45,6 @@ sealed interface PrimitiveDataType {
     @Serializable
     @SerialName("boolean")
     data object Bool : PrimitiveDataType
-
-    @Serializable
-    @SerialName("custom")
-    data class Custom(val configuration: JsonElement = JsonNull) : PrimitiveDataType
 }
 
 @Serializable
