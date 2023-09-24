@@ -5,7 +5,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
 import tel.schich.idl.core.constraint.CollectionSizeRange
 import tel.schich.idl.core.constraint.FloatValueRange
