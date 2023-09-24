@@ -16,7 +16,7 @@ import tel.schich.idl.core.valueAsBoolean
 import tel.schich.idl.core.valueAsString
 import tel.schich.idl.core.valueFromJson
 import tel.schich.idl.generator.kotlin.generate.FileBuilder
-import tel.schich.idl.generator.kotlin.generate.buildFile
+import tel.schich.idl.generator.kotlin.generate.SimpleFileBuilder
 import tel.schich.idl.generator.kotlin.generate.definitionName
 import tel.schich.idl.generator.kotlin.generate.generateAdt
 import tel.schich.idl.generator.kotlin.generate.generateAlias
@@ -95,73 +95,73 @@ class KotlinGenerator : JvmInProcessGenerator {
                 .resolve(packageName.replace('.', File.separatorChar))
                 .resolve("$fileName.kt")
 
-            val code = buildFile(packageName) {
-                fun <T : Definition> ctx(def: T): KotlinGeneratorContext<T> = KotlinGeneratorContext(
-                    request,
-                    subjectModule,
-                    modules,
-                    serializationLibrary,
-                    this,
-                    name,
-                    def,
-                )
+            val builder = SimpleFileBuilder(packageName)
+            fun <T : Definition> ctx(def: T): KotlinGeneratorContext<T> = KotlinGeneratorContext(
+                request,
+                subjectModule,
+                modules,
+                serializationLibrary,
+                builder,
+                name,
+                def,
+            )
 
-                fun unlessOtherwiseRepresented(block: () -> Unit) {
-                    val representationType = definition.metadata.getAnnotation(RepresentAsAnnotation)
-                    if (representationType != null) {
-                        typeAlias(name, representationType)
-                    } else {
-                        block()
-                    }
-                }
-
-                when (definition) {
-                    is Model.Primitive -> {
-                        ctx(definition).generatePrimitive()
-                    }
-                    is Model.HomogenousList -> {
-                        ctx(definition).generateHomogenousList()
-                    }
-                    is Model.HomogenousSet -> {
-                        ctx(definition).generateHomogenousSet()
-                    }
-                    is Model.HomogenousMap -> {
-                        ctx(definition).generateHomogenousMap()
-                    }
-                    is Model.Constant -> {
-                        ctx(definition).generateConstant()
-                    }
-                    is Alias -> {
-                        ctx(definition).generateAlias()
-                    }
-                    is Model.Unknown -> {
-                        ctx(definition).generateUnknown()
-                    }
-                    is Model.Enumeration -> unlessOtherwiseRepresented {
-                        ctx(definition).generateEnumeration()
-                    }
-                    is Model.Product -> unlessOtherwiseRepresented {
-                        ctx(definition).generateProduct()
-                    }
-                    is Model.Adt -> unlessOtherwiseRepresented {
-                        ctx(definition).generateAdt()
-                    }
-                    is Model.Record -> unlessOtherwiseRepresented {
-                        ctx(definition).generateRecord()
-                    }
-                    is Model.Sum -> unlessOtherwiseRepresented {
-                        ctx(definition).generateSum()
-                    }
-                    is Model.TaggedSum -> unlessOtherwiseRepresented {
-                        ctx(definition).generateTaggedSum()
-                    }
+            fun unlessOtherwiseRepresented(block: () -> Unit) {
+                val representationType = definition.metadata.getAnnotation(RepresentAsAnnotation)
+                if (representationType != null) {
+                    builder.typeAlias(name, representationType)
+                } else {
+                    block()
                 }
             }
 
-            filePath.parent.createDirectories()
-            Files.write(filePath, code.toByteArray())
+            when (definition) {
+                is Model.Primitive -> {
+                    ctx(definition).generatePrimitive()
+                }
+                is Model.HomogenousList -> {
+                    ctx(definition).generateHomogenousList()
+                }
+                is Model.HomogenousSet -> {
+                    ctx(definition).generateHomogenousSet()
+                }
+                is Model.HomogenousMap -> {
+                    ctx(definition).generateHomogenousMap()
+                }
+                is Model.Constant -> {
+                    ctx(definition).generateConstant()
+                }
+                is Alias -> {
+                    ctx(definition).generateAlias()
+                }
+                is Model.Unknown -> {
+                    ctx(definition).generateUnknown()
+                }
+                is Model.Enumeration -> unlessOtherwiseRepresented {
+                    ctx(definition).generateEnumeration()
+                }
+                is Model.Product -> unlessOtherwiseRepresented {
+                    ctx(definition).generateProduct()
+                }
+                is Model.Adt -> unlessOtherwiseRepresented {
+                    ctx(definition).generateAdt()
+                }
+                is Model.Record -> unlessOtherwiseRepresented {
+                    ctx(definition).generateRecord()
+                }
+                is Model.Sum -> unlessOtherwiseRepresented {
+                    ctx(definition).generateSum()
+                }
+                is Model.TaggedSum -> unlessOtherwiseRepresented {
+                    ctx(definition).generateTaggedSum()
+                }
+            }
 
-            filePath
+
+            filePath.also {
+                it.parent.createDirectories()
+                Files.newBufferedWriter(it).use(builder::write)
+            }
         }
     }
 

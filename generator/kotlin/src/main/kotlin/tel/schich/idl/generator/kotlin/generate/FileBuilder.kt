@@ -1,5 +1,7 @@
 package tel.schich.idl.generator.kotlin.generate
 
+import java.io.Writer
+
 interface FileBuilder {
     fun topLevelSymbolName(name: String): String
     fun useImported(qualifiedName: String): String
@@ -10,24 +12,16 @@ interface FileBuilder {
     fun line(block: FileBuilder.() -> Unit)
 }
 
-fun buildFile(packageName: String, block: FileBuilder.() -> Unit): String {
-    return SimpleFileBuilder(
-        packageName,
-        mutableSetOf(),
-        mutableSetOf(),
-        StringBuilder(),
-        indentionLevel = 0u,
-    ).also(block).toString()
-}
-
-class SimpleFileBuilder(
+class SimpleFileBuilder private constructor(
     private val packageName: String,
     private val imports: MutableSet<String>,
     private val topLevelSymbols: MutableSet<String>,
     private val builder: StringBuilder,
-    val indentionLevel: UInt,
+    private val indentionLevel: UInt
 ) : FileBuilder {
     private val indention = "    "
+
+    constructor(packageName: String) : this(packageName, mutableSetOf(), mutableSetOf(), StringBuilder(), 0u)
 
     override fun topLevelSymbolName(name: String): String {
         if (name in topLevelSymbols) {
@@ -102,17 +96,15 @@ class SimpleFileBuilder(
         }
     }
 
-    override fun toString(): String {
-        val output = StringBuilder()
-        output.append("package ${quoteName(packageName)}\n\n")
+    fun write(writer: Writer) {
+        writer.write("package ${quoteName(packageName)}\n\n")
         val sortedImports = imports.toList().sorted()
         if (sortedImports.isNotEmpty()) {
             for (import in sortedImports) {
-                output.append("import ${quoteName(import)}\n")
+                writer.write("import ${quoteName(import)}\n")
             }
-            output.append("\n")
+            writer.write("\n")
         }
-        output.append(builder)
-        return output.toString()
+        writer.write(builder.toString())
     }
 }
