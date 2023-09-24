@@ -7,6 +7,7 @@ import tel.schich.idl.generator.kotlin.SymbolNameAnnotation
 
 fun KotlinGeneratorContext<Model.Sum>.generateSum() {
     docs(definition.metadata)
+    deprecatedAnnotation(definition.metadata)
     indent()
     append("sealed interface ${topLevelSymbolName(name)}")
     codeBlock {
@@ -20,6 +21,7 @@ fun KotlinGeneratorContext<Model.Sum>.generateSum() {
                 ?: idiomaticClassName(constructor.metadata.name)
             val type = definitionType(constructor.model)
             docs(constructor.metadata)
+            deprecatedAnnotation(definition.metadata)
             line {
                 append("data class ${symbolName(constructorName)}(")
                 value(valueFieldName(constructor.metadata), type)

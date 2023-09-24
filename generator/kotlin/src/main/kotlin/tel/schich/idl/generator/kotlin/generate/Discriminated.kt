@@ -37,6 +37,7 @@ fun KotlinGeneratorContext<Model.TaggedSum>.generateTaggedSum() {
             docs(definition.metadata)
             serializableAnnotation(serializationLibrary)
             jsonClassDiscriminatorAnnotation(serializationLibrary, discriminatorFieldName)
+            deprecatedAnnotation(definition.metadata)
             line {
                 append("sealed interface ${topLevelSymbolName(name)}")
             }
@@ -69,6 +70,7 @@ fun KotlinGeneratorContext<Model.TaggedSum>.generateTaggedSum() {
                     val constructorName = constructor.metadata.getAnnotation(SymbolNameAnnotation)
                         ?: idiomaticClassName(constructor.metadata.name)
                     docs(constructor.metadata)
+                    deprecatedAnnotation(definition.metadata)
                     line {
                         append("data class ${symbolName(constructorName)}(")
                         val type = definitionType(constructor.model)
@@ -85,6 +87,7 @@ fun KotlinGeneratorContext<Model.Adt>.generateAdt() {
     docs(definition.metadata)
     jsonClassDiscriminatorAnnotation(serializationLibrary, discriminatorFieldName(definition.metadata))
     serializableAnnotation(serializationLibrary)
+    deprecatedAnnotation(definition.metadata)
     indent()
     append("sealed interface ${topLevelSymbolName(name)}")
     codeBlock {
@@ -111,6 +114,7 @@ fun KotlinGeneratorContext<Model.Adt>.generateAdt() {
             docs(constructor.metadata)
             serializableAnnotation(serializationLibrary)
             serialNameAnnotation(serializationLibrary, constructor.metadata)
+            deprecatedAnnotation(definition.metadata)
             line {
                 append("data class ${topLevelSymbolName(constructorName)}(")
             }

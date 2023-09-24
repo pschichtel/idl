@@ -21,6 +21,7 @@ private fun constructInstance(subject: Module, module: Module, definition: Defin
 fun KotlinGeneratorContext<Model.Record>.generateRecord() {
     docs(definition.metadata)
     serializableAnnotation(serializationLibrary)
+    deprecatedAnnotation(definition.metadata)
     // TODO add @SerialName if used in tagged sum and implement interfaces accordingly
     line {
         append("data class ${topLevelSymbolName(name)}(")
@@ -39,6 +40,7 @@ fun KotlinGeneratorContext<Model.Record>.generateRecord() {
             val type = definitionType(referencedModule, referencedDefinition)
             docs(definition.metadata)
             contextualAnnotation(serializationLibrary, referencedDefinition)
+            deprecatedAnnotation(definition.metadata)
             line {
                 value(propertyName, type)
                 if (property.nullable) {

@@ -33,6 +33,7 @@ private fun tupleFieldName(n: Int): String {
 fun KotlinGeneratorContext<Model.Product>.generateProduct() {
     docs(definition.metadata)
     serializableAnnotation(serializationLibrary)
+    deprecatedAnnotation(definition.metadata)
     line {
         append("data class ${topLevelSymbolName(name)}(")
     }

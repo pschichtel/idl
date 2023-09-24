@@ -11,6 +11,8 @@ definitions:
   - metadata:
       name: LegacyEnableBargeIn
       deprecated: true
+      annotations:
+        tel.schich.idl.generator.kotlin/deprecation-message: This definition is superseded by AdvancedBargeInOptions
     type: primitive
     dataType:
       type: boolean

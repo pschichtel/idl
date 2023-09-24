@@ -13,6 +13,7 @@ fun KotlinGeneratorContext<Model.Enumeration>.generateEnumeration() {
 
     docs(definition.metadata)
     serializableAnnotation(serializationLibrary)
+    deprecatedAnnotation(definition.metadata)
     indent()
     append("enum class ${topLevelSymbolName(name)}(")
     value(valueFieldName, valueType)
@@ -25,6 +26,7 @@ fun KotlinGeneratorContext<Model.Enumeration>.generateEnumeration() {
             docs(entry.metadata)
             val stringValue = if (value.isString) value.content else null
             serialNameAnnotation(serializationLibrary, entry.metadata, stringValue)
+            deprecatedAnnotation(definition.metadata)
             line {
                 append("${symbolName(entryName)}(${valueFieldName} = ${primitiveValue(value)}),")
             }

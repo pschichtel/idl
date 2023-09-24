@@ -14,6 +14,7 @@ private fun KotlinGeneratorContext<*>.collectionDefinition(defaultCollectionType
     val newType = definition.metadata.getAnnotation(NewTypeAnnotation) ?: true
 
     docs(definition.metadata)
+    deprecatedAnnotation(definition.metadata)
     if (newType) {
         serializableAnnotation(serializationLibrary)
         valueClass(name, valueFieldName(definition.metadata), type)

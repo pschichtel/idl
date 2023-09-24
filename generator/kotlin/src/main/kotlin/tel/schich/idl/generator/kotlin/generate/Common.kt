@@ -13,6 +13,8 @@ import tel.schich.idl.core.generate.getAnnotation
 import tel.schich.idl.core.getAnnotation
 import tel.schich.idl.core.resolveModelReference
 import tel.schich.idl.core.splitIntoWords
+import tel.schich.idl.core.valueAsString
+import tel.schich.idl.generator.kotlin.KotlinAnnotation
 import tel.schich.idl.generator.kotlin.KotlinGeneratorContext
 import tel.schich.idl.generator.kotlin.ModelNameFormatAnnotation
 import tel.schich.idl.generator.kotlin.PackageAnnotation
@@ -177,5 +179,23 @@ fun FileBuilder.docBlock(text: String) {
     }
     line {
         append(" */")
+    }
+}
+
+private val DeprecationMessageAnnotation = KotlinAnnotation("deprecation-message", ::valueAsString)
+
+fun FileBuilder.deprecatedAnnotation(metadata: Metadata) {
+    if (!metadata.deprecated) {
+        return
+    }
+
+    val message = metadata.getAnnotation(DeprecationMessageAnnotation)
+    line {
+        annotation("kotlin.Deprecated")
+        if (message != null) {
+            append("(message = ")
+            append(primitiveValue(JsonPrimitive(message)))
+            append(")")
+        }
     }
 }
