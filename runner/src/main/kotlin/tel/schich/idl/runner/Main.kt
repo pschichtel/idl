@@ -6,7 +6,7 @@ import tel.schich.idl.runner.command.Root
 import tel.schich.idl.runner.command.Validate
 
 fun main(args: Array<String>) {
-    val command = Root()
+    Root()
         .subcommands(InProcessGenerate(), Validate())
         .main(args)
 }

@@ -4,8 +4,6 @@ plugins {
     id("tel.schich.idl.conventions-json-gen")
 }
 
-version = "1.0-SNAPSHOT"
-
 repositories {
     mavenCentral()
 }

@@ -2,11 +2,14 @@
 rootProject.name = "kotlin-idl"
 
 include(
-    "core",
-    "runner",
+    ":core",
+    ":runner",
     ":generator:openapi",
     ":generator:kotlin",
 )
+
+includeBuild("example")
+includeBuild("plugin")
 
 pluginManagement {
     includeBuild("conventions")
