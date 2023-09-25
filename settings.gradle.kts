@@ -6,10 +6,10 @@ include(
     ":runner",
     ":generator:openapi",
     ":generator:kotlin",
+    ":plugin",
 )
 
 includeBuild("example")
-includeBuild("plugin")
 
 pluginManagement {
     includeBuild("conventions")

@@ -1,5 +1,5 @@
 plugins {
-//    id("tel.schich.idl.plugin") apply(false)
+    id("tel.schich.idl.plugin") apply(false)
 }
 
 allprojects {

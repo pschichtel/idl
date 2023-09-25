@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    api("tel.schich.idl:runner")
+    api(project(":runner"))
 }
 
 gradlePlugin {

@@ -1,5 +1,5 @@
 plugins {
     id("tel.schich.idl.conventions-base")
-//    id("tel.schich.idl.plugin")
+    id("tel.schich.idl.plugin")
     application
 }

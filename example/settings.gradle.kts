@@ -8,7 +8,7 @@ include(
 
 pluginManagement {
     includeBuild("../conventions")
-    includeBuild("../plugin")
+    includeBuild("..")
     repositories {
         mavenCentral()
         gradlePluginPortal()
