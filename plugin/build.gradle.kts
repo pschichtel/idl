@@ -13,7 +13,10 @@ repositories {
 }
 
 dependencies {
-    api(project(":runner"))
+    implementation(project(":core"))
+    implementation(project(":runner"))
+    implementation(project(":generator:kotlin"))
+    implementation(project(":generator:openapi"))
 }
 
 gradlePlugin {

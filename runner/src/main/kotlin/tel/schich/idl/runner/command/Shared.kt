@@ -36,7 +36,7 @@ import tel.schich.idl.runner.loadModule
 import tel.schich.idl.core.validation.ValidationError
 import tel.schich.idl.core.validation.ValidationResult
 import tel.schich.idl.core.validation.validateModule
-import tel.schich.idl.runner.LoaderException
+import tel.schich.idl.runner.generate.resolveToFiles
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.streams.asSequence
@@ -46,18 +46,10 @@ internal fun CliktCommand.error(string: String) {
     echo(string, err = true)
 }
 
-internal fun CliktCommand.loadModules(sources: List<Path>): List<Module> {
-    val inputFiles = sources
-        .filter { Files.exists(it) }
-        .map { it.toRealPath() }
-        .flatMap {
-            when {
-                Files.isDirectory(it) -> Files.walk(it).asSequence().filterNot(Files::isDirectory)
-                else -> sequenceOf(it)
-            }
-        }
+internal fun CliktCommand.resolveModulePaths(sources: List<Path>): List<Path> {
+    val resolvedPaths = resolveToFiles(sources)
 
-    if (inputFiles.isEmpty()) {
+    if (resolvedPaths.isEmpty()) {
         error("Non of the given paths were viable:")
         for (inputPath in sources) {
             error("  - $inputPath")
@@ -65,10 +57,7 @@ internal fun CliktCommand.loadModules(sources: List<Path>): List<Module> {
         exitProcess(1)
     }
 
-    return inputFiles.map { inputFile ->
-        val module = loadModule(inputFile)
-        module.copy(metadata = module.metadata.copy(sourcePath = inputFile))
-    }
+    return resolvedPaths
 }
 
 internal fun CliktCommand.printValidationErrors(validationErrors: Set<ValidationError>) {

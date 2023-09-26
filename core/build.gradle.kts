@@ -9,6 +9,7 @@ repositories {
 }
 
 dependencies {
-    api("org.jetbrains.kotlinx:kotlinx-serialization-core")
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json")
+    val kotlinxSerializationVersion = "1.6.0"
+    api("org.jetbrains.kotlinx:kotlinx-serialization-core:$kotlinxSerializationVersion")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
 }

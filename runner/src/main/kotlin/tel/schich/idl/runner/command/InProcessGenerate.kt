@@ -12,7 +12,10 @@ import tel.schich.idl.core.Annotations
 import tel.schich.idl.core.ModuleReference
 import tel.schich.idl.core.generate.GenerationRequest
 import tel.schich.idl.core.generate.GenerationResult
-import tel.schich.idl.runner.loadAnnotations
+import tel.schich.idl.runner.generate.JvmInProcessGenerator
+import tel.schich.idl.runner.generate.UnknownSubjectsException
+import tel.schich.idl.runner.generate.loadInputs
+import tel.schich.idl.runner.generate.resolveSubjects
 import java.nio.file.Path
 
 private fun mergeAnnotations(all: List<Annotations>): Annotations {
@@ -21,9 +24,7 @@ private fun mergeAnnotations(all: List<Annotations>): Annotations {
 
 internal abstract class GenerateCommand(name: String) : CliktCommand(name = name) {
     private val moduleSources: List<Path> by moduleSourcesOption()
-    private val annotations: List<Annotations> by option("--annotations", "-a").path().convert {
-        loadAnnotations(it)
-    }.multiple()
+    private val annotations: List<Path> by option("--annotations", "-a").path(mustExist = true).multiple()
     private val subjectReferences by option("--subject").convert { arg ->
         ModuleReference.parse(arg)
             ?: fail("the subject must be a valid module reference of the format module-name:version")
@@ -31,42 +32,34 @@ internal abstract class GenerateCommand(name: String) : CliktCommand(name = name
     private val outputPath by option("--output", "-o").path().required()
 
     protected inline fun withRequest(block: (GenerationRequest) -> GenerationResult): GenerationResult {
-        val modules = loadModules(moduleSources)
-        validate(modules)
-
-        if (modules.isEmpty()) {
+        val resolvedModulePaths = resolveModulePaths(moduleSources)
+        val inputs = loadInputs(resolvedModulePaths, annotations)
+        if (inputs.modules.isEmpty()) {
             error("No modules have been loaded!")
+            return GenerationResult.Failure("No modules have been loaded!")
         }
 
+        validate(inputs.modules)
+
         echo("Modules loaded:")
-        for (module in modules) {
+        for (module in inputs.modules) {
             echo("  - ${module.reference}")
         }
 
-        val loadedModuleReferences = modules.map { it.reference }.toSet()
-        val subjects = if (subjectReferences.isEmpty()) {
-            loadedModuleReferences
-        } else {
-            subjectReferences.toSet().also { selectedSubjects ->
-                val unknownSubjects = selectedSubjects - loadedModuleReferences
-                if (unknownSubjects.isNotEmpty()) {
-                    error("Some subjects have not been loaded:")
-                    for (unknownSubject in unknownSubjects) {
-                        error(" - $unknownSubject")
-                    }
-                    exit(1)
-                }
+        val subjects = try {
+            resolveSubjects(inputs.modules, subjectReferences)
+        } catch (e: UnknownSubjectsException) {
+            error("Some subjects have not been loaded:")
+            for (unknownSubject in e.unknownSubjects) {
+                error(" - $unknownSubject")
             }
-        }
-
-        if (subjects.isEmpty()) {
-            error("No modules have been selected for generation!")
+            exit(1)
         }
 
         val request = GenerationRequest(
-            modules,
+            inputs.modules,
             subjects,
-            mergeAnnotations(annotations),
+            inputs.annotations,
             outputPath,
         )
         return block(request)

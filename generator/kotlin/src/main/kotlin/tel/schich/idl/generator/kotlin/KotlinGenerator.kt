@@ -34,7 +34,7 @@ import tel.schich.idl.generator.kotlin.generate.generateTaggedSum
 import tel.schich.idl.generator.kotlin.generate.generateUnknown
 import tel.schich.idl.generator.kotlin.generate.getPackage
 import tel.schich.idl.generator.kotlin.generate.typeAlias
-import tel.schich.idl.runner.command.JvmInProcessGenerator
+import tel.schich.idl.runner.generate.JvmInProcessGenerator
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path

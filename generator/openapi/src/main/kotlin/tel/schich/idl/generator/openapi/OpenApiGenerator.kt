@@ -31,7 +31,7 @@ import tel.schich.idl.core.resolveModelReference
 import tel.schich.idl.core.validation.GeneratorValidationError
 import tel.schich.idl.core.valueAsString
 import tel.schich.idl.core.valueFromJson
-import tel.schich.idl.runner.command.JvmInProcessGenerator
+import tel.schich.idl.runner.generate.JvmInProcessGenerator
 import java.io.File
 import java.math.BigDecimal
 import java.net.URI

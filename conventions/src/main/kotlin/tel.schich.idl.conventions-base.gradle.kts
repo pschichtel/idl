@@ -13,11 +13,11 @@ repositories {
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of("8"))
+        vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
 dependencies {
     testImplementation(kotlin("test"))
-    implementation(platform("org.jetbrains.kotlinx:kotlinx-serialization-bom:1.6.0"))
 }
 
 tasks.test {

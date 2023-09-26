@@ -1,4 +1,4 @@
-package tel.schich.idl.runner.command
+package tel.schich.idl.runner.generate
 
 import tel.schich.idl.core.generate.GenerationRequest
 import tel.schich.idl.core.generate.GenerationResult
