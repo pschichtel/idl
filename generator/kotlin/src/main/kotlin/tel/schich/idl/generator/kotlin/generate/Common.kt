@@ -154,6 +154,10 @@ fun symbolName(s: String): String {
     return s
 }
 
+fun quoteName(name: String): String {
+    return name.split(PACKAGE_SEPARATOR).joinToString(PACKAGE_SEPARATOR, transform = ::symbolName)
+}
+
 fun FileBuilder.value(name: String, type: String, const: Boolean = false, private: Boolean = false, override: Boolean = false) {
     if (override) {
         append("override ")

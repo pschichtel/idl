@@ -4,12 +4,18 @@ import kotlinx.serialization.json.JsonPrimitive
 import tel.schich.idl.generator.kotlin.SerializationLibrary
 import tel.schich.idl.generator.kotlin.generate.FileBuilder
 import tel.schich.idl.generator.kotlin.generate.annotation
-import tel.schich.idl.generator.kotlin.generate.lineComment
 import tel.schich.idl.generator.kotlin.generate.literalString
 import tel.schich.idl.generator.kotlin.generate.primitiveValue
+import tel.schich.idl.generator.kotlin.generate.quoteName
 import tel.schich.idl.generator.kotlin.generate.symbolName
 
-fun FileBuilder.jsonTypeInfoAnnotation(serializationLibrary: SerializationLibrary?, discriminatorFieldName: String, subTypes: Map<String, JsonPrimitive>) {
+data class SubTypeInfo(
+    val import: String,
+    val nestedClass: String?,
+    val tag: JsonPrimitive,
+)
+
+fun FileBuilder.jsonTypeInfoAnnotation(serializationLibrary: SerializationLibrary?, discriminatorFieldName: String, subTypes: List<SubTypeInfo>) {
     if (serializationLibrary != SerializationLibrary.JACKSON) {
         return
     }
@@ -46,11 +52,16 @@ fun FileBuilder.jsonTypeInfoAnnotation(serializationLibrary: SerializationLibrar
                 append("value = [")
             }
             indented {
-                for ((type, value) in subTypes) {
+                for ((import, nestedClass, value) in subTypes) {
+                    val stringTag = JsonPrimitive(value.content)
                     line {
-                        append(
-                            "${useImported(jsonSubTypes)}.${symbolName("Type")}(value = ${useImported(type)}::class, name = ${primitiveValue(value)}),"
-                        )
+                        append("${useImported(jsonSubTypes)}.${symbolName("Type")}(value = ")
+                        val imported = useImported(import)
+                        append(imported)
+                        if (nestedClass != null) {
+                            append(".${quoteName(nestedClass)}")
+                        }
+                        append("::class, name = ${primitiveValue(stringTag)}),")
                     }
                 }
             }

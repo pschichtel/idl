@@ -27,7 +27,7 @@ class SimpleFileBuilder private constructor(
         if (name in topLevelSymbols) {
             error("Global symbol $name was defined repeatedly!")
         }
-        topLevelSymbols.add(name)
+        topLevelSymbols += packageName + PACKAGE_SEPARATOR + name
         return symbolName(name)
     }
 
@@ -49,10 +49,10 @@ class SimpleFileBuilder private constructor(
         if (qualifiedName in imports) {
             return symbolName(symbolName)
         }
-        if (symbolName in topLevelSymbols) {
-            return symbolName(qualifiedName)
+        if (topLevelSymbols.any { it.endsWith(PACKAGE_SEPARATOR + symbolName) &&  it != qualifiedName }) {
+            return quoteName(qualifiedName)
         }
-        topLevelSymbols += symbolName
+        topLevelSymbols += qualifiedName
 
         if (referencedPackageName != this.packageName && referencedPackageName !in PreImportedPackage) {
             imports.add(qualifiedName)
@@ -87,16 +87,6 @@ class SimpleFileBuilder private constructor(
         indent()
         block()
         append("\n")
-    }
-
-    private fun quoteName(name: String): String {
-        return name.split(PACKAGE_SEPARATOR).joinToString(PACKAGE_SEPARATOR) {
-            if (it in HardKeywords) {
-                "`$it`"
-            } else {
-                it
-            }
-        }
     }
 
     fun write(writer: Writer) {

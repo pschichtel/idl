@@ -11,6 +11,7 @@ import tel.schich.idl.generator.kotlin.DiscriminatorFieldNameAnnotation
 import tel.schich.idl.generator.kotlin.KotlinAnnotation
 import tel.schich.idl.generator.kotlin.KotlinGeneratorContext
 import tel.schich.idl.generator.kotlin.SymbolNameAnnotation
+import tel.schich.idl.generator.kotlin.generate.library.SubTypeInfo
 import tel.schich.idl.generator.kotlin.generate.library.contextualAnnotation
 import tel.schich.idl.generator.kotlin.generate.library.jsonClassDiscriminatorAnnotation
 import tel.schich.idl.generator.kotlin.generate.library.jsonTypeInfoAnnotation
@@ -35,7 +36,7 @@ fun KotlinGeneratorContext<Model.TaggedSum>.generateTaggedSum() {
 
     when (encoding) {
         TaggedSumEncoding.RECORD_PROPERTY -> {
-            val subTypes = definition.constructors.associate { constructor ->
+            val subTypes = definition.constructors.map { constructor ->
                 val (referencedModule, referencedDefinition) = resolveModelReference(subjectModule, modules, constructor.model)!!
                 if (referencedModule != subjectModule) {
                     invalidModule(subjectModule.reference, "The ${TaggedSumEncoding.RECORD_PROPERTY} encoding requires all constructors to be defined in the same module!")
@@ -47,7 +48,7 @@ fun KotlinGeneratorContext<Model.TaggedSum>.generateTaggedSum() {
                     invalidModule(subjectModule.reference, "The ${TaggedSumEncoding.RECORD_PROPERTY} requires a discriminator field name that does not exist in any of its constructors, $discriminatorFieldName already exists in ${constructor.metadata.name}!")
                 }
 
-                definitionType(referencedModule, referencedDefinition) to discriminatorStringValue(constructor.metadata, constructor.tag.tag)
+                SubTypeInfo(definitionType(referencedModule, referencedDefinition), null, constructor.tag.tag)
             }
             docs(definition.metadata)
             serializableAnnotation(serializationLibrary)
@@ -97,8 +98,8 @@ fun KotlinGeneratorContext<Model.Adt>.generateAdt() {
     docs(definition.metadata)
     jsonClassDiscriminatorAnnotation(serializationLibrary, discriminatorFieldName)
     serializableAnnotation(serializationLibrary)
-    val subTypes = definition.constructors.associate {
-        constructorName(it.metadata) to discriminatorValue(it.metadata)
+    val subTypes = definition.constructors.map {
+        SubTypeInfo(name, constructorName(it.metadata), discriminatorValue(it.metadata))
     }
     jsonTypeInfoAnnotation(serializationLibrary, discriminatorFieldName, subTypes)
     deprecatedAnnotation(definition.metadata)
