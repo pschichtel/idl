@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm")
     publishing
     `maven-publish`
+    idea
 }
 
 repositories {
@@ -16,8 +17,16 @@ java {
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
+
 dependencies {
     testImplementation(kotlin("test"))
+}
+
+idea {
+    module {
+        isDownloadSources = true
+        isDownloadJavadoc = true
+    }
 }
 
 tasks.test {
