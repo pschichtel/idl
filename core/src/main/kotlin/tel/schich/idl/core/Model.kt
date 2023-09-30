@@ -1,6 +1,5 @@
 package tel.schich.idl.core
 
-import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
@@ -13,15 +12,12 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.json.JsonClassDiscriminator
-import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
-import sun.awt.im.SimpleInputMethodWindow
 import tel.schich.idl.core.constraint.CollectionSizeRange
 import tel.schich.idl.core.constraint.FloatValueRange
 import tel.schich.idl.core.constraint.IntegerValueRange
 import tel.schich.idl.core.constraint.StringLengthRange
-import java.util.UUID
 
 @Serializable
 @OptIn(ExperimentalSerializationApi::class)
