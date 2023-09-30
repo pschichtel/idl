@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package tel.schich.idl.runner
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -53,13 +55,11 @@ private inline fun <T> handleJsonException(deserializationStrategy: Deserializat
     } catch (e: SerializationException) {
         throw LoaderException("Failed to parse JSON!", e)
     } catch (e: IllegalArgumentException) {
-        @OptIn(ExperimentalSerializationApi::class)
         throw LoaderException("Failed to map JSON to ${deserializationStrategy.descriptor.serialName}!", e)
     }
 }
 
 object JsonLoader : Loader {
-    @OptIn(ExperimentalSerializationApi::class)
     override fun <T> load(data: ByteArray, deserializationStrategy: DeserializationStrategy<T>): T {
         return handleJsonException(deserializationStrategy) {
             json.decodeFromStream(it, ByteArrayInputStream(data))
@@ -68,7 +68,6 @@ object JsonLoader : Loader {
 }
 
 
-@OptIn(ExperimentalSerializationApi::class)
 private fun convertJacksonTreeToJsonElement(jackson: JsonNode): JsonElement = when (jackson) {
     is ObjectNode -> {
         val obj = buildMap(jackson.size()) {

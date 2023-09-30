@@ -194,7 +194,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                         modules,
                         commonNamePrefix,
                         asNullable = property.nullable,
-                        withDefault = property.default?.value,
+                        withDefault = property.default,
                         property.metadata,
                     )
                 } else {

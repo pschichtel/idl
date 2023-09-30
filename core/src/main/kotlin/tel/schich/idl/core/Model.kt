@@ -1,15 +1,27 @@
 package tel.schich.idl.core
 
+import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.encoding.CompositeDecoder
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.json.JsonClassDiscriminator
+import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
+import sun.awt.im.SimpleInputMethodWindow
 import tel.schich.idl.core.constraint.CollectionSizeRange
 import tel.schich.idl.core.constraint.FloatValueRange
 import tel.schich.idl.core.constraint.IntegerValueRange
 import tel.schich.idl.core.constraint.StringLengthRange
+import java.util.UUID
 
 @Serializable
 @OptIn(ExperimentalSerializationApi::class)
@@ -104,16 +116,66 @@ data class Alias(
     val aliasedModel: ModelReference,
 ) : Definition
 
-@Serializable
-data class DefaultValue(val value: JsonElement)
-
-@Serializable
+@Serializable(RecordPropertySerializer::class)
 data class RecordProperty(
     val metadata: BasicMetadata,
     val model: ModelReference,
     val nullable: Boolean = false,
-    val default: DefaultValue? = null,
+    val default: JsonElement? = null,
 )
+
+private object RecordPropertySerializer : KSerializer<RecordProperty> {
+    override val descriptor = buildClassSerialDescriptor(RecordProperty::class.qualifiedName!!) {
+        element("metadata", BasicMetadata.serializer().descriptor)
+        element("model", ModelReference.serializer().descriptor)
+        element("nullable", Boolean.serializer().descriptor, isOptional = true)
+        element("default", JsonElement.serializer().descriptor, isOptional = true)
+    }
+
+    override fun serialize(encoder: Encoder, value: RecordProperty) {
+        encoder.beginStructure(descriptor).apply {
+            encodeSerializableElement(descriptor, index = 0, BasicMetadata.serializer(), value.metadata)
+            encodeSerializableElement(descriptor, index = 1, ModelReference.serializer(), value.model)
+            if (value.nullable) {
+                encodeBooleanElement(descriptor, index = 2, value = true)
+            }
+            value.default?.let {
+                encodeSerializableElement(descriptor, index = 3, JsonElement.serializer(), it)
+            }
+        }.endStructure(descriptor)
+    }
+
+    override fun deserialize(decoder: Decoder) = decoder.decodeStructure(descriptor) {
+        var metadata: BasicMetadata? = null
+        var model: ModelReference? = null
+        var nullable = false
+        var default: JsonElement? = null
+
+        while (true) {
+            when (val index = decodeElementIndex(descriptor)) {
+                CompositeDecoder.DECODE_DONE ->
+                    break
+                CompositeDecoder.UNKNOWN_NAME ->
+                    throw SerializationException("unknown field!")
+                0 ->
+                    metadata = decodeSerializableElement(descriptor, index, BasicMetadata.serializer())
+                1 ->
+                    model = decodeSerializableElement(descriptor, index, ModelReference.serializer())
+                2 ->
+                    nullable = decodeBooleanElement(descriptor, index)
+                3 ->
+                    default = decodeSerializableElement(descriptor, index, JsonElement.serializer())
+            }
+        }
+        if (metadata == null) {
+            throw SerializationException("metadata is required in RecordProperty!")
+        }
+        if (model == null) {
+            throw SerializationException("model is required in RecordProperty!")
+        }
+        RecordProperty(metadata, model, nullable, default)
+    }
+}
 
 @Serializable
 data class AdtConstructor(

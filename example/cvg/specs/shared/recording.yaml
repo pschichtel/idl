@@ -46,8 +46,7 @@ definitions:
 
             When a recording is terminated, it will be processed as soon as possible and can't be resumed.
         nullable: true
-        default:
-          value: null
+        default: null
         model:
           module:
             name: ai.vier.cvg.shared.time
@@ -56,15 +55,13 @@ definitions:
       - metadata:
           name: recordingId
         nullable: true
-        default:
-          value: null
+        default: null
         model:
           name: RecordingId
       - metadata:
           name: speakers
         nullable: true
-        default:
-          value: null
+        default: null
         model:
           module:
             name: ai.vier.cvg.shared.speaker
@@ -84,14 +81,12 @@ definitions:
       - metadata:
           name: recordingId
         nullable: true
-        default:
-          value: null
+        default: null
         model:
           name: RecordingId
       - metadata:
           name: terminate
-        default:
-          value: false
+        default: false
         model:
           name: TerminateRecordingOnStop
   - metadata:

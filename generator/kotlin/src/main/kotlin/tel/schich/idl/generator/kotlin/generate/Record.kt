@@ -49,7 +49,7 @@ fun KotlinGeneratorContext<Model.Record>.generateRecord() {
                 val default = property.default
                 if (default != null) {
                     append(" = ")
-                    append(constructInstance(subjectModule, referencedModule, referencedDefinition, default.value))
+                    append(constructInstance(subjectModule, referencedModule, referencedDefinition, default))
                 }
                 append(",")
             }

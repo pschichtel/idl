@@ -18,7 +18,7 @@ object NullDefaultInNonNullableRecordPropertyValidator : ModuleValidator {
             .flatMap { record ->
                 record.properties
                     .filterNot { it.nullable }
-                    .filter { it.default != null && it.default.value is JsonNull }
+                    .filter { it.default != null && it.default is JsonNull }
                     .map { property ->
                         NullDefaultInNonNullableRecordPropertyError(
                             module.reference,

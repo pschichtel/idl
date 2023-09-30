@@ -48,8 +48,7 @@ definitions:
       - metadata:
           name: botURL
         nullable: true
-        default:
-          value: null
+        default: null
         model:
           module:
             name: ai.vier.cvg.shared.project
@@ -58,8 +57,7 @@ definitions:
       - metadata:
           name: botAccessToken
         nullable: true
-        default:
-          value: null
+        default: null
         model:
           module:
             name: ai.vier.cvg.shared.project
@@ -68,8 +66,7 @@ definitions:
       - metadata:
           name: botConfiguration
         nullable: true
-        default:
-          value: null
+        default: null
         model:
           module:
             name: ai.vier.cvg.shared.project
@@ -78,15 +75,13 @@ definitions:
       - metadata:
           name: language
         nullable: true
-        default:
-          value: null
+        default: null
         model:
           name: ProvisionCallRequestLanguage
       - metadata:
           name: transcriberVendors
         nullable: true
-        default:
-          value: null
+        default: null
         model:
           module:
             name: ai.vier.cvg.shared.speech-service
@@ -95,8 +90,7 @@ definitions:
       - metadata:
           name: synthesizerVendors
         nullable: true
-        default:
-          value: null
+        default: null
         model:
           module:
             name: ai.vier.cvg.shared.speech-service
@@ -104,15 +98,13 @@ definitions:
           name: SynthesizerSelection
       - metadata:
           name: writeDialogData
-        default:
-          value: true
+        default: true
         model:
           name: EnabledDialogData
       - metadata:
           name: inactivityTimeout
         nullable: true
-        default:
-          value: null
+        default: null
         model:
           module:
             name: ai.vier.cvg.shared.project
@@ -121,8 +113,7 @@ definitions:
       - metadata:
           name: minimumNoiseLevel
         nullable: true
-        default:
-          value: null
+        default: null
         model:
           module:
             name: ai.vier.cvg.shared.project
@@ -131,8 +122,7 @@ definitions:
       - metadata:
           name: utteranceTimeout
         nullable: true
-        default:
-          value: null
+        default: null
         model:
           module:
             name: ai.vier.cvg.shared.project

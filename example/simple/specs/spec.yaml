@@ -32,7 +32,13 @@ definitions:
           description: override
         model:
           name: product
+        default: null
         nullable: true
+      - metadata:
+          name: prop2
+          description: override
+        model:
+          name: product
   - type: constant
     metadata:
       name: constant

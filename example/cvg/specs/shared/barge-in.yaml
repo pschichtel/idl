@@ -48,8 +48,7 @@ definitions:
       - metadata:
           name: confidence
         nullable: true
-        default:
-          value: null
+        default: null
         model:
           module:
             name: ai.vier.cvg.shared.confidence
@@ -58,8 +57,7 @@ definitions:
       - metadata:
           name: phraseList
         nullable: true
-        default:
-          value: null
+        default: null
         model:
           module:
             name: ai.vier.cvg.shared.speech-service

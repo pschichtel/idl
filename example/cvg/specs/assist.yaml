@@ -41,8 +41,7 @@ definitions:
       - metadata:
           name: authToken
         nullable: true
-        default:
-          value: null
+        default: null
         model:
           name: AssistAuthToken
   - metadata:
