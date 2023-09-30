@@ -24,7 +24,7 @@ fun KotlinGeneratorContext<Model.Enumeration>.generateEnumeration() {
             val entryName = entry.metadata.getAnnotation(SymbolNameAnnotation)
                 ?: idiomaticEnumEntryName(entry.metadata.name)
             docs(entry.metadata)
-            serialNameAnnotation(serializationLibrary, discriminatorValue(entry.metadata, value))
+            serialNameAnnotation(serializationLibrary, discriminatorStringValue(entry.metadata, value))
             deprecatedAnnotation(definition.metadata)
             line {
                 append("${symbolName(entryName)}(${valueFieldName} = ${primitiveValue(value)}),")

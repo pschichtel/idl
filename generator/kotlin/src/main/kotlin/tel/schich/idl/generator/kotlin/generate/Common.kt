@@ -230,12 +230,6 @@ fun FileBuilder.lineComment(comment: String) {
     }
 }
 
-fun discriminatorValue(metadata: Metadata, explicitValue: JsonPrimitive? = null): JsonPrimitive {
-    return metadata.getAnnotation(DiscriminatorValueAnnotation)?.let(::JsonPrimitive)
-        ?: explicitValue
-        ?: JsonPrimitive(metadata.name)
-}
-
 fun discriminatorStringValue(metadata: Metadata, explicitValue: JsonPrimitive? = null): JsonPrimitive {
     return metadata.getAnnotation(DiscriminatorValueAnnotation)?.let(::JsonPrimitive)
         ?: explicitValue?.content?.let(::JsonPrimitive)

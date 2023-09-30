@@ -48,7 +48,7 @@ fun KotlinGeneratorContext<Model.TaggedSum>.generateTaggedSum() {
                     invalidModule(subjectModule.reference, "The ${TaggedSumEncoding.RECORD_PROPERTY} requires a discriminator field name that does not exist in any of its constructors, $discriminatorFieldName already exists in ${constructor.metadata.name}!")
                 }
 
-                SubTypeInfo(definitionType(referencedModule, referencedDefinition), null, constructor.tag.tag)
+                SubTypeInfo(definitionType(referencedModule, referencedDefinition), null, discriminatorStringValue(constructor.metadata, constructor.tag.tag))
             }
             docs(definition.metadata)
             serializableAnnotation(serializationLibrary)
@@ -99,7 +99,7 @@ fun KotlinGeneratorContext<Model.Adt>.generateAdt() {
     jsonClassDiscriminatorAnnotation(serializationLibrary, discriminatorFieldName)
     serializableAnnotation(serializationLibrary)
     val subTypes = definition.constructors.map {
-        SubTypeInfo(name, constructorName(it.metadata), discriminatorValue(it.metadata))
+        SubTypeInfo(name, constructorName(it.metadata), discriminatorStringValue(it.metadata))
     }
     jsonTypeInfoAnnotation(serializationLibrary, discriminatorFieldName, subTypes)
     deprecatedAnnotation(definition.metadata)
@@ -128,7 +128,7 @@ fun KotlinGeneratorContext<Model.Adt>.generateAdt() {
                 ?: idiomaticClassName(constructor.metadata.name)
             docs(constructor.metadata)
             serializableAnnotation(serializationLibrary)
-            serialNameAnnotation(serializationLibrary, discriminatorValue(constructor.metadata))
+            serialNameAnnotation(serializationLibrary, discriminatorStringValue(constructor.metadata))
             deprecatedAnnotation(definition.metadata)
             line {
                 append("data class ${topLevelSymbolName(constructorName)}(")
