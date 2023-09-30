@@ -2,10 +2,10 @@ package tel.schich.idl.generator.kotlin.generate.library
 
 import kotlinx.serialization.json.JsonPrimitive
 import tel.schich.idl.core.Definition
-import tel.schich.idl.core.Metadata
 import tel.schich.idl.core.Model
 import tel.schich.idl.core.getAnnotation
-import tel.schich.idl.generator.kotlin.DiscriminatorValueAnnotation
+import tel.schich.idl.core.valueAsBoolean
+import tel.schich.idl.generator.kotlin.KotlinAnnotation
 import tel.schich.idl.generator.kotlin.generate.FileBuilder
 import tel.schich.idl.generator.kotlin.SerializationLibrary
 import tel.schich.idl.generator.kotlin.generate.annotation
@@ -43,10 +43,17 @@ fun FileBuilder.serialNameAnnotation(serializationLibrary: SerializationLibrary?
     }
 }
 
+val KotlinxSerializationContextualAnnotation = KotlinAnnotation("kotlinx.serialization-contextual", ::valueAsBoolean)
+
 fun FileBuilder.contextualAnnotation(serializationLibrary: SerializationLibrary?, referencedDefinition: Definition) {
-    if (serializationLibrary == SerializationLibrary.KOTLINX_SERIALIZATION && (referencedDefinition is Model.Sum || referencedDefinition is Model.TaggedSum)) {
-        line {
-            annotation("kotlinx.serialization.Contextual")
+    // TODO @Contextual needs to appear in many more places (e.g. collection parameters, value wrappers, ...)
+    if (serializationLibrary == SerializationLibrary.KOTLINX_SERIALIZATION) {
+        val isComplex = referencedDefinition is Model.Sum || referencedDefinition is Model.TaggedSum
+        val isAnnotated = referencedDefinition.metadata.getAnnotation(KotlinxSerializationContextualAnnotation) == true
+        if (isAnnotated || isComplex) {
+            line {
+                annotation("kotlinx.serialization.Contextual")
+            }
         }
     }
 }

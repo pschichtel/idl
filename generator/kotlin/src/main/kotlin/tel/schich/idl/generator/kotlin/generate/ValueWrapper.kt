@@ -6,6 +6,7 @@ import tel.schich.idl.core.getAnnotation
 import tel.schich.idl.generator.kotlin.KotlinGeneratorContext
 import tel.schich.idl.generator.kotlin.NewTypeAnnotation
 import tel.schich.idl.generator.kotlin.RepresentAsAnnotation
+import tel.schich.idl.generator.kotlin.SerializationLibrary
 import tel.schich.idl.generator.kotlin.generate.library.serializableAnnotation
 
 private fun KotlinGeneratorContext<*>.typeWrappingDefinition(type: String) {
@@ -23,7 +24,12 @@ private fun KotlinGeneratorContext<*>.typeWrappingDefinition(type: String) {
 }
 
 fun KotlinGeneratorContext<Model.Unknown>.generateUnknown() {
-    typeWrappingDefinition(type = "kotlin.Any")
+    val defaultUnknownType = when (serializationLibrary) {
+        SerializationLibrary.KOTLINX_SERIALIZATION -> "kotlinx.serialization.json.JsonElement"
+        SerializationLibrary.JACKSON -> "com.fasterxml.jackson.databind.JsonNode"
+        null -> "kotlin.Any"
+    }
+    typeWrappingDefinition(defaultUnknownType)
 }
 
 fun KotlinGeneratorContext<Alias>.generateAlias() {

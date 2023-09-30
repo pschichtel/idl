@@ -181,7 +181,13 @@ fun FileBuilder.valueClass(name: String, valueFieldName: String, type: String) {
     }
     line {
         append("value class ${topLevelSymbolName(name)}(")
-        value(valueFieldName, type)
+    }
+    indented {
+        line {
+            value(valueFieldName, type)
+        }
+    }
+    line {
         append(")")
     }
 }
@@ -234,4 +240,12 @@ fun discriminatorStringValue(metadata: Metadata, explicitValue: JsonPrimitive? =
     return metadata.getAnnotation(DiscriminatorValueAnnotation)?.let(::JsonPrimitive)
         ?: explicitValue?.content?.let(::JsonPrimitive)
         ?: JsonPrimitive(metadata.name)
+}
+
+fun FileBuilder.todo(message: String? = null) {
+    append("${useImported("kotlin.TODO")}(")
+    if (message != null) {
+        append(literalString(message))
+    }
+    append(")")
 }

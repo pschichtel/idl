@@ -26,6 +26,7 @@ definitions:
       annotations:
         tel.schich.idl.generator.kotlin/new-type: false
         tel.schich.idl.generator.kotlin/represent-as: java.time.Duration
+        tel.schich.idl.generator.kotlin/kotlinx.serialization-contextual: true
     type: primitive
     dataType:
       type: integer
