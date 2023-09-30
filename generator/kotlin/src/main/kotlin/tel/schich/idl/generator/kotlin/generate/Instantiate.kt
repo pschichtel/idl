@@ -31,7 +31,6 @@ fun FileBuilder.instantiateDefinition(request: GenerationRequest, subject: Modul
     when (definition) {
         is Alias -> instantiateAlias(request, subject, definingModule, definition, nullableContext, value)
         is Model.Adt -> todo()
-        is Model.Constant -> todo()
         is Model.Enumeration -> todo()
         is Model.HomogenousList -> todo()
         is Model.HomogenousMap -> todo()

@@ -21,7 +21,6 @@ import tel.schich.idl.generator.kotlin.generate.SimpleFileBuilder
 import tel.schich.idl.generator.kotlin.generate.definitionName
 import tel.schich.idl.generator.kotlin.generate.generateAdt
 import tel.schich.idl.generator.kotlin.generate.generateAlias
-import tel.schich.idl.generator.kotlin.generate.generateConstant
 import tel.schich.idl.generator.kotlin.generate.generateEnumeration
 import tel.schich.idl.generator.kotlin.generate.generateHomogenousList
 import tel.schich.idl.generator.kotlin.generate.generateHomogenousMap
@@ -118,9 +117,6 @@ class KotlinGenerator : JvmInProcessGenerator {
                 }
                 is Model.HomogenousMap -> {
                     ctx(definition).generateHomogenousMap()
-                }
-                is Model.Constant -> {
-                    ctx(definition).generateConstant()
                 }
                 is Alias -> {
                     ctx(definition).generateAlias()

@@ -58,7 +58,6 @@ object DeadReferenceValidator : ModuleValidator {
         val errors = module.definitions.flatMap { definition ->
             when (definition) {
                 is Alias -> validateReference(definition, definition.aliasedModel)
-                is Model.Constant -> emptyList()
                 is Model.Enumeration -> emptyList()
                 is Model.HomogenousList -> validateReference(definition, definition.itemModel)
                 is Model.HomogenousMap -> validateReference(definition, definition.keyModel) + validateReference(

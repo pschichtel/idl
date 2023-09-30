@@ -190,14 +190,6 @@ sealed interface Model : Definition {
     ) : Model
 
     @Serializable
-    @SerialName("constant")
-    data class Constant(
-        override val metadata: ModelMetadata,
-        val dataType: PrimitiveDataType,
-        val value: JsonPrimitive,
-    ) : Model
-
-    @Serializable
     @SerialName("primitive")
     data class Primitive(
         override val metadata: ModelMetadata,

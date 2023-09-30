@@ -455,19 +455,6 @@ class OpenApiGenerator : JvmInProcessGenerator {
                     },
                 )
             }
-            is Model.Constant -> {
-                val (type, format) = primitiveType(definition.dataType, definition.metadata)
-                SimpleSchema(
-                    type = type?.let(::typeWithNull),
-                    format = format,
-                    description = description,
-                    deprecated = deprecated,
-                    example = examples.firstOrNull(),
-                    examples = examples,
-                    default = withDefault,
-                    const = definition.value,
-                )
-            }
 
             is Model.Adt -> {
                 val nullSchema = if (asNullable) {

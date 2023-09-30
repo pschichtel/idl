@@ -45,7 +45,6 @@ object CyclicReferenceValidator : ModuleValidator {
 
             return when (definition) {
                 is Alias -> detectCycle(referencedModuleRef, refWithModule(currentModule, definition.aliasedModel), path + ref)
-                is Model.Constant -> null
                 is Model.Enumeration -> null
                 is Model.HomogenousList -> {
                     if (resolveMinimumSize(definition.sizeRange) > 0u) {
