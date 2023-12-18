@@ -18,7 +18,7 @@ dependencies {
     val kotlinxSerializationVersion = "1.6.0"
     api("org.jetbrains.kotlinx:kotlinx-serialization-core:$kotlinxSerializationVersion")
     api("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
-    val jacksonVersion = "2.15.2"
+    val jacksonVersion = "2.16.0"
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
 }
 
