@@ -155,7 +155,7 @@ class OpenApiGenerator : JvmInProcessGenerator {
                 } else {
                     parentPath.relativize(outputFilePath)
                 }
-                URI(path.toString())
+                URI(path.joinToString("/"))
             }
             val reference = Reference(uri, JsonPointer.fromString("/components/schemas/${ref.name}"))
             val examples = (overrideMetadata as? ModelMetadata)?.examples?.map { it.example }
