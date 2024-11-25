@@ -7,5 +7,5 @@ plugins {
 dependencies {
     implementation(project(":core"))
     implementation(project(":runner"))
-    implementation("com.ibm.icu:icu4j:74.1")
+    implementation("com.ibm.icu:icu4j:74.2")
 }
