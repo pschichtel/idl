@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm") version("1.9.23") apply(false)
-    kotlin("plugin.serialization") version("1.9.23") apply(false)
+    kotlin("jvm") version("1.9.25") apply(false)
+    kotlin("plugin.serialization") version("1.9.25") apply(false)
     id("tel.schich.idl.plugin") apply(false)
 }
 
