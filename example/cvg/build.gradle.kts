@@ -15,7 +15,7 @@ application {
 }
 
 dependencies {
-    val kotlinxSerializationVersion = "1.6.0"
+    val kotlinxSerializationVersion = "1.7.3"
     api("org.jetbrains.kotlinx:kotlinx-serialization-core:$kotlinxSerializationVersion")
     api("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
     val jacksonVersion = "2.16.0"
