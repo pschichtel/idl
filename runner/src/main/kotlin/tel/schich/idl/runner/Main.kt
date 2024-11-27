@@ -1,5 +1,6 @@
 package tel.schich.idl.runner
 
+import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.core.subcommands
 import tel.schich.idl.runner.command.InProcessGenerate
 import tel.schich.idl.runner.command.Root

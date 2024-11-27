@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("jvm")
@@ -11,9 +11,10 @@ repositories {
     mavenCentral()
 }
 
+val jvmTarget = 8
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of("8"))
+        languageVersion.set(JavaLanguageVersion.of(jvmTarget))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
@@ -33,8 +34,8 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+kotlin {
+    jvmToolchain(jvmTarget)
 }
 
 publishing {
