@@ -5,6 +5,6 @@ plugins {
 
 dependencies {
     implementation(project(":core"))
-    implementation("com.github.ajalt.clikt:clikt:5.0.1")
+    implementation("com.github.ajalt.clikt:clikt:5.0.2")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.2")
 }
